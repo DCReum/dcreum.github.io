@@ -2,10 +2,11 @@ pragma solidity ^0.4.9;
 
 contract Workflow {
 
+// Data types:
 
-    // zero indexation.
+    // enums are zero indexed - FYI.
     enum RelationType {
-        Include, Exclude, Response, Condition, Milestone //Spawn to be added
+        Include, Exclude, Response, Condition, Milestone
     }
 
     struct ExternalRelation {
@@ -35,14 +36,14 @@ contract Workflow {
 
         // External relations:
         ExternalRelation[] extRel; // could be made into several lists if large 
-
     }
 
 
-
+// Workflow data and creation:
 
     event Execution(address sender, uint32 id, bool successful);
-    event ExternalEdit(address sender, uint32 id, RelationType typ, bool successful);
+    event ExternalStateEdit(address sender, uint32 id, RelationType typ, bool successful);
+    event ActivityAdded(address sender, uint32 id);
     Activity[] activities;
     address owner;
     bytes32 name;
@@ -54,8 +55,13 @@ contract Workflow {
     /// include: array of include relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
     /// exclude: array of exclude relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
     /// response: array of response relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
-    /// condition: array of condition relations. The array is expected to have a structure such that i % 2 = 0 is the TO activity and i + 1 is the FROM activity 
+    /// spawn: array of spawn relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity, which is expected to have isSpawn=true 
+    /// condition: array of condition relations. The array is expected to have a structure such that i % 2 = 0 is the TO activity and i + 1 is the FROM activity
     /// milestone: array of milestone relations. The array is expected to have a structure such that i % 2 = 0 is the TO activity and i + 1 is the FROM activity 
+    /// localId: array of ids where the following external relation data should be put. Expected to be ordered such that localId[i] is id of the activity where externalId[i], workflowAddress[i] and relationType[i] is relevant.
+    /// externalId: array of ids of activities on other workflow contracts. Ordered such that externalId[i] is activity i on workflowAddress[i]
+    /// workflowAddress: array of addresses to other workflow contracts.
+    /// relationType: array of external relation type enums.
     function Workflow (
         bytes32 wfName,
         bytes32[] names,
@@ -65,14 +71,14 @@ contract Workflow {
         uint32[] include,
         uint32[] exclude,
         uint32[] response,
+        uint32[] spawn,
         uint32[] condition,
         uint32[] milestone,
-        // External relations:
+        // External relation data:
         uint32[] localId,
         uint32[] externalId,
         address[] workflowAddress,
         uint32[] relationType
-
     ) {
         name = wfName;
         owner = msg.sender;
@@ -91,51 +97,57 @@ contract Workflow {
             activities[include[i++]].include.push(include[i]);
         for (i = 0; i < exclude.length; i++) 
             activities[exclude[i++]].exclude.push(exclude[i]);
-        for (i = 0; i < response.length; i++) 
+        for (i = 0; i < response.length; i++)
             activities[response[i++]].response.push(response[i]);
-        for (i = 0; i < condition.length; i++) 
+        for (i = 0; i < condition.length; i++)
             activities[condition[i++]].condition.push(condition[i]);
-        for (i = 0; i < milestone.length; i++) 
+        for (i = 0; i < milestone.length; i++)  
             activities[milestone[i++]].milestone.push(milestone[i]);
-
+                
         // External relation creation
         for (i = 0; i < localId.length; i++)
             activities[localId[i]].extRel.push(ExternalRelation(externalId[i], workflowAddress[i], RelationType(relationType[i])));
-
     }
 
-    function addToWhitelist(uint32 id, address actor){
-        if(msg.sender != owner)
-            throw;
-        
-        activities[id].whitelist.push(actor);
-    }
+
+
+// Internal functions:
 
     function logFail(uint32 id) private {
         Execution(msg.sender, id, false);
     }
 
+    
+    function authorize(uint32 actId) private {
+        if(activities[actId].whitelist.length > 0) {
+            for (var i = 0; i < activities[actId].whitelist.length; i++) 
+                if(activities[actId].whitelist[i] == msg.sender)
+                    break;
+            
+            if(i == activities[actId].whitelist.length){
+                throw; 
+            }
+        }
+    }
+
+
+
+
+
+// External functions:
+
     function execute(uint32 id) {
         // Check that activity is in executable state
         Activity memory a = activities[id];
         
-        if(a.whitelist.length > 0) {
-            for (var i = 0; i < a.whitelist.length; i++) 
-                if(a.whitelist[i] == msg.sender)
-                    break;
-            
-            if(i == a.whitelist.length){
-                logFail(id);
-                return;
-            }
-        }
+        authorize(id);
         
         if(!a.included){
             logFail(id);
             return;
         }
         
-        for (i = 0; i < a.condition.length; i++) 
+        for (var i = 0; i < a.condition.length; i++) 
             if(!activities[a.condition[i]].executed && activities[a.condition[i]].included) {
                 logFail(id);
                 return;
@@ -161,11 +173,9 @@ contract Workflow {
         
         // Effects on other activities
         for (i = 0; i < a.include.length; i++) 
-            activities[a.include[i]].included = true;            
-        
+            activities[a.include[i]].included = true;
         for (i = 0; i < a.exclude.length; i++) 
-            activities[a.exclude[i]].included = false; 
-        
+            activities[a.exclude[i]].included = false;
         for (i = 0; i < a.response.length; i++) 
             activities[a.response[i]].pending = true; 
 
@@ -179,41 +189,117 @@ contract Workflow {
             }   
         }
 
-        // Effect on executing activity
+        // Effect on executing activity - reentrancy issues!?
         a.executed = true;
         a.pending = false;
         Execution(msg.sender, id, true);
 
     }
+    
+    // Add a new authorized pub key to specified activity 
+    function addToWhitelist(uint32 id, address actor){
+        if(msg.sender != owner)
+            throw;
+        
+        activities[id].whitelist.push(actor);
+    }
 
 
+
+    // Add a new external relation on activity id
+    function addExternalRelation (uint32 actId, address workflow, RelationType relTyp) {
+        authorize(actId);
+                
+        activities[actId].extRel.push(ExternalRelation(actId, workflow, relTyp));
+    }
+
+    function addActivities (
+        bytes32[] names,        
+        bool[] included,
+        bool[] executed,
+        bool[] pending,
+        uint32[] relations, // even ids are fromIds, odd are toIds
+        uint32[] internalRelations, // even ids are fromIds, odd are toIds
+        RelationType[] relTyps, // expected to have size relations.length /2
+        RelationType[] intRelTyps // expected to have size internalRelations.length /2
+    ) returns (uint32[]) {
+        uint32[] memory ids = new uint32[](names.length);
+        
+        for(var i = 0; i < names.length; i++) {
+            uint32 id = uint32(activities.length++);
+            activities[id].name = name;
+            activities[id].included = included[i];
+            activities[id].executed = executed[i];
+            activities[id].pending = pending[i];
+            ids[i] = id;
+        }
+
+        for(i = 0; i < relations.length; i++) 
+            addRelation(relations[i++], relations[i], relTyps[(i-1) / 2]);
+        for(i = 0; i < internalRelations.length; i++) 
+            addRelation(ids[internalRelations[i++]], ids[internalRelations[i]], intRelTyps[(i-1) / 2]);
+        
+        return ids;
+    }
+    
+    function addRelation (uint32 fromId, uint32 toId, RelationType relTyp) {
+        if(fromId >= activities.length || toId >= activities.length)
+            throw;
+        
+        if(relTyp == RelationType.Include) activities[fromId].include.push(toId);
+        else if(relTyp == RelationType.Exclude) activities[fromId].exclude.push(toId);
+        else if(relTyp == RelationType.Response) activities[fromId].response.push(toId);
+        else if(relTyp == RelationType.Condition) activities[toId].condition.push(fromId);
+        else if(relTyp == RelationType.Milestone) activities[toId].milestone.push(fromId);
+    }
+    function addActivity(  
+        bytes32 name,
+        bool included,
+        bool executed,
+        bool pending,
+        uint32[] include,
+        uint32[] exclude,
+        uint32[] response,
+        uint32[] condition,
+        uint32[] milestone,
+        address[] whitelist
+    ) returns (uint32) {
+        uint32 id = uint32(activities.length++);
+        activities[id].name = name;
+        activities[id].included = included;
+        activities[id].executed = executed;
+        activities[id].pending = pending;
+        activities[id].include = include;
+        activities[id].exclude = exclude;
+        activities[id].response = response;
+        activities[id].condition = condition;
+        activities[id].milestone = milestone;
+        activities[id].whitelist = whitelist;
+        return id;
+    }
+
+    // Selfdestruct
     function sudoku() {
         if(msg.sender != owner)
             throw;
         
         selfdestruct(owner);
     }
+
    
-    // Functions meant for external activity state interaction, to enable interworkflow communication
+// Functions for external activity state interaction, to enable interworkflow communication:
+
+    // External state change call
     function externalStateChange (uint32 actId, RelationType relTyp) {
         
         // Authorization: Assuming that calling contract address is in activity whitelist
-        if(activities[actId].whitelist.length > 0) {
-            for (var i = 0; i < activities[actId].whitelist.length; i++) 
-                if(activities[actId].whitelist[i] == msg.sender)
-                    break;
-            
-            if(i == activities[actId].whitelist.length){
-                //ExternalEdit(msg.sender, actId, relTyp, false); // comment in for debug
-                //return; // comment in for debug
-                throw; // Comment out for debug
-            }
-        }
+        authorize(actId);
 
+        // Change local state
         if(relTyp == RelationType.Include) activities[actId].included = true;
         if(relTyp == RelationType.Exclude) activities[actId].included = false;
         if(relTyp == RelationType.Response) activities[actId].pending = true;
-        ExternalEdit(msg.sender, actId, relTyp, true);
+        ExternalStateEdit(msg.sender, actId, relTyp, true);
         
     }
 
