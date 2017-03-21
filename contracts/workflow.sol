@@ -44,6 +44,7 @@ contract Workflow {
     event Execution(address sender, uint32 id, bool successful);
     event ExternalStateEdit(address sender, uint32 id, RelationType typ, bool successful);
     event ActivityAdded(address sender, uint32 id);
+    event RelationAdded(address sender, uint32 fromId, uint32 toId, RelationType typ);
     Activity[] activities;
     address owner;
     bytes32 name;
@@ -55,7 +56,6 @@ contract Workflow {
     /// include: array of include relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
     /// exclude: array of exclude relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
     /// response: array of response relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity 
-    /// spawn: array of spawn relations. The array is expected to have a structure such that i % 2 = 0 is the FROM activity and i + 1 is the TO activity, which is expected to have isSpawn=true 
     /// condition: array of condition relations. The array is expected to have a structure such that i % 2 = 0 is the TO activity and i + 1 is the FROM activity
     /// milestone: array of milestone relations. The array is expected to have a structure such that i % 2 = 0 is the TO activity and i + 1 is the FROM activity 
     /// localId: array of ids where the following external relation data should be put. Expected to be ordered such that localId[i] is id of the activity where externalId[i], workflowAddress[i] and relationType[i] is relevant.
@@ -232,6 +232,8 @@ contract Workflow {
             activities[id].executed = executed[i];
             activities[id].pending = pending[i];
             ids[i] = id;
+
+            ActivityAdded(msg.sender, id);
         }
 
         for(i = 0; i < relations.length; i++) 
@@ -251,7 +253,10 @@ contract Workflow {
         else if(relTyp == RelationType.Response) activities[fromId].response.push(toId);
         else if(relTyp == RelationType.Condition) activities[toId].condition.push(fromId);
         else if(relTyp == RelationType.Milestone) activities[toId].milestone.push(fromId);
+
+        RelationAdded(msg.sender, fromId, toId, relTyp);
     }
+
     function addActivity(  
         bytes32 name,
         bool included,
@@ -275,6 +280,7 @@ contract Workflow {
         activities[id].condition = condition;
         activities[id].milestone = milestone;
         activities[id].whitelist = whitelist;
+        ActivityAdded(msg.sender, id);
         return id;
     }
 
