@@ -6,7 +6,7 @@ contract Workflow {
 
     // enums are zero indexed - FYI.
     enum RelationType {
-        Include, Exclude, Response, Condition, Milestone
+        Include, Exclude, Response, Condition, Milestone, External
     }
 
     struct ExternalRelation {
@@ -68,17 +68,12 @@ contract Workflow {
         bool[] included,
         bool[] executed,
         bool[] pending,
-        uint32[] include,
-        uint32[] exclude,
-        uint32[] response,
-        uint32[] spawn,
-        uint32[] condition,
-        uint32[] milestone,
+
+        uint32[] relations,
+        RelationType[] relationType,
         // External relation data:
-        uint32[] localId,
-        uint32[] externalId,
-        address[] workflowAddress,
-        uint32[] relationType
+        address[] externalWorkflowAddress,
+        uint32[] externalRelationType
     ) {
         name = wfName;
         owner = msg.sender;
@@ -91,25 +86,19 @@ contract Workflow {
             activities[i].executed  = executed[i];
             activities[i].pending   = pending[i];
         }
+        uint externalRelationCounter = 0;
+        // We expect all relation arrays are formed such that i % 2 = 0 is where the data is to be stored, and i+1 is the data that is to be stored there.
+        for(i = 0; i <= relations.length; i+2){
+            if(relationType[i/2] == RelationType.Include)        activities[relations[i]].include.push(relations[i+1]);
+            else if(relationType[i/2] == RelationType.Exclude)   activities[relations[i]].exclude.push(relations[i+1]);
+            else if(relationType[i/2] == RelationType.Response)  activities[relations[i]].response.push(relations[i+1]);
+            else if(relationType[i/2] == RelationType.Condition) activities[relations[i+1]].condition.push(relations[i]);
+            else if(relationType[i/2] == RelationType.Milestone) activities[relations[i+1]].milestone.push(relations[i]);
+            else if(relationType[i/2] == RelationType.External)
+                activities[relations[i]].extRel.push(ExternalRelation(relations[i+1], externalWorkflowAddress[externalRelationCounter], RelationType(externalRelationType[i-externalRelationCounter++])));
+        }
 
-        // We expect all relation arrays are formed such that i % 2 = 0 is where the data is to be stored, and i+1 is the data that is to be stored there
-        for (i = 0; i < include.length; i++) 
-            activities[include[i++]].include.push(include[i]);
-        for (i = 0; i < exclude.length; i++) 
-            activities[exclude[i++]].exclude.push(exclude[i]);
-        for (i = 0; i < response.length; i++)
-            activities[response[i++]].response.push(response[i]);
-        for (i = 0; i < condition.length; i++)
-            activities[condition[i++]].condition.push(condition[i]);
-        for (i = 0; i < milestone.length; i++)  
-            activities[milestone[i++]].milestone.push(milestone[i]);
-                
-        // External relation creation
-        for (i = 0; i < localId.length; i++)
-            activities[localId[i]].extRel.push(ExternalRelation(externalId[i], workflowAddress[i], RelationType(relationType[i])));
     }
-
-
 
 // Internal functions:
 
@@ -129,10 +118,6 @@ contract Workflow {
             }
         }
     }
-
-
-
-
 
 // External functions:
 
@@ -195,7 +180,7 @@ contract Workflow {
         Execution(msg.sender, id, true);
 
     }
-    
+
     // Add a new authorized pub key to specified activity 
     function addToWhitelist(uint32 id, address actor){
         if(msg.sender != owner)
@@ -203,8 +188,6 @@ contract Workflow {
         
         activities[id].whitelist.push(actor);
     }
-
-
 
     // Add a new external relation on activity id
     function addExternalRelation (uint32 actId, address workflow, RelationType relTyp) {
@@ -308,7 +291,6 @@ contract Workflow {
         ExternalStateEdit(msg.sender, actId, relTyp, true);
         
     }
-
 
     // returns true if calling activity is executable according to specified relation type
     function relationFulfilled (uint32 actId, RelationType relTyp) returns (bool) {
