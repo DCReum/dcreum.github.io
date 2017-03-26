@@ -26,6 +26,7 @@ contract DCReum {
 
     // group execution rights bit vector
     // a set bit means the corresponding group is allowed to execute
+    // 0x0 disables group auth
     uint32 authGroups;
 
     // activity state
@@ -43,21 +44,18 @@ contract DCReum {
 
   Workflow[] workflows;
 
-  function get(uint256 workflowId, uint256 activityId) internal returns (Workflow, Activity) {
-    var workflow = workflows[workflowId];
-    var activity = workflow.activities[activityId];
-    return (workflow, activity);
-  }
-
   function canExecute(uint256 workflowId, uint256 activityId) returns (bool) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
     uint32 i;
     uint32 fromId;
 
-    // sender must be member of a group with rights to execute
+    // activity must have group auth disabled or sender must be member of a group with rights to execute
     // note that workflow.groupMembers[msg.sender] defaults to 0 for unmapped sender
-    if ((workflow.groupMembers[msg.sender] & activity.authGroups) != 0) return false;
+    // note that the operands of the AND are of different bit lengths,
+    // causing the 8 special group bits to be ignored
+    if (activity.authGroups != 0 && (workflow.groupMembers[msg.sender] & activity.authGroups) == 0)
+      return false;
 
     // activity must be included
     if (!activity.included) return false;
@@ -76,11 +74,12 @@ contract DCReum {
   }
 
   function execute(uint256 workflowId, uint256 activityId) {
-    var (workflow, activity) = get(workflowId, activityId);
+    var workflow = workflows[workflowId];
+    var activity = workflow.activities[activityId];
     uint32 i;
     uint32 toId; 
 
-    if (!canExecute(workflowId, workflowId)) throw;
+    if (!canExecute(workflowId, activityId)) throw;
 
     // executed activity
     activity.executed = true;
@@ -118,10 +117,11 @@ contract DCReum {
   }
 
   // temporary debug function
-  function createActivity(uint256 workflowId, bytes32 activityName) returns (uint256) {
+  function createActivity(uint256 workflowId, bytes32 activityName, uint32 authGroups) returns (uint256) {
     var workflow = workflows[workflowId];
     var activityId = workflow.activities.length++;
     workflow.activities[activityId].name = activityName;
+    workflow.activities[activityId].authGroups = authGroups;
     LogActivityCreation(workflowId, activityId, activityName);
     return activityId;
   }
