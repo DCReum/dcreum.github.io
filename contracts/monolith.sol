@@ -12,22 +12,14 @@ contract DCReum {
     // it must not surpass 2^32 entries
     Activity[] activities;
 
-    // group 0-31     permits execution of activities with the corresponding auth bit set
-    // group 32       permits workflow modification
-    // group 33-39    reserved
-    mapping (address => uint40) groupMembers;
-
-    // names of group 0-31
     bytes32[32] groupNames;
+    mapping(address => bool[32]) groupMembers;
   }
 
   struct Activity {
     bytes32 name;
-
-    // group execution rights bit vector
-    // a set bit means the corresponding group is allowed to execute
-    // 0x0 disables group auth
-    uint32 authGroups;
+    address[] executorAccounts;
+    bool[32] executorGroups;
 
     // activity state
     bool included;
@@ -49,13 +41,26 @@ contract DCReum {
     var activity = workflow.activities[activityId];
     uint32 i;
     uint32 fromId;
+    bool isSenderAuthed;
+    bool[32] memory senderGroups;
 
-    // activity must have group auth disabled or sender must be member of a group with rights to execute
-    // note that workflow.groupMembers[msg.sender] defaults to 0 for unmapped sender
-    // note that the operands of the AND are of different bit lengths,
-    // causing the 8 special group bits to be ignored
-    if (activity.authGroups != 0 && (workflow.groupMembers[msg.sender] & activity.authGroups) == 0)
-      return false;
+    // sender must be an executor account or in an executor group 
+    for (i = 0; i < activity.executorAccounts.length; i++) {
+      if (activity.executorAccounts[i] == msg.sender) {
+        isSenderAuthed = true;
+        break;
+      }
+    }
+
+    senderGroups = workflow.groupMembers[msg.sender];
+    for (i = 0; i < 32; i++) {
+      if (senderGroups[i] && activity.executorGroups[i]) {
+        isSenderAuthed = true;
+        break;
+      }
+    }
+
+    if (!isSenderAuthed) throw;
 
     // activity must be included
     if (!activity.included) return false;
@@ -108,20 +113,30 @@ contract DCReum {
   }
 
   // temporary debug function
-  function createWorkflow(bytes32 workflowName, bytes32[32] groupNames) returns (uint256) {
+  function createWorkflow(bytes32 workflowName, bytes32[32] groupNames, address[] groupMemberAddresses, bool[] groupMemberRights) returns (uint256) {
     var workflowId = workflows.length++;
+    uint256 i;
+    uint256 j;
     workflows[workflowId].name = workflowName;
     workflows[workflowId].groupNames = groupNames;
+    for (i = 0; i < groupMemberAddresses.length; i++) {
+      bool[32] memory rights;
+      for (j = 0; j < 32; j++) {
+        rights[j] = groupMemberRights[i*32 + j];
+      }
+      workflows[workflowId].groupMembers[groupMemberAddresses[i]] = rights;
+    }
     LogWorkflowCreation(workflowId, workflowName);
     return workflowId;
   }
 
   // temporary debug function
-  function createActivity(uint256 workflowId, bytes32 activityName, uint32 authGroups) returns (uint256) {
+  function createActivity(uint256 workflowId, bytes32 activityName, address[] executorAccounts, bool[32] executorGroups) returns (uint256) {
     var workflow = workflows[workflowId];
     var activityId = workflow.activities.length++;
     workflow.activities[activityId].name = activityName;
-    workflow.activities[activityId].authGroups = authGroups;
+    workflow.activities[activityId].executorAccounts = executorAccounts;
+    workflow.activities[activityId].executorGroups = executorGroups;
     LogActivityCreation(workflowId, activityId, activityName);
     return activityId;
   }
