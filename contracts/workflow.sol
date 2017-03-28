@@ -46,6 +46,7 @@ contract Workflow {
     event ActivityAdded(address sender, uint32 id);
     event RelationAdded(address sender, uint32 fromId, uint32 toId, RelationType typ);
     Activity[] activities;
+    uint256 deletedActivitiesVector;
     address owner;
     bytes32 name;
 
@@ -91,7 +92,7 @@ contract Workflow {
         }
         uint externalRelationCounter = 0;
         // We expect all relation arrays are formed such that i % 2 = 0 is where the data is to be stored, and i+1 is the data that is to be stored there.
-        for(i = 0; i <= relations.length; i+2){
+        for(i = 0; i < relations.length; i=i+2){
             if(relationType[i/2] == RelationType.Include)        activities[relations[i]].include.push(relations[i+1]);
             else if(relationType[i/2] == RelationType.Exclude)   activities[relations[i]].exclude.push(relations[i+1]);
             else if(relationType[i/2] == RelationType.Response)  activities[relations[i]].response.push(relations[i+1]);
@@ -209,9 +210,17 @@ contract Workflow {
         RelationType[] relTyps, // expected to have size relations.length /2
         RelationType[] intRelTyps // expected to have size internalRelations.length /2
     ) returns (uint32[]) {
+        // Non-invasive check
+        for(var i = 0; i < relTyps.length; i++){
+            RelationType typ = relTyps[i];
+
+            if(typ == RelationType.Include || typ == RelationType.Exclude)
+                throw;
+        }
+
         uint32[] memory ids = new uint32[](names.length);
         
-        for(var i = 0; i < names.length; i++) {
+        for(i = 0; i < names.length; i++) {
             uint32 id = uint32(activities.length++);
             activities[id].name = name;
             activities[id].included = included[i];
@@ -243,31 +252,99 @@ contract Workflow {
         RelationAdded(msg.sender, fromId, toId, relTyp);
     }
 
-    function addActivity(  
-        bytes32 name,
-        bool included,
-        bool executed,
-        bool pending,
-        uint32[] include,
-        uint32[] exclude,
-        uint32[] response,
-        uint32[] condition,
-        uint32[] milestone,
-        address[] whitelist
-    ) returns (uint32) {
-        uint32 id = uint32(activities.length++);
-        activities[id].name = name;
-        activities[id].included = included;
-        activities[id].executed = executed;
-        activities[id].pending = pending;
-        activities[id].include = include;
-        activities[id].exclude = exclude;
-        activities[id].response = response;
-        activities[id].condition = condition;
-        activities[id].milestone = milestone;
-        activities[id].whitelist = whitelist;
-        ActivityAdded(msg.sender, id);
-        return id;
+    function contains (uint32[] container, uint32 containee) internal returns (bool) {
+        for(var j = 0; j < container.length; j++)
+            if(container[j] == containee)
+                return true;
+        return false;
+    }
+
+    function isSubSetOf (uint32[] subSet, uint32[] superSet) internal returns (bool) {
+        for(var i = 0; i < subSet.length; i++){
+            if(!contains(superSet, subSet[i]))
+                return false;
+        }
+        return true;
+    }
+
+    function isDeleted (uint32 id) internal returns (bool) {
+        return (deletedActivitiesVector & (1 << id) == 0);
+    }
+
+
+    function deleteActivities(uint32[] ids) {
+        uint256 deleteVector = 0;
+        for(var i = 0; i < ids.length; i++){
+            deleteVector = deleteVector ^ (1 << ids[i]);
+        }
+
+        if(deletedActivitiesVector & deleteVector != 0)
+            throw;
+
+        // check for outgoing relations
+        for(i = 0; i < ids.length; i++){
+            if(!isSubSetOf(activities[ids[i]].response, ids))
+                throw;
+        }
+
+        // check incoming relations
+        for(i = 0; i < activities.length; i++){
+            if(contains(ids, i) || isDeleted(i))
+                continue;
+
+            for(var j = 0; j < activities[i].condition.length; j++)
+                if(contains(ids, activities[i].condition[j]))
+                    throw;
+            
+            for(j = 0; j < activities[i].milestone.length; j++)
+                if(contains(ids, activities[i].milestone[j]))
+                    throw;
+        }
+
+        //from here on in, we know that ids are allowed to be deleted
+        deletedActivitiesVector = deletedActivitiesVector ^ deleteVector;
+
+        for(i = 0; i < activities.length; i++){
+            if(isDeleted(ids[i]))
+                continue;
+            
+            // remove deleted include relations
+            for(j = 0; j < activities[i].include.length; j++){
+                if(isDeleted(activities[i].include[j])){
+                    for(var k = j; k < activities[i].include.length; k++){
+                        activities[i].include[k] = activities[i].include[k+1];
+                    }
+                    delete activities[i].include[activities[i].include.length - 1];
+                    activities[i].include.length--;
+                    j--;
+                }
+            }
+
+            // remove deleted exclude relations            
+            for(j = 0; j < activities[i].exclude.length; j++){
+                if(isDeleted(activities[i].exclude[j])){
+                    for(k = j; k < activities[i].exclude.length; k++){
+                        activities[i].exclude[k] = activities[i].exclude[k+1];
+                    }
+                    delete activities[i].exclude[activities[i].exclude.length - 1];
+                    activities[i].exclude.length--;
+                    j--;
+                }
+            }
+
+            // remove deleted response relations
+            for(j = 0; j < activities[i].response.length; j++){
+                if(isDeleted(activities[i].response[j])){
+                    for(k = j; k < activities[i].response.length; k++){
+                        activities[i].response[k] = activities[i].response[k+1];
+                    }
+                    delete activities[i].response[activities[i].response.length - 1];
+                    activities[i].response.length--;
+                    j--;
+                }
+            }
+        }
+
     }
 
     // Selfdestruct
