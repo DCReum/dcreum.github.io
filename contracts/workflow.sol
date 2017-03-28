@@ -75,6 +75,9 @@ contract Workflow {
         address[] externalWorkflowAddress,
         uint32[] externalRelationType
     ) {
+        if((relations.length/2) != relationType.length)
+            throw;
+            
         name = wfName;
         owner = msg.sender;
 
