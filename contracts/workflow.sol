@@ -76,6 +76,9 @@ contract Workflow {
         address[] externalWorkflowAddress,
         uint32[] externalRelationType
     ) {
+        if((relations.length/2) != relationType.length)
+            throw;
+            
         name = wfName;
         owner = msg.sender;
 
@@ -320,7 +323,7 @@ contract Workflow {
             // remove deleted exclude relations            
             for(j = 0; j < activities[i].exclude.length; j++){
                 if(isDeleted(activities[i].exclude[j])){
-                    for(var k = j; k < activities[i].exclude.length; k++){
+                    for(k = j; k < activities[i].exclude.length; k++){
                         activities[i].exclude[k] = activities[i].exclude[k+1];
                     }
                     delete activities[i].exclude[activities[i].exclude.length - 1];
