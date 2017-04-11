@@ -2,17 +2,8 @@ pragma solidity 0.4.9;
 
 contract DCReum {
   event LogWorkflowCreation(uint256 indexed workflowId, bytes32 indexed workflowName);
+  event LogActivityCreation(uint256 indexed workflowId, uint256 indexed activityId, bytes32 indexed activityName);
   event LogExecution(uint256 indexed workflowId, uint256 indexed activityId, address indexed executor);
-
-  enum RelationType {
-    Include, Exclude, Response, Condition, Milestone, External
-  }
-
-  struct ExternalRelation {
-    uint256 workflowId;
-    uint256 activityId;
-    RelationType relationType;
-  }
 
   struct Workflow {
     bytes32 name;
@@ -41,20 +32,17 @@ contract DCReum {
     uint32[] responseTo;
     uint32[] conditionFrom;
     uint32[] milestoneFrom;
-    ExternalRelation[] externals;
   }
 
-  Workflow[] public workflows;
+  Workflow[] workflows;
 
   function canExecute(uint256 workflowId, uint256 activityId) returns (bool) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
-    Activity memory fromActivity;
     uint32 i;
+    uint32 fromId;
     bool isSenderAuthed;
     bool[32] memory senderGroups;
-    ExternalRelation memory externalRelation;
-    Workflow memory externalWorkflow;
 
     // sender must be an executor account or in an executor group 
     for (i = 0; i < activity.executorAccounts.length; i++) {
@@ -72,49 +60,30 @@ contract DCReum {
       }
     }
 
-    if (!isSenderAuthed) return false;
+    if (!isSenderAuthed) throw;
 
     // activity must be included
     if (!activity.included) return false;
 
     // all conditions executed
     for (i = 0; i < activity.conditionFrom.length; i++) {
-      fromActivity = workflow.activities[activity.conditionFrom[i]];
-      if (!fromActivity.executed && fromActivity.included) return false;
+      fromId = activity.conditionFrom[i];
+      if (!workflow.activities[fromId].executed) return false;
     }
 
     // no milestones pending
     for (i = 0; i < activity.milestoneFrom.length; i++) {
-      fromActivity = workflow.activities[activity.milestoneFrom[i]];
-      if (fromActivity.pending && fromActivity.included) return false;
+      fromId = activity.milestoneFrom[i];
+      if (workflow.activities[fromId].pending) return false;
     }
-
-    // External checks
-    for (i = 0; i < activity.externals.length; i++) {
-      externalWorkflow = workflows[activity.externals[i].workflowId];
-      fromActivity = externalWorkflow.activities[activity.externals[i].activityId];
-      externalRelation = activity.externals[i];
-
-      // Condition logic
-      if(externalRelation.relationType == RelationType.Condition && !fromActivity.executed && fromActivity.included) 
-        return false;
-      
-      // Milestone logic
-      else if(externalRelation.relationType == RelationType.Milestone && fromActivity.pending && fromActivity.included) 
-        return false;
-    }
-
-    return true;
   }
 
   function execute(uint256 workflowId, uint256 activityId) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
     uint32 i;
-    uint32 toId;
-    Workflow memory externalWorkflow;
-    ExternalRelation memory externalRelation;    
-    
+    uint32 toId; 
+
     if (!canExecute(workflowId, activityId)) throw;
 
     // executed activity
@@ -140,76 +109,35 @@ contract DCReum {
       workflow.activities[toId].pending = true;
     }
 
-    // External state changes
-    for (i = 0; i < activity.externals.length; i++) {
-      externalRelation = activity.externals[i];
-      externalWorkflow = workflows[externalRelation.workflowId];
-
-      if(externalRelation.relationType == RelationType.Exclude)
-        externalWorkflow.activities[externalRelation.activityId].included = false;
-      if(externalRelation.relationType == RelationType.Include)
-        externalWorkflow.activities[externalRelation.activityId].included = true;
-      if(externalRelation.relationType == RelationType.Response)
-        externalWorkflow.activities[externalRelation.activityId].pending = true;
-    }
-
     LogExecution(workflowId, activityId, msg.sender);
   }
 
-  function createWorkflow(
-        bytes32 workflowName,
-        bytes32[] activityNames,
-        bool[] included,
-        bool[] executed,
-        bool[] pending,
-
-        uint32[] relations,
-        RelationType[] relationType,
-        // External relation data:
-        uint256[] externalWorkflowId,
-        uint32[] externalRelationType,
-
-        bytes32[32] groupNames,
-        address[] groupMemberAddresses,
-        bool[] groupMemberRights
-    ) {
-        // uint256 i;
-        // uint256 j;
-
-        Workflow wf = workflows[workflows.length++];
-        // if((relations.length/2) != relationType.length)
-        //     throw;
-            
-        wf.name = workflowName;
-        // wf.groupNames = groupNames;
-        // for (i = 0; i < groupMemberAddresses.length; i++) {
-        //   var rights = wf.groupMembers[groupMemberAddresses[i]];
-        //   for (j = 0; j < 32; j++) {
-        //      rights[j] = groupMemberRights[i*32 + j];
-        //   }
-        // }
-
-        // wf.activities.length = activityNames.length;
-
-        // for (i = 0; i < activityNames.length; i++) {
-        //     wf.activities[i].name      = activityNames[i];
-        //     wf.activities[i].included  = included[i];
-        //     wf.activities[i].executed  = executed[i];
-        //     wf.activities[i].pending   = pending[i];
-        // }
-        
-        // // We expect all relation arrays are formed such that i % 2 = 0 is where the data is to be stored, and i+1 is the data that is to be stored there.
-        // j = 0;
-        // for(i = 0; i <= relations.length; i += 2){
-        //     if(relationType[i/2] == RelationType.Include)        wf.activities[relations[i]].includeTo.push(relations[i+1]);
-        //     else if(relationType[i/2] == RelationType.Exclude)   wf.activities[relations[i]].excludeTo.push(relations[i+1]);
-        //     else if(relationType[i/2] == RelationType.Response)  wf.activities[relations[i]].responseTo.push(relations[i+1]);
-        //     else if(relationType[i/2] == RelationType.Condition) wf.activities[relations[i+1]].conditionFrom.push(relations[i]);
-        //     else if(relationType[i/2] == RelationType.Milestone) wf.activities[relations[i+1]].milestoneFrom.push(relations[i]);
-        //     else if(relationType[i/2] == RelationType.External)
-        //         wf.activities[relations[i]].externals.push(ExternalRelation(relations[i+1], externalWorkflowId[j], RelationType(externalRelationType[i-j++])));
-        // }
-
-        LogWorkflowCreation(workflows.length - 1, workflowName);
+  // temporary debug function
+  function createWorkflow(bytes32 workflowName, bytes32[32] groupNames, address[] groupMemberAddresses, bool[] groupMemberRights) returns (uint256) {
+    var workflowId = workflows.length++;
+    uint256 i;
+    uint256 j;
+    workflows[workflowId].name = workflowName;
+    workflows[workflowId].groupNames = groupNames;
+    for (i = 0; i < groupMemberAddresses.length; i++) {
+      bool[32] memory rights;
+      for (j = 0; j < 32; j++) {
+        rights[j] = groupMemberRights[i*32 + j];
+      }
+      workflows[workflowId].groupMembers[groupMemberAddresses[i]] = rights;
     }
+    LogWorkflowCreation(workflowId, workflowName);
+    return workflowId;
+  }
+
+  // temporary debug function
+  function createActivity(uint256 workflowId, bytes32 activityName, address[] executorAccounts, bool[32] executorGroups) returns (uint256) {
+    var workflow = workflows[workflowId];
+    var activityId = workflow.activities.length++;
+    workflow.activities[activityId].name = activityName;
+    workflow.activities[activityId].executorAccounts = executorAccounts;
+    workflow.activities[activityId].executorGroups = executorGroups;
+    LogActivityCreation(workflowId, activityId, activityName);
+    return activityId;
+  }
 }
