@@ -143,4 +143,28 @@ contract Workflow {
         
         selfdestruct(owner);
     }
+    function isIncluded(uint i) public constant returns (bool){
+        return activities[i].included;
+    }
+    function isPending(uint i) public constant returns (bool){
+        return activities[i].pending;
+    }
+    function isExecuted(uint i) public constant returns (bool){
+        return activities[i].executed;
+    }
+    function getIncludeRelations(uint i) public constant returns (uint32[]){
+        return activities[i].include;
+    }
+    function getExcludeRelations(uint i) public constant returns (uint32[]){
+        return activities[i].exclude;
+    }
+    function getResponseRelations(uint i) public constant returns (uint32[]){
+        return activities[i].response;
+    }
+    function getConditionRelations(uint i) public constant returns (uint32[]){
+        return activities[i].condition;
+    }
+    function getMilestoneRelations(uint i) public constant returns (uint32[]){
+        return activities[i].milestone;
+    }
 }
