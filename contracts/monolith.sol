@@ -12,53 +12,56 @@ contract DCReum {
   struct Workflow {
     bytes32 name;
     
-    // note that while activities is indexed with 256 bit,
-    // it must not surpass 2^32 entries
+    // Note that while activities is indexed with 256 bit, it must not surpass 2^32 entries
     Activity[] activities;
 
-    // group 0-31     permits execution of activities with the corresponding auth bit set
-    // group 32       permits workflow modification
-    // group 33-39    reserved
+    // Group 0-31     permits execution of activities with the corresponding auth bit set
+    // Group 32       permits workflow modification
+    // Group 33-39    reserved
     mapping (address => uint40) groupMembers;
     
-    // names of group 0-31
+    // Names of group 0-31
     bytes32[32] groupNames;
   }
 
   struct Activity {
     bytes32 name;
 
-    // activity state
+    // Activity state
     bool included;
     bool executed;
     bool pending;
 
-    // activity relations
+    // Activity relations
     uint32[] includeTo;
     uint32[] excludeTo;
     uint32[] responseTo;
     uint32[] conditionFrom;
     uint32[] milestoneFrom;
     
-    // group execution rights bit vector
-    // a set bit means the corresponding group is allowed to execute
-    uint32 authGroups;
+    // Group execution rights bit vector
+    // A set bit means the corresponding group is allowed to execute
+    uint32 groupWhitelist;
 
-    // individual accounts with rights to execute
-    address[] authAccounts;
+    // Individual accounts with rights to execute
+    address[] accountWhitelist;
 
-    // if true anyone can execute
+    // If true anyone can execute
     bool authDisabled;
   }
 
   Workflow[] workflows;
 
-  // not intended for use in transactions, as returned structs will exist in memory,
-  // not as storage pointers
+  // Not intended for use in transactions, as returned structs will exist in memory instead of as storage pointers!
   function getWorkflowActivity(uint256 workflowId, uint256 activityId) private constant returns (Workflow, Activity) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
     return (workflow, activity);
+  }
+
+  function getAccountWhitelist(uint256 workflowId, uint256 activityId) public constant returns (address[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.accountWhitelist;
   }
 
   function isIncluded(uint256 workflowId, uint256 activityId) public constant returns (bool) {
@@ -107,31 +110,30 @@ contract DCReum {
     uint32 i;
     uint32 fromId;
 
-    // sender address must have rights to execute or sender must be member of a group with rights to execute
-    // note that the operands of the AND are of different bit lengths,
-    // causing the 8 special group bits to be ignored
-    if (!activity.authDisabled && (workflow.groupMembers[msg.sender] & activity.authGroups) == 0) {
-      // sender not in allowed group - check individual account access rights
-      for (i = 0; i < activity.authAccounts.length; i++) {
-        if (activity.authAccounts[i] == msg.sender)
+    // Sender address must have rights to execute or sender must be member of a group with rights to execute
+    // Note that the operands of the AND are of different bit lengths, causing the 8 special group bits to be ignored
+    if (!activity.authDisabled && (workflow.groupMembers[msg.sender] & activity.groupWhitelist) == 0) {
+      // Sender not in allowed group - check individual account access rights
+      for (i = 0; i < activity.accountWhitelist.length; i++) {
+        if (activity.accountWhitelist[i] == msg.sender)
           break;
       }
 
-      // sender not in authAccounts array
-      if (i == activity.authAccounts.length)
+      // Sender not in accountWhitelist array
+      if (i == activity.accountWhitelist.length)
         return false;
     }
 
-    // activity must be included
+    // Activity must be included
     if (!activity.included) return false;
 
-    // all conditions executed
+    // All conditions executed
     for (i = 0; i < activity.conditionFrom.length; i++) {
       fromId = activity.conditionFrom[i];
       if (!workflow.activities[fromId].executed) return false;
     }
 
-    // no milestones pending
+    // No milestones pending
     for (i = 0; i < activity.milestoneFrom.length; i++) {
       fromId = activity.milestoneFrom[i];
       if (workflow.activities[fromId].pending) return false;
@@ -148,24 +150,24 @@ contract DCReum {
 
     if (!canExecute(workflowId, activityId)) throw;
 
-    // executed activity
+    // Executed activity
     activity.executed = true;
     activity.pending = false;
 
-    // exclude relations pass
+    // Exclude relations pass
     for (i = 0; i < activity.excludeTo.length; i++) {
       toId = activity.excludeTo[i];
       workflow.activities[toId].included = false;
     }
 
-    // include relations pass
-    // note this happens after the exlude pass
+    // Include relations pass
+    // Note this happens after the exlude pass
     for (i = 0; i < activity.includeTo.length; i++) {
       toId = activity.includeTo[i];
       workflow.activities[toId].included = true;
     }
 
-    // response relations pass
+    // Response relations pass
     for (i = 0; i < activity.responseTo.length; i++) {
       toId = activity.responseTo[i];
       workflow.activities[toId].pending = true;
@@ -175,25 +177,25 @@ contract DCReum {
   }
 
   function createWorkflow(
-    // ugly squash hack to decrease stack depth
-    // 0: workflow name
-    // 1-32: group names
-    // 33-end: activity names
+    // Ugly squash hack to decrease stack depth
+    // 0        workflow name
+    // 1-32     group names
+    // 33-end   activity names
     bytes32[] names,
     bool[3][] activityStates, // included, executed, pending
 
-    // ugly squash hack to decrease stack depth
-    // length is amount of activities
-    // 0: counts for relationTypes and relationActivityIds
-    // 1: counts for authAccounts
-    // 2: authGroups
+    // Ugly squash hack to decrease stack depth
+    // Length of outer array is amount of activities
+    // 0  counts for relationTypes and relationActivityIds
+    // 1  counts for accountWhitelist
+    // 2  groupWhitelist
     uint32[3][] activityData,
     RelationType[] relationTypes,
     uint32[] relationActivityIds,
 
     address[] groupAccounts,
     uint40[] groupMemberships,
-    address[] authAccounts,
+    address[] accountWhitelist,
     bool[] authDisabled
   ) {
     var workflow = workflows[workflows.length++];
@@ -211,22 +213,22 @@ contract DCReum {
       workflow.groupNames[i] = names[1 + i];
     }
 
-    // group accounts
+    // Group accounts
     for (i = 0; i < groupAccounts.length; i++) {
       workflow.groupMembers[groupAccounts[i]] = groupMemberships[i];
     }
 
-    // activities
+    // Activities
     for (i = 0; i < activityData.length; i++) {
       var activity = workflow.activities[workflow.activities.length++];
       activity.name = names[33 + i];
       activity.included = activityStates[i][0];
       activity.executed = activityStates[i][1];
       activity.pending = activityStates[i][2];
-      activity.authGroups = activityData[i][2];
+      activity.groupWhitelist = activityData[i][2];
       activity.authDisabled = authDisabled[i];
 
-      // relations
+      // Activity relations
       for (j = 0; j < activityData[i][0]; j++) {
         if (relationTypes[relationIndex] == RelationType.Include)
           activity.includeTo.push(relationActivityIds[relationIndex]);
@@ -242,9 +244,9 @@ contract DCReum {
         relationIndex++;
       }
 
-      // individual account auth
+      // Individually whitelisted accounts
       for (j = 0; j < activityData[i][1]; j++) {
-        activity.authAccounts.push(authAccounts[authAccountIndex++]);
+        activity.accountWhitelist.push(accountWhitelist[authAccountIndex++]);
       }
     }
     
