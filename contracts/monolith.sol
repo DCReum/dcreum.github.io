@@ -45,7 +45,7 @@ contract DCReum {
     uint32 authGroups;
 
     // individual accounts with rights to execute
-    mapping(address => bool) authAccounts;
+    address[] authAccounts;
 
     // if true anyone can execute
     bool authDisabled;
@@ -76,6 +76,31 @@ contract DCReum {
     return activity.pending;
   }
 
+  function getIncludes(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.includeTo;
+  }
+
+  function getExcludes(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.excludeTo;
+  }
+
+  function getResponses(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.responseTo;
+  }
+
+  function getConditions(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.conditionFrom;
+  }
+
+  function getMilestones(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.milestoneFrom;
+  }
+
   function canExecute(uint256 workflowId, uint256 activityId) public constant returns (bool) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
@@ -83,13 +108,19 @@ contract DCReum {
     uint32 fromId;
 
     // sender address must have rights to execute or sender must be member of a group with rights to execute
-    // note that workflow.groupMembers[msg.sender] defaults to 0 for unmapped sender
     // note that the operands of the AND are of different bit lengths,
     // causing the 8 special group bits to be ignored
-    if (!activity.authDisabled &&
-        !activity.authAccounts[msg.sender] &&
-        (workflow.groupMembers[msg.sender] & activity.authGroups) == 0)
-      return false;
+    if (!activity.authDisabled && (workflow.groupMembers[msg.sender] & activity.authGroups) == 0) {
+      // sender not in allowed group - check individual account access rights
+      for (i = 0; i < activity.authAccounts.length; i++) {
+        if (activity.authAccounts[i] == msg.sender)
+          break;
+      }
+
+      // sender not in authAccounts array
+      if (i == activity.authAccounts.length)
+        return false;
+    }
 
     // activity must be included
     if (!activity.included) return false;
@@ -213,7 +244,7 @@ contract DCReum {
 
       // individual account auth
       for (j = 0; j < activityData[i][1]; j++) {
-        activity.authAccounts[authAccounts[authAccountIndex++]] = true;
+        activity.authAccounts.push(authAccounts[authAccountIndex++]);
       }
     }
     
