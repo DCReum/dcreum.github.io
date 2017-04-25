@@ -1,0 +1,85 @@
+Workflow: Support ticket
+
+0: Submit ticket: 
+1: Propose solution: 
+2: Reject solution: 
+3: Accept solution: 
+4: Close ticket: 
+
+wfName:
+0x537570706f7274207469636b6574
+
+Names:
+0x5375626d6974207469636b6574
+0x50726f706f736520736f6c7574696f6e
+0x52656a65637420736f6c7574696f6e
+0x41636365707420736f6c7574696f6e
+0x436c6f7365207469636b6574
+
+Included:
+t
+t
+t
+t
+f
+
+Executed:
+f
+f
+f
+f
+f
+
+Pending:
+f
+t
+f
+f
+f
+
+Relations:
+0
+0
+0
+1
+0
+4
+1
+2
+2
+1
+1
+3
+1
+3
+3
+1
+3
+2
+3
+4
+3
+4
+
+RelationType:
+1
+3
+0
+3
+2
+2
+4
+1
+1
+2
+3
+
+
+
+Single contract:
+Creation:
+0x6cc29949f55eaccfb865e83c360b8ef0846a14f2b653654dec5d5c9aa89dda72
+Gas Used:
+1648968
+
+Execute 4 (excluded):
