@@ -88,10 +88,6 @@ contract Workflow {
     }
 
 // Internal functions:
-    function logFail(uint32 id) private {
-        Execution(msg.sender, id, false);
-    }
-    
     function authorize(uint32 actId) private {
         if(activities[actId].whitelist.length > 0) {
             for (var i = 0; i < activities[actId].whitelist.length; i++) 
@@ -111,19 +107,18 @@ contract Workflow {
         Activity memory a = activities[id];
         
         if(!a.included){
-            logFail(id);
-            return;
+            throw;
         }
         
         for (var i = 0; i < a.condition.length; i++) 
             if(!activities[a.condition[i]].executed && activities[a.condition[i]].included) {
-                logFail(id);
+                throw;
                 return;
             }
         
         for (i = 0; i < a.milestone.length; i++) 
             if(activities[a.milestone[i]].pending && activities[a.milestone[i]].included) {
-                logFail(id);
+                throw;
                 return;
             }
 
