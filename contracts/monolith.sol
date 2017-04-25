@@ -12,16 +12,16 @@ contract DCReum {
   struct Workflow {
     bytes32 name;
     
-    // Note that while activities is indexed with 256 bit, it must not surpass 2^32 entries
+    // Note that while activities-array is indexed with 256 bit, it must not surpass 2^32 entries
     Activity[] activities;
+
+    // Names of group 0-31
+    bytes32[32] groupNames;
 
     // Group 0-31     permits execution of activities with the corresponding auth bit set
     // Group 32       permits workflow modification
     // Group 33-39    reserved
-    mapping (address => uint40) groupMembers;
-    
-    // Names of group 0-31
-    bytes32[32] groupNames;
+    mapping (address => uint40) groupsOfAccount;
   }
 
   struct Activity {
@@ -59,9 +59,21 @@ contract DCReum {
     return (workflow, activity);
   }
 
-  function getAccountWhitelist(uint256 workflowId, uint256 activityId) public constant returns (address[]) {
+  function getName(uint256 workflowId) public constant returns (bytes32) {
+    return workflows[workflowId].name;
+  }
+
+  function getGroupNames(uint256 workflowId) public constant returns (bytes32[32]) {
+    return workflows[workflowId].groupNames;
+  }
+
+  function getGroupsOfAccount(uint256 workflowId, address account) public constant returns (uint40) {
+    return workflows[workflowId].groupsOfAccount[account];
+  }
+
+  function getName(uint256 workflowId, uint256 activityId) public constant returns (bytes32) {
     var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
-    return activity.accountWhitelist;
+    return activity.name;
   }
 
   function isIncluded(uint256 workflowId, uint256 activityId) public constant returns (bool) {
@@ -104,6 +116,21 @@ contract DCReum {
     return activity.milestoneFrom;
   }
 
+  function getGroupWhitelist(uint256 workflowId, uint256 activityId) public constant returns (uint32) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.groupWhitelist;
+  }
+
+  function getAccountWhitelist(uint256 workflowId, uint256 activityId) public constant returns (address[]) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.accountWhitelist;
+  }
+
+  function isAuthDisabled(uint256 workflowId, uint256 activityId) public constant returns (bool) {
+    var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
+    return activity.authDisabled;
+  }
+
   function canExecute(uint256 workflowId, uint256 activityId) public constant returns (bool) {
     var workflow = workflows[workflowId];
     var activity = workflow.activities[activityId];
@@ -112,7 +139,7 @@ contract DCReum {
 
     // Sender address must have rights to execute or sender must be member of a group with rights to execute
     // Note that the operands of the AND are of different bit lengths, causing the 8 special group bits to be ignored
-    if (!activity.authDisabled && (workflow.groupMembers[msg.sender] & activity.groupWhitelist) == 0) {
+    if (!activity.authDisabled && (workflow.groupsOfAccount[msg.sender] & activity.groupWhitelist) == 0) {
       // Sender not in allowed group - check individual account access rights
       for (i = 0; i < activity.accountWhitelist.length; i++) {
         if (activity.accountWhitelist[i] == msg.sender)
@@ -215,7 +242,7 @@ contract DCReum {
 
     // Group accounts
     for (i = 0; i < groupAccounts.length; i++) {
-      workflow.groupMembers[groupAccounts[i]] = groupMemberships[i];
+      workflow.groupsOfAccount[groupAccounts[i]] = groupMemberships[i];
     }
 
     // Activities
