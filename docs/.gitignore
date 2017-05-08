@@ -14,6 +14,8 @@
 *.cb
 *.cb2
 
+report.pdf
+
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
