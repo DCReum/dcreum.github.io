@@ -40,7 +40,7 @@ f
 Relations:
 0
 0
-0
+0	
 1
 0
 4
@@ -74,12 +74,95 @@ RelationType:
 2
 3
 
+Authorized:
+0x007c0F769713D5c68D75B5e197Fc9Be47718cC8b
+0x0047B376B738035Df5bCDA5764d357A9A970EB7c
+0x007c0F769713D5c68D75B5e197Fc9Be47718cC8b
+0x007c0F769713D5c68D75B5e197Fc9Be47718cC8b
+0x0047B376B738035Df5bCDA5764d357A9A970EB7c
+
+numberofauths:
+1
+1
+1
+11
+1
+
+
+Contract:
+0x12aB74B503F83FFe8f97d24Be4216729d6c23E38 
+Creation:
+0xf4160f0ee21767d66ba4152af0017a74ce3652545b8f7d5226119540252a386b
+Gas:
+1793729
+
+execute success - submit:
+0x497a41f05040238851d8a136d2f656f9e6e4d6ad42724a4c83db4aaf1a5a4887
+Gas:
+43524
+
+execute fail (out of gas) - accept:
+0x86d95bb1a5ab165f310deb3a721e2e4ae5abddf2a7b7e0abb027483678599cae
+gas:
+21464
+
+execute fail (unauth) - accept:
+0x5c156ed426ffe9cbb6aafd535a7b4601a18c055fed9100c94cef93c3736d50cd
+gas:
+full amount - 35000
+
+execute fail (dcr-logic - condition) - close:
+0xbc77e88f86e0ab8d47ba3b55b782f981c9064841cb1afeccf689265d27bde07b
+gas:
+full amount - 47066
+
+execute succeed - propose:
+0xb95765da74425991566b3bb42da777cf2bbebb7d9ce1c58e5e06dd8f7590cc98
+gas:
+39222
+
+execute succeed 2 - propose:
+0x4f7c6509f872cf58bf27002bc2c6ee3eb4096cd931420f4f0e6bec507e89da65
+gas:
+39222
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Single contract:
 Creation:
-0x6cc29949f55eaccfb865e83c360b8ef0846a14f2b653654dec5d5c9aa89dda72
+0x076429485df65e8408ddb24bb0e2ef0540f355d41b8811312df36800b8b0a682
 Gas Used:
-1648968
+1823270
 
-Execute 4 (excluded):
+execute success - submit:
+0x15d5e9fe8ce5dedffbd339598dabb7c7fb42457457902da0a6b7325b2fa1d4e8
+gas:
+43524
+
+execute fail (unauth) - accept:
+0x5548d8f31aa8817f3fabee6e12b22a9aaa84912a6b66577b2c8aee7eb05dc8bc
+gas:
+39398
+
+execute fail (unauth) - accept (2):
+0x5e301c6463c6c263350e99e79734f0cee72bcb5434cd9081919591e2c77aa129
+gas:
+
+
+execute

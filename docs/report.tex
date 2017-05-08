@@ -58,11 +58,13 @@
 
 	\section{Ethereum}
 
-		\subsection{Structure}
+		\subsection{Blockchain}
 
-		\subsection{Gas}
+		\subsection{Ethereum Virtual Machine}
 
-	\section{Solution requirements}
+		\subsection{Currency}
+
+	\section{Implementation requirements}
 
 	All of the proposed solutions will contain the following features:
 	\begin{itemize}
@@ -72,27 +74,34 @@
 		\item Visibility?
 	\end{itemize}
 
-	In order to compare the solutions to each other, a simple workflow has been created modelling each of the five relations...
 
-	\begin{description}
-		\item[Contract creation]
-		\item[Successfull execution] ...
-		\item[Failed execution] ... 
-	\end{description}
-
-	\section{Multi-contract solution}
+	\section{Multi-contract implementation}
 
 	As the gas costs of ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
 
 	The first proposed solution is creating a contract for each workflow...
 
-	\section{Mono-contract solution}
+	\section{Mono-contract implementation}
 
 	The second proposed solution is creating a single contract which controls all workflows...
 
 	\section{Comparison}
+	In order to compare the solutions to each other, a simple workflow has been created modelling each of the five relations...
 
-	\section{Optimized solution}
+	\begin{description}
+		\item[Contract creation]
+		\item[Successful execution] ...
+		\item[Failed execution] ... 
+	\end{description}
+
+	\section{Optimizations}
+
+		\subsection{Bitfields}
+
+		\subsection{Incoming/Outgoing}
+
+		\subsection{etc.}
+
 
 	\section{Discussion}
 
@@ -100,9 +109,9 @@
 
 		\subsection{External relations}
 
-		\subsection{Dynamic workflows}
+		\subsection{Workflow changes}
 
-		\subsection{External conditions}
+		\subsection{External contract conditions}
 
 	\section{Vulnerabilities}
 

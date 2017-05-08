@@ -82,9 +82,6 @@ contract Workflow {
             else if(relationType[i/2] == RelationType.Milestone) activities[relations[i+1]].milestone.push(relations[i]);
             else throw;
         }
-
-        
-
     }
 
 // Internal functions:
