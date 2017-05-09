@@ -82,16 +82,9 @@ contract Workflow {
             else if(relationType[i/2] == RelationType.Milestone) activities[relations[i+1]].milestone.push(relations[i]);
             else throw;
         }
-
-        
-
     }
 
 // Internal functions:
-    function logFail(uint32 id) private {
-        Execution(msg.sender, id, false);
-    }
-    
     function authorize(uint32 actId) private {
         if(activities[actId].whitelist.length > 0) {
             for (var i = 0; i < activities[actId].whitelist.length; i++) 
@@ -111,19 +104,18 @@ contract Workflow {
         Activity memory a = activities[id];
         
         if(!a.included){
-            logFail(id);
-            return;
+            throw;
         }
         
         for (var i = 0; i < a.condition.length; i++) 
             if(!activities[a.condition[i]].executed && activities[a.condition[i]].included) {
-                logFail(id);
+                throw;
                 return;
             }
         
         for (i = 0; i < a.milestone.length; i++) 
             if(activities[a.milestone[i]].pending && activities[a.milestone[i]].included) {
-                logFail(id);
+                throw;
                 return;
             }
 
@@ -147,5 +139,29 @@ contract Workflow {
             throw;
         
         selfdestruct(owner);
+    }
+    function isIncluded(uint i) public constant returns (bool){
+        return activities[i].included;
+    }
+    function isPending(uint i) public constant returns (bool){
+        return activities[i].pending;
+    }
+    function isExecuted(uint i) public constant returns (bool){
+        return activities[i].executed;
+    }
+    function getIncludeRelations(uint i) public constant returns (uint32[]){
+        return activities[i].include;
+    }
+    function getExcludeRelations(uint i) public constant returns (uint32[]){
+        return activities[i].exclude;
+    }
+    function getResponseRelations(uint i) public constant returns (uint32[]){
+        return activities[i].response;
+    }
+    function getConditionRelations(uint i) public constant returns (uint32[]){
+        return activities[i].condition;
+    }
+    function getMilestoneRelations(uint i) public constant returns (uint32[]){
+        return activities[i].milestone;
     }
 }

@@ -1,0 +1,437 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage[nodayofweek,level]{datetime}
+\usepackage{ulem}
+\usepackage{mathtools}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\definecolor{darkgreen}{RGB}{50,200,50}
+\definecolor{verylightgray}{gray}{0.85}
+\definecolor{goldenbrown}{rgb}{0.558215, 0.0, 0.135316}
+
+\lstdefinelanguage{solidity}
+{
+	keywords={uint256, bytes32, mapping, address, uint40, bool, uint32, msg, sender, false, true},
+	keywordstyle=\color{blue},
+	keywords=[2]{pragma, contract, event, enum, struct, function, return, private, public, constant, returns, var, for, !, if, break, continue, throw, &&, ||, else, =, ==, <, >, <=, >=},
+	keywordstyle=[2]\color{magenta},
+	comment=[l]{//},
+	commentstyle=\color{darkgreen},
+	numbers=left,
+	extendedchars=false,
+	morestring=[b]",
+	stringstyle=\color{goldenbrown},
+	breaklines=true,
+	backgroundcolor=\color{verylightgray},
+	basicstyle=\linespread{1}\ttfamily\footnotesize
+}
+
+\title{Consensus in declarative process models using distributed smart-contracts}
+\author{Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen }
+\date{}
+
+\begin{document}
+
+\normalem
+	\begin{titlepage}
+		\maketitle		
+		\hspace{-18pt}
+		\textit{May 15, 2017}
+		\vspace{\fill}
+		\section*{Abstract}
+		This paper investigates how efficently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine will be implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine.
+		\thispagestyle{empty}
+	\end{titlepage}
+	\clearpage
+
+	\pagenumbering{arabic}
+	\setcounter{page}{1}
+
+	\tableofcontents
+	\pagebreak
+
+	\section{Introduction}
+	In this article we will continue to build upon our previous research with declarative process models on block chains. 
+	In our previous research we have shown how a block chain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins block chain to achieve consensus.
+
+	The proof of work was...... 
+	We found Bitcoins block chain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
+	But the underlying technology, the block chain, has been used in many other applications and platforms. 
+	We will implement a WfMS using a Declarative Condition Response (DCR) engine on one of these platforms, Ethereum.
+
+	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
+
+	\subsection{Previous work}
+	Our previous work with block chains was done for our bachelor thesis \cite{bachelor}. 
+	The main idea we will carry on from our bachelor thesis is that a block chain can be used to create a consensus protocol. 
+	We will therefore not go into great detail of how we can achieve consensus with a block chain. 
+	The following section will provide the information we deem necessary to understand how we can achieve consensus with a block chain, but no literature to support this. 
+	Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
+	\subsubsection{Achieving consensus with block chains}
+
+	\subsubsection{Motivation to use Ethereum}
+	The previous DCR engine we built utilized Bitcoins block chain to validate workflow creation and execution attempts by storing the hash of these on the block chain.
+	The actual verification of the legality of executions with respect to DCR logic and execution rights was done on a DCR engine running locally on a users machine.
+	Thus our application relied heavily on the majority of users involved in a workflow were actually using our DCR engine to verify the legality of executions. 
+
+	Our previous DCR engine made it infeasible for an adversary to fake executions or claim that executions were part of another workflow than what benevolent users thought.
+	Instead it was vulnerable to loss of local data. 
+	
+	If a user managed to remove all local traces of a workflow, it could be difficult to claim that the traces of executions belonged to a certain workflow and therefore hard to prove that a user actually did execute some specific activity. Furthermore reconstruction of a lost workflow would be nigh impossible without access to another copy of the workflow.
+
+	Ethereums block chain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the block chain \textbf{2)} if code on the block chain has been run \textbf{3)} if the code was run successfully or not.
+	Any user participating in a workflow using a DCR engine running on Ethereums block chain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins block chain verified workflow creation and execution attempts.
+
+	\section{Dynamic Condition Response graphs}
+	\label{sec:dcr-graphs}
+	A DCR graph is a representation of a workflow.
+	The graph is made up of one or more activities with zero or more relations between them. 
+	The following section is loosely based on a similar description in our bachelor's thesis \cite{bachelor}. 
+
+	\subsection{Activity}
+	The activities in a DCR graph have three attributes: included, executed and pending. 
+	The attributes can be true or false. 
+	Furthermore an activity can have role and actor specific execution rights.
+
+	\subsubsection{Included attribute}
+	If the include attribute of an activity is true, the activity is included and it can be executed. 
+	If the attribute is false, the activity is excluded and can no longer be executed.
+
+	\subsubsection{Pending attribute}
+	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state. 
+	Every time an activity is executed its pending attribute is set to false.
+	This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to finish the workflow.
+
+	\subsubsection{Executed attribute}
+	If an activities executed attribute is false executing the activity will set its executed attribute to true.
+	Executing an already executed activity will have no effect on the executed attribute.
+
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\textwidth]{figures/activity_states.png}
+	 	\caption[Activity States]
+	 	{From left to right: A visual representation of an included, excluded, pending and executed activity as presented on \href{http://www.dcrgraphs.net}{dcrgraphs.net}}.
+	\end{figure}
+
+	\subsection{Relations}
+	There are five types of relations which define different types of relationships between activities in a workflow. 
+	These five are the \emph{condition}, \emph{response}, \emph{include}, \emph{exclude} and \emph{milestone} relations.
+
+	\subsubsection{Condition relation}
+	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
+	 	\caption[Condition relation]
+	 	{Condition relation}
+	\end{figure}
+
+	\subsubsection{Response relation}
+	If there is a response relation from activity A to activity B, then B's pending attribute will be set to true every time A is executed.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ResponseRelation.png}
+	 	\caption[Response relation]
+	 	{Response relation}
+	\end{figure}
+
+	\subsubsection{Include relation}
+	If there is an include relation from activity A to activity B, then B's included attribute will be set to true every time A is executed.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/IncludeRelation.png}
+	 	\caption[Include relation]
+	 	{Include relation}
+	\end{figure}
+
+	\subsubsection{Exclude relation}
+	If there is an exclude relation from activity A to activity B, then B's included attribute will be set to false every time A is executed.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ExcludeRelation.png}
+	 	\caption[Exclude relation]
+	 	{Exclude relation}
+	\end{figure}
+
+	\paragraph{Milestone relation}
+	If there is a milestone relation from activity A to activity B, then B can only be executed if A's pending attribute is false or A's included attribute is false.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/MilestoneRelation.png}
+	 	\caption[Milestone relation]
+	 	{Milestone relation}
+	\end{figure}
+
+	\subsection{Example workflow}
+	Figure \ref{fig:exampleWorkflow} shows an DCR graph modeling a support ticket workflow. When the workflow is created only \texttt{Submit ticket} is executable. 
+	\texttt{Close ticket} cannot be executed as it is excluded and there is a condition relation to it from an activity that is not executed. 
+	\texttt{Propose solution} and \texttt{Reject solution} cannot be executed as there are condition relations to them from activities that have not been executed. 
+	Lastly \texttt{Accept solution} cannot be executed as there is a milestone relation to it from \texttt{Propose solution} which is pending and not excluded.
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=\textwidth]{figures/exampleWorkflow.png}
+	 	\caption[Example workflow]
+	 	{Example workflow}
+	 	\label{fig:exampleWorkflow}
+	\end{figure}
+	\FloatBarrier
+	A typical example of an execution order of the example workflow would look like this:
+	\begin{enumerate}
+		\item The customer executes \texttt{Submit ticket} which excludes itself. 
+		This includes \texttt{Close ticket}, but \texttt{Close ticket} is still not executable, as there is a condition relation to it from \texttt{Accept solution}.
+		\texttt{Propose solution} however is now executable.
+		\item The supporter executes \texttt{Propose solution}. Now \texttt{Accept solution} is executable as \texttt{Propose solution} is no longer pending and \texttt{Reject solution} is also executable as \texttt{Propose solution} is executed. 
+		Furthermore \texttt{Accept solution} is now pending and must therefore be executed or excluded at some point.
+		\item If the customer is not satisfied with the solution he can execute \texttt{Reject solution} which will prevent execution of \texttt{Accept solution}, as \texttt{Propose solution} is now pending and still included. 
+		The workflow is now in the same state as in step 2 except from the fact that \texttt{Reject solution} is executable. 
+		Executing \texttt{Reject solution} will however have no effect, as \texttt{Propose solution} is already pending.
+		\item If the customer on the other hand is satisfied with the supporters solution he can execute \texttt{Accept solution}.
+		Executing \texttt{Accept solution} will exclude \texttt{Propose solution} and \texttt{Reject solution}.
+		This leaves \texttt{Close ticket} executable and pending.
+		To leave the workflow in a finished state the supporter must execute \texttt{Close ticket}. 
+	\end{enumerate}
+
+	\section{Ethereum}
+	In order to implement the DCR engine as a distributed smart-contract, we use the platform Ethereum. 
+	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+	Central for blockchain technologies is a cryptocurrency, which is used to provide incentive for mining and to pay for the verification and computation of the published code.
+	Ethereum's cryptocurrency is called \emph{Ether}.
+	As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) have a value associated with it in a unit called gas, see appendix \ref{app:gas-prices}, which is then payed for with Ether by the person publishing that code.
+	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
+	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
+
+		\subsection{Currency}
+		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
+		Additional rewards given for blocks which include uncles (see the following section). 
+		Lastly a miner also gets a reward based on how much computation power is needed to run the code included in a block. 
+		The last reward is essentially equivalent to the transaction fees in Bitcoin.
+
+		To store data or run code on the Ethereum platform one has to spend an amount of gas. 
+		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
+		All computations have a set gas cost, and Ethereum provides tools to calculate how much a proposed execution some code would cost. The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user set the amount of gas to low, no miner is willing to include the users code execution in his block.
+
+		\subsection{Blockchain}
+		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
+		Each block contains the changes to the database since the last block, as well as a reference to the last block.
+		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding nonce to include in the block such that the hash of the block is prefixed with a number of zeroes, called the \emph{difficulty}\cite{bitcoin-white-paper}. 
+		The process of finding these hashes is commonly called \emph{mining}.
+		The difficulty is automatically adjusted according to the number of miners, to achieve a statistically bounded time between the publication of each subsequent block.
+		Multiple blocks can be published at the same, and thus reference the same preceding block, which is called a \emph{fork} in the blockchain.
+		Forks are handled slightly differently according to the specific blockchain implementation, but is generally based on some sort of the-longest-chain-wins scheme, i.e. the block most used in the system afterwards will be the block that the accepted block, while the other is rejected.
+		
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting points, which makes the Ethereum blockchain unique.
+		The most important change is the support of storing potentially arbitrary large amounts of data, as well as the integration of code execution into the block verification.
+
+		\subsection{Ethereum Virtual Machine}
+		
+
+	\section{Implementation requirements}
+
+	In order to ensure that the implementations can be properly compared, they will support, and initially be limited to, the following functionality: 
+	
+	\begin{description}
+		\item[Workflow creation] The implementation must support the creation of a workflow. The creation of this workflow should be performed with a single method call and must be atomic, meaning that no workflow can be partially created. This also means that no workflow can be modified past its creation.
+		\item[Attempt activity execution] Any activity must be attempted to be executed at any time and be executed only when the state of the workflow allows it. The execution must also influence any other activity as prescribed by any relations it has.
+		\item[Contract suicide] Any created contract must be allowed to self-destruct, when called by the creating user.
+		\item[Data retrieval] The data stored must be accessible by any user.
+	\end{description}
+
+	The data structure of the implementation will be as follows:
+
+	\begin{description}
+		\item[Workflow] The workflow must contain a name, a list of activities and a list of people who can modify the workflow.
+		\item[Activity] Each activity must contain a name, a list the relations related to it and a list of users who are allowed to execute it.
+		\item[Relations] The 5 relations described in Section \ref{sec:dcr-graphs} must be supported. They should be implemented in two categories:
+			\begin{enumerate}
+				\item Incoming: The relations in this category are: \emph{milestone} and \emph{condition}. These relations specify which activities this activity's execution might depend on and that those activities should be checked when an execution is attempted on this activity.
+				\item Outgoing: The relations in this category are: \emph{response}, \emph{exclude} and \emph{include}. These relations specify which activities are affected by an execution on this activity.
+			\end{enumerate}
+		\item[Access rights] Should be indicated by the public key of a given user.
+	\end{description}
+
+	\section{Multi-contract implementation}
+
+	As the gas costs of Ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
+
+	The first proposed solution is creating a contract for each workflow...
+
+	\section{Mono-contract implementation}
+
+	The second proposed solution is creating a single contract which controls all workflows...
+
+	\section{Comparison}
+	In order to compare the solutions to each other, a simple workflow has been created modelling each of the five relations...
+
+	\begin{description}
+		\item[Contract creation]
+		\item[Successful execution] ...
+		\item[Failed execution] ... 
+	\end{description}
+
+	\section{Optimizations}
+
+		\subsection{Bitfields}
+
+		\subsection{Incoming/Outgoing}
+
+		\subsection{etc.}
+
+
+	\section{Discussion}
+
+	\section{Further features}
+
+		\subsection{External relations}
+
+		\subsection{Workflow changes}
+
+		\subsection{External contract conditions}
+
+	\section{Vulnerabilities}
+
+		\subsection{External relations attack}
+
+		\subsection{Workflow updating attack}
+
+	\section{Conclusion}
+
+	\pagebreak
+	\addcontentsline{toc}{section}{References}	
+	\bibliographystyle{plain}
+	\begin{thebibliography}{99}
+
+		\bibitem{yellow-paper}
+		Wood, G.
+		\textit{Ethereum: A Secure Decentralised Generalised Transaction Ledger}. 
+		\url{http://yellowpaper.io}.
+		Accessed 2017-05-09.
+
+		\bibitem{bachelor}
+		Gaub et al.
+		\textit{Consensus in peer-to-peer systems}.
+		Unpublished manuscript.
+		IT-University of Copenhagen,
+		Denmark,
+		2016.
+
+		\bibitem{ethereum-white-paper}
+		Various authors.
+		\textit{White Paper}.
+		\url{https://github.com/ethereum/wiki/wiki/White-Paper},
+		Accessed 2017-05-09.
+
+		\bibitem{bitcoin-white-paper}
+		Nakamoto, S.
+		\textit{Bitcoin: A Peer-to-Peer Electronic Cash System}.
+		\url{https://bitcoin.org/bitcoin.pdf},
+		Accessed 2017-05-09.
+
+
+	\end{thebibliography}
+
+	\appendix
+
+	\clearpage
+
+	\section{Gas prices}
+		\label{app:gas-prices}
+
+		As of May 9th, 2017, the gas prices are \cite{yellow-paper}: 
+		\begin{table}[!ht]
+		\footnotesize
+		\noindent \begin{tabular}{| l | l | p{8cm} |}
+			\hline
+			Name 				& Value 	& Description \\ \hline
+			$G_{zero}$ 			& 0 		& Nothing paid for operations of set $W_{zero}$. \\ \hline
+			$G_{base}$ 			& 2 		& Amount of gas to pay for operations of the set $W_{base}$. \\ \hline
+			$G_{verylow}$ 		& 3 		& Amount of gas to pay for operations of the set $W_{verylow}$. \\ \hline
+			$G_{low}$ 			& 5 		& Amount of gas to pay for operations of the set $W_{low}$. \\ \hline
+			$G_{mid}$ 			& 8 		& Amount of gas to pay for operations of the set $W_{mid}$. \\ \hline
+			$G_{high}$ 			& 10 		& Amount of gas to pay for operations of the set $W_{high}$. \\ \hline
+			$G_{extcode}$ 		& 700 		& Amount of gas to pay for operations of the set $W_{extcode}$. \\ \hline
+			$G_{balance}$ 		& 400 		& Amount of gas to pay for a BALANCE operation. \\ \hline
+			$G_{sload}$ 		& 200 		& Paid for a SLOAD operation. \\ \hline
+			$G_{jumpdest}$ 		& 1 		& Paid for a JUMPDEST operation. \\ \hline
+			$G_{sset}$ 			& 20000 	& Paid for an SSTORE operation when the storage value is set to non-zero from zero. \\ \hline
+			$G_{sreset}$ 		& 5000 		& Paid for an SSTORE operation when the storage value's zeroness remains unchanged or is set to zero. \\ \hline
+			$R_{sclear}$ 		& 15000		& Refund given (added into refund counter) when the storage value is set to zero from non-zero. \\ \hline
+			$R_{suicide}$ 		& 24000 	& Refund given (added into refund counter) for suiciding an account. \\ \hline
+			$G_{suicide}$ 		& 5000 		& Amount of gas to pay for a SUICIDE operation. \\ \hline
+			$G_{create}$ 		& 32000		& Paid for a CREATE operation. \\ \hline
+			$G_{codedeposit}$ 	& 200 		& Paid per byte for a CREATE operation to succeed in placing code into state. \\ \hline
+			$G_{call}$ 			& 700		& Paid for a CALL operation. \\ \hline
+			$G_{callvalue}$ 	& 9000		& Paid for a non-zero value transfer as part of the CALL operation. \\ \hline
+			$G_{calstipend}$ 	& 2300		& A stipend for the called contract subtracted from $G_{callvalue}$ for a non-zero value transfer. \\ \hline
+			$G_{newaccount}$ 	& 25000		& Paid for a CALL or SUICIDE operation which creates an account. \\ \hline
+			$G_{exp}$ 			& 10 		& Partial payment for an EXP operation \\ \hline
+			$G_{expbyte}$ 		& 10		& Partial payment when multiplied by $\ceil{log_{256}(exponent)}$  for the EXP operation. 	 \\ \hline
+			$G_{memory}$ 		& 3			& Paid for every additional word when expanding memory. \\ \hline
+			$G_{txcreate}$ 		& 32000		& Paid by all contract-creating transactions after the Homestead transition. \\ \hline
+			$G_{txdatazero}$ 	& 4 		& Paid for every zero byte of data or code for a transaction. \\ \hline
+			$G_{txdatanonzero}$ & 68		& Paid for every non-zero byte of data or code for a transaction. \\ \hline
+			$G_{transaction}$ 	& 21000		& Paid for every transaction. \\ \hline
+			$G_{log}$ 			& 375 		& Partial payment for a LOG operation. \\ \hline
+			$G_{logdata}$ 		& 8			& Paid for each byte in a LOG operation's data. \\ \hline
+			$G_{logtopic}$ 		& 375		& Paid for each topic of a LOG operation. \\ \hline
+			$G_{sha3}$ 			& 30		& Paid for each SHA3 operation. \\ \hline
+			$G_{sha3word}$ 		& 6			& Paid for each word (rounded up) for input data to a SHA3 operation. \\ \hline
+			$G_{copy}$ 			& 3			& Partial payment for *COPY operations, multiplied by words copied, rounded up. \\ \hline
+			$G_{blockhash}$ 	& 20		& Payment for BLOCKHASH operation. \\ 
+			\hline
+		\end{tabular}
+		\end{table}
+		\FloatBarrier
+
+		\subsection{Instruction sets}
+		\begin{description}
+			\item[$W_{zero}$] = \{STOP, RETURN\}
+			\item[$W_{base}$] = \{ADDRESS, ORIGIN, CALLER, CALLVALUE, CALLDATASIZE, CODESIZE, GASPRICE, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, POP, PC, MSIZE, GAS \}
+			\item[$W_{verylow}$] = \{ADD, SUB, NOT, LT, GT, SLT, SGT, EQ, ISZERO, AND, OR, XOR, BYTE, CALLDATALOAD, MLOAD, MSTORE, MSTORES, PUSH*, DUP*, SWAP*\}
+			\item[$W_{low}$] = \{MUL, DIV, SDIV, MOD, SMOD, SIGNEXTEND\}
+			\item[$W_{mid}$] = \{ADDMOD, MULMOD, JUMP\}
+			\item[$W_{high}$] = \{JUMPI\}
+			\item[$W_{extcode}$] = \{EXTCODESIZE\}			
+		\end{description}
+
+	\section{Test workflow}
+
+		\includegraphics[scale=0.45]{figures/ExampleWorkflow.png}
+
+	\section{Multi-contract}
+
+		\subsection{Code}
+
+			\lstinputlisting[language=solidity]{../contracts/workflow.sol}
+
+		\subsection{Costs}
+
+			\begin{tabular}{| l | l |}
+				\hline
+				Action & Cost (gas) \\ \hline
+				Contract creation & 0 \\
+				\hline
+			\end{tabular}
+
+	\section{Mono-contract}
+
+		\subsection{Code}
+
+			\lstinputlisting[language=solidity]{../contracts/monolith.sol}
+
+		\subsection{Costs}
+
+			\begin{tabular}{| l | l |}
+				\hline
+				Action & Cost (gas) \\ \hline
+				Contract creation & 0 \\
+				\hline
+			\end{tabular}
+
+\end{document}
