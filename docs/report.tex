@@ -176,6 +176,15 @@
 		i.e infinite computation is impossible, since the amount of gas will always be finite. 
 
 		\subsection{Blockchain}
+		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
+		Each block contains the changes to the database since the last block, as well as a reference to the last block.
+		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding nonce to include in the block such that the hash of the block is prefixed with a number of zeroes, called the \emph{difficulty}\cite{bitcoin-white-paper}. 
+		The process of finding these hashes is commonly called \emph{mining}.
+		The difficulty is automatically adjusted according to the number of miners, to achieve a statistically bounded time between the publication of each subsequent block.
+		Multiple blocks can be published at the same, and thus reference the same preceding block, which is called a \emph{fork} in the blockchain.
+		Forks are handled slightly differently according to the specific blockchain implementation, but is generally based on some sort of the-longest-chain-wins scheme, i.e. the block most used in the system afterwards will be the block that the accepted block, while the other is rejected.
+		
+		Ethereum's blockchain
 
 		\subsection{Ethereum Virtual Machine}
 
@@ -261,6 +270,18 @@
 		IT-University of Copenhagen,
 		Denmark,
 		2016.
+
+		\bibitem{ethereum-white-paper}
+		Various authors.
+		\textit{White Paper}.
+		\url{https://github.com/ethereum/wiki/wiki/White-Paper},
+		Accessed 2017-05-09.
+
+		\bibitem{bitcoin-white-paper}
+		Nakamoto, S.
+		\textit{Bitcoin: A Peer-to-Peer Electronic Cash System}.
+		\url{https://bitcoin.org/bitcoin.pdf},
+		Accessed 2017-05-09.
 
 
 	\end{thebibliography}
