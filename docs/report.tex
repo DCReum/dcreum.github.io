@@ -1,4 +1,4 @@
-\documentclass{paper}
+\documentclass{article}
 
 \usepackage{graphicx}
 \usepackage{placeins}
@@ -6,6 +6,8 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage[nodayofweek,level]{datetime}
+\usepackage{ulem}
 
 \definecolor{darkgreen}{RGB}{50,200,50}
 \definecolor{verylightgray}{gray}{0.85}
@@ -57,6 +59,14 @@
 	Exclusion of Spawn relation.
 
 	\section{Ethereum}
+		For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
+		Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+		Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
+		Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
+
+		For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
+		They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
+		i.e infinite computation is impossible, since the amount of gas will always be finite. 
 
 		\subsection{Blockchain}
 
@@ -126,10 +136,25 @@
 	\begin{thebibliography}{99}
 
 		\bibitem{test}
-		Dr. Bib Example,
-		\textit{How to bib},
+		Example, B.
+		\textit{How to bib}.
 		Penguin publishing,
-		1994
+		1994.
+
+		\bibitem{yellow-paper}
+		Wood, G.
+		\textit{Ethereum: A Secure Decentralised Generalised Transaction Ledger}. 
+		\url{http://yellowpaper.io}.
+		Accessed 2017-05-09.
+
+		\bibitem{bachelor}
+		Gaub et al.
+		\textit{Consensus in peer-to-peer systems}.
+		Unpublished manuscript.
+		IT-University of Copenhagen,
+		Denmark,
+		2016.
+
 
 	\end{thebibliography}
 
