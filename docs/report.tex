@@ -206,7 +206,7 @@
 	As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) have a value associated with it in a unit called gas, see appendix \ref{app:gas-prices}, which is then payed for with Ether by the person publishing that code.
 	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
 	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
-	
+
 		\subsection{Currency}
 		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
 		Additional rewards given for blocks which include uncles (see the following section). 
@@ -218,7 +218,7 @@
 		All computations have a set gas cost, and Ethereum provides tools to calculate how much a proposed execution some code would cost. The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user set the amount of gas to low, no miner is willing to include the users code execution in his block.
 
 		\subsection{Blockchain}
-		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
+		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
 		Each block contains the changes to the database since the last block, as well as a reference to the last block.
 		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding nonce to include in the block such that the hash of the block is prefixed with a number of zeroes, called the \emph{difficulty}\cite{bitcoin-white-paper}. 
 		The process of finding these hashes is commonly called \emph{mining}.
