@@ -6,6 +6,9 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{mathtools}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \definecolor{darkgreen}{RGB}{50,200,50}
 \definecolor{verylightgray}{gray}{0.85}
@@ -241,14 +244,61 @@
 
 	\section{Gas prices}
 
-		\begin{tabular}{| l | l |}
+		\begin{tabular}{| l | l | l |}
 			\hline
-			Action & Cost (gas) \\ \hline
-			Contract creation & 0 \\
+			Name 				& Value 	& Description \\ \hline
+			$G_{zero}$ 			& 0 		& Nothing paid for operations of set $W_{zero}$. \\ \hline
+			$G_{base}$ 			& 2 		& Amount of gas to pay for operations of the set $W_{base}$. \\ \hline
+			$G_{verylow}$ 		& 3 		& Amount of gas to pay for operations of the set $W_{verylow}$. \\ \hline
+			$G_{low}$ 			& 5 		& Amount of gas to pay for operations of the set $W_{low}$. \\ \hline
+			$G_{mid}$ 			& 8 		& Amount of gas to pay for operations of the set $W_{mid}$. \\ \hline
+			$G_{high}$ 			& 10 		& Amount of gas to pay for operations of the set $W_{high}$. \\ \hline
+			$G_{extcode}$ 		& 700 		& Amount of gas to pay for operations of the set $W_{extcode}$. \\ \hline
+			$G_{balance}$ 		& 400 		& Amount of gas to pay for a BALANCE operation. \\ \hline
+			$G_{sload}$ 		& 200 		& Paid for a SLOAD operation. \\ \hline
+			$G_{jumpdest}$ 		& 1 		& Paid for a JUMPDEST operation. \\ \hline
+			$G_{sset}$ 			& 20000 	& Paid for an SSTORE operation when the storage value is set to non-zero from zero. \\ \hline
+			$G_{sreset}$ 		& 5000 		& Paid for an SSTORE operation when the storage value's zeroness remains unchanged or is set to zero. \\ \hline
+			$R_{sclear}$ 		& 15000		& Refund given (added into refund counter) when the storage value is set to zero from non-zero. \\ \hline
+			$R_{suicide}$ 		& 24000 	& Refund given (added into refund counter) for suiciding an account. \\ \hline
+			$G_{suicide}$ 		& 5000 		& Amount of gas to pay for a SUICIDE operation. \\ \hline
+			$G_{create}$ 		& 32000		& Paid for a CREATE operation. \\ \hline
+			$G_{codedeposit}$ 	& 200 		& Paid per byte for a CREATE operation to succeed in placing code into state. \\ \hline
+			$G_{call}$ 			& 700		& Paid for a CALL operation. \\ \hline
+			$G_{callvalue}$ 	& 9000		& Paid for a non-zero value transfer as part of the CALL operation. \\ \hline
+			$G_{calstipend}$ 	& 2300		& A stipend for the called contract subtracted from $G_{callvalue}$ for a non-zero value transfer. \\ \hline
+			$G_{newaccount}$ 	& 25000		& Paid for a CALL or SUICIDE operation which creates an account. \\ \hline
+			$G_{exp}$ 			& 10 		& Partial payment for an EXP operation \\ \hline
+			$G_{expbyte}$ 		& 10		& Partial payment when multiplied by $\ceil{log_{256}(exponent)}$  for the EXP operation. 	 \\ \hline
+			$G_{memory}$ 		& 3			& Paid for every additional word when expanding memory. \\ \hline
+			$G_{txcreate}$ 		& 32000		& Paid by all contract-creating transactions after the Homestead transition. \\ \hline
+			$G_{txdatazero}$ 	& 4 		& Paid for every zero byte of data or code for a transaction. \\ \hline
+			$G_{txdatanonzero}$ & 68		& Paid for every non-zero byte of data or code for a transaction. \\ \hline
+			$G_{transaction}$ 	& 21000		& Paid for every transaction. \\ \hline
+			$G_{log}$ 			& 375 		& Partial payment for a LOG operation. \\ \hline
+			$G_{logdata}$ 		& 8			& Paid for each byte in a LOG operation's data. \\ \hline
+			$G_{logtopic}$ 		& 375		& Paid for each topic of a LOG operation. \\ \hline
+			$G_{sha3}$ 			& 30		& Paid for each SHA3 operation. \\ \hline
+			$G_{sha3word}$ 		& 6			& Paid for each word (rounded up) for input data to a SHA3 operation. \\ \hline
+			$G_{copy}$ 			& 3			& Partial payment for *COPY operations, multiplied by words copied, rounded up. \\ \hline
+			$G_{blockhash}$ 	& 20		& Payment for BLOCKHASH operation. \\ 
 			\hline
 		\end{tabular}
 
+		\subsection{Instruction sets}
+		\begin{description}
+			\item[$W_{zero}$] \{STOP, RETURN\}
+			\item[$W_{base}$] \{ADDRESS, ORIGIN, CALLER, CALLVALUE, CALLDATASIZE, CODESIZE, GASPRICE, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, POP, PC, MSIZE, GAS \}
+			\item[$W_{verylow}$] \{ADD, SUB, NOT, LT, GT, SLT, SGT, EQ, ISZERO, AND, OR, XOR, BYTE, CALLDATALOAD, MLOAD, MSTORE, MSTORES, PUSH*, DUP*, SWAP*\}
+			\item[$W_{low}$] \{MUL, DIV, SDIV, MOD, SMOD, SIGNEXTEND\}
+			\item[$W_{mid}$] \{ADDMOD, MULMOD, JUMP\}
+			\item[$W_{high}$] \{JUMPI\}
+			\item[$W_{extcode}$] \{EXTCODESIZE\}			
+		\end{description}
+
 	\section{Test workflow}
+
+		\includegraphics[scale=0.45]{figures/ExampleWorkflow.png}
 
 	\section{Multi-contract}
 
