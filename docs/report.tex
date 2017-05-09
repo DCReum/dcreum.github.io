@@ -38,6 +38,8 @@
 \date{}
 
 \begin{document}
+
+\normalem
 	\begin{titlepage}
 		\maketitle		
 		\hspace{-18pt}
@@ -88,7 +90,8 @@
 	Any user participating in a workflow using a DCR engine running on Ethereums block chain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins block chain verified workflow creation and execution attempts.
 
 	\section{Dynamic Condition Response graphs}
-	A DCR graph is a representation of a workflow. 
+	\label{sec:dcr-graphs}
+	A DCR graph is a representation of a workflow.
 	The graph is made up of one or more activities with zero or more relations between them. 
 	The following section is loosely based on a similar description in our bachelor-project \cite{bachelor}. 
 
@@ -104,13 +107,13 @@
 	\subsubsection{Pending attribute}
 	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state. 
 	Every time an activity is executed its pending attribute is set to false.
-	This means that setting the pending attribute of an included activity to true is specifying that this activity \emph{must} be executed or excluded at some point to finish the workflow.
+	This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to finish the workflow.
 
 	\subsubsection{Executed attribute}
 	If an activities executed attribute is false executing the activity will set its executed attribute to true.
 	Executing an already executed activity will have no effect on the executed attribute.
 
-	\begin{figure}[h]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\textwidth]{figures/activity_states.png}
 	 	\caption[Activity States]
@@ -123,7 +126,7 @@
 
 	\subsubsection{Condition relation}
 	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
 	 	\caption[Condition relation]
@@ -132,7 +135,7 @@
 
 	\subsubsection{Response relation}
 	If there is a response relation from activity A to activity B, then B's pending attribute will be set to true every time A is executed.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/ResponseRelation.png}
 	 	\caption[Response relation]
@@ -141,7 +144,7 @@
 
 	\subsubsection{Include relation}
 	If there is an include relation from activity A to activity B, then B's included attribute will be set to true every time A is executed.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/IncludeRelation.png}
 	 	\caption[Include relation]
@@ -150,7 +153,7 @@
 
 	\subsubsection{Exclude relation}
 	If there is an exclude relation from activity A to activity B, then B's included attribute will be set to false every time A is executed.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/ExcludeRelation.png}
 	 	\caption[Exclude relation]
@@ -159,7 +162,7 @@
 
 	\paragraph{Milestone relation}
 	If there is a milestone relation from activity A to activity B, then B can only be executed if A's pending attribute is false or A's included attribute is false.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/MilestoneRelation.png}
 	 	\caption[Milestone relation]
@@ -171,7 +174,7 @@
 	\texttt{Close ticket} cannot be executed as it is excluded and there is a condition relation to it from an activity that is not executed. 
 	\texttt{Propose solution} and \texttt{Reject solution} cannot be executed as there are condition relations to them from activities that have not been executed. 
 	Lastly \texttt{Accept solution} cannot be executed as there is a milestone relation to it from \texttt{Propose solution} which is pending and not excluded.
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=\textwidth]{figures/exampleWorkflow.png}
 	 	\caption[Example workflow]
@@ -196,14 +199,14 @@
 	\end{enumerate}
 
 	\section{Ethereum}
-		For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
-		Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
-		Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
-		Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
+	For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
+	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+	Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
+	Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
 
-		For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
-		They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
-		i.e infinite computation is impossible, since the amount of gas will always be finite. 
+	For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
+	They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
+	i.e infinite computation is impossible, since the amount of gas will always be finite. 
 
 		\subsection{Currency}
 		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
@@ -216,24 +219,47 @@
 		All computations have a set gas cost, and Ethereum provides tools to calculate how much a proposed execution some code would cost. The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user set the amount of gas to low, no miner is willing to include the users code execution in his block.
 
 		\subsection{Blockchain}
+		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
+		Each block contains the changes to the database since the last block, as well as a reference to the last block.
+		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding nonce to include in the block such that the hash of the block is prefixed with a number of zeroes, called the \emph{difficulty}\cite{bitcoin-white-paper}. 
+		The process of finding these hashes is commonly called \emph{mining}.
+		The difficulty is automatically adjusted according to the number of miners, to achieve a statistically bounded time between the publication of each subsequent block.
+		Multiple blocks can be published at the same, and thus reference the same preceding block, which is called a \emph{fork} in the blockchain.
+		Forks are handled slightly differently according to the specific blockchain implementation, but is generally based on some sort of the-longest-chain-wins scheme, i.e. the block most used in the system afterwards will be the block that the accepted block, while the other is rejected.
+		
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting points, which makes the Ethereum blockchain unique.
+		The most important change is the support of storing potentially arbitrary large amounts of data, as well as the integration of code execution into the block verification.
 
 		\subsection{Ethereum Virtual Machine}
 		
 
 	\section{Implementation requirements}
 
-	All of the proposed solutions will contain the following features:
-	\begin{itemize}
-		\item Creation of a workflow
-		\item Execution of an activity
-		\item Execution rights on the level of a user and on the level of a group
-		\item Visibility?
-	\end{itemize}
+	In order to ensure that the initial implementations can be properly compared, they will support and be limited to the following functionality: 
+	
+	\begin{description}
+		\item[Workflow creation] The implementation must support the creation of a workflow. The creation of this workflow should be performed with a single method call and must be atomic, meaning that no workflow can be partially created. This also means that no workflow can be modified past its creation.
+		\item[Attempt activity execution] Any activity must be attempted to be executed at any time and be executed only when the state of the workflow allows it. The execution should also influence any other activity as prescribed by any outgoing relations it has.
+		\item[Contract suicide] Any created contract must be allowed to self-destruct, when called by the creating user.
+		\item[Data retrieval] The data stored must be accessible by any user.
+	\end{description}
 
+	The data structure of the implementation will be as follows:
+
+	\begin{description}
+		\item[Workflow] The workflow should contain a name, a list of activities and a list of people who can modify the workflow.
+		\item[Activity] Each activity should contain a name, a list of each type of relation and a list of users who are allowed to execute it.
+		\item[Relations] The 5 relations described in Section \ref{sec:dcr-graphs} must be supported. They should be implemented in two categories:
+			\begin{enumerate}
+				\item Incoming: The relations in this category are: \emph{milestone} and \emph{condition}. These relations specify which activities this activities execution might depend on and that those activities should be checked when an execution is attempted on this activity.
+				\item Outgoing: The relations in this category are: \emph{response}, \emph{exclude} and \emph{include}. These relations specify which activities are affected by an execution on this activity.
+			\end{enumerate}
+		\item[Access rights] Should be indicated by the public key of a given user.
+	\end{description}
 
 	\section{Multi-contract implementation}
 
-	As the gas costs of ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
+	As the gas costs of Ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
 
 	The first proposed solution is creating a contract for each workflow...
 
@@ -279,8 +305,9 @@
 
 	\pagebreak
 	\addcontentsline{toc}{section}{References}	
+	\bibliographystyle{plain}
 	\begin{thebibliography}{99}
-	
+
 		\bibitem{yellow-paper}
 		Wood, G.
 		\textit{Ethereum: A Secure Decentralised Generalised Transaction Ledger}. 
@@ -295,6 +322,18 @@
 		Denmark,
 		2016.
 
+		\bibitem{ethereum-white-paper}
+		Various authors.
+		\textit{White Paper}.
+		\url{https://github.com/ethereum/wiki/wiki/White-Paper},
+		Accessed 2017-05-09.
+
+		\bibitem{bitcoin-white-paper}
+		Nakamoto, S.
+		\textit{Bitcoin: A Peer-to-Peer Electronic Cash System}.
+		\url{https://bitcoin.org/bitcoin.pdf},
+		Accessed 2017-05-09.
+
 
 	\end{thebibliography}
 
@@ -305,8 +344,8 @@
 	\section{Gas prices}
 		\label{app:gas-prices}
 
-		As of May 9th, 2017, the gas prices are\cite{yellow-paper}:
-		\begin{table}[h!]
+		As of May 9th, 2017, the gas prices are \cite{yellow-paper}: 
+		\begin{table}[!ht]
 		\footnotesize
 		\noindent \begin{tabular}{| l | l | p{8cm} |}
 			\hline
