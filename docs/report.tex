@@ -168,14 +168,14 @@
 	\end{enumerate}
 
 	\section{Ethereum}
-		For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
-		Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
-		Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
-		Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
+	For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
+	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+	Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
+	Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
 
-		For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
-		They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
-		i.e infinite computation is impossible, since the amount of gas will always be finite. 
+	For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
+	They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
+	i.e infinite computation is impossible, since the amount of gas will always be finite. 
 
 		\subsection{Blockchain}
 		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
@@ -186,7 +186,8 @@
 		Multiple blocks can be published at the same, and thus reference the same preceding block, which is called a \emph{fork} in the blockchain.
 		Forks are handled slightly differently according to the specific blockchain implementation, but is generally based on some sort of the-longest-chain-wins scheme, i.e. the block most used in the system afterwards will be the block that the accepted block, while the other is rejected.
 		
-		Ethereum's blockchain
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting points, which makes the Ethereum blockchain unique.
+		The most important change is the support of storing potentially arbitrary large amounts of data, as well as the integration of code execution into the block verification.
 
 		\subsection{Ethereum Virtual Machine}
 
