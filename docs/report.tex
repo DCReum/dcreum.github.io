@@ -38,6 +38,8 @@
 \date{}
 
 \begin{document}
+
+\normalem
 	\begin{titlepage}
 		\maketitle		
 		\hspace{-18pt}
@@ -56,10 +58,40 @@
 	\pagebreak
 
 	\section{Introduction}
+	In this article we will continue to build upon our previous research with declarative process models on block chains. 
+	In our previous research we have shown how a block chain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins block chain to achieve consensus.
 
-	\section{Distributed Condition Response graphs}
+	The proof of work was...... 
+	We found Bitcoins block chain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
+	But the underlying technology, the block chain, has been used in many other applications and platforms. 
+	We will implement a WfMS using a Declarative Condition Response (DCR) engine on one of these platforms, Ethereum.
+
+	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
+
+	\subsection{Previous work}
+	Our previous work with block chains was done for our bachelor thesis \cite{bachelor}. 
+	The main idea we will carry on from our bachelor thesis is that a block chain can be used to create a consensus protocol. 
+	We will therefore not go into great detail of how we can achieve consensus with a block chain. 
+	The following section will provide the information we deem necessary to understand how we can achieve consensus with a block chain, but no literature to support this. 
+	Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
+	\subsubsection{Achieving consensus with block chains}
+
+	\subsubsection{Motivation to use Ethereum}
+	The previous DCR engine we built utilized Bitcoins block chain to validate workflow creation and execution attempts by storing the hash of these on the block chain.
+	The actual verification of the legality of executions with respect to DCR logic and execution rights was done on a DCR engine running locally on a users machine.
+	Thus our application relied heavily on the majority of users involved in a workflow were actually using our DCR engine to verify the legality of executions. 
+
+	Our previous DCR engine made it infeasible for an adversary to fake executions or claim that executions were part of another workflow than what benevolent users thought.
+	Instead it was vulnerable to loss of local data. 
+	
+	If a user managed to remove all local traces of a workflow, it could be difficult to claim that the traces of executions belonged to a certain workflow and therefore hard to prove that a user actually did execute some specific activity. Furthermore reconstruction of a lost workflow would be nigh impossible without access to another copy of the workflow.
+
+	Ethereums block chain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the block chain \textbf{2)} if code on the block chain has been run \textbf{3)} if the code was run successfully or not.
+	Any user participating in a workflow using a DCR engine running on Ethereums block chain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins block chain verified workflow creation and execution attempts.
+
+	\section{Dynamic Condition Response graphs}
 	\label{sec:dcr-graphs}
-	A Distributed Condition Response (DCR) graph is a representation of a workflow. 
+	A DCR graph is a representation of a workflow.
 	The graph is made up of one or more activities with zero or more relations between them. 
 	The following section is loosely based on a similar description in our bachelor-project \cite{bachelor}. 
 
@@ -167,16 +199,26 @@
 	\end{enumerate}
 
 	\section{Ethereum}
-		For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
-		Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
-		Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
-		Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
+	For efficient distribution of, and consensus in, the workflows, we use the platform Ethereum. 
+	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+	Central for blockchain technologies is cryptocurrency, which is used to provide incentive for mining, and in Ethereum's case, to pay for computations called \textit{gas}\cite{yellow-paper}.
+	Ethereum's cryptocurrency is called \textit{Ether}\cite{yellow-paper}.
 
-		For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
-		They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
-		i.e infinite computation is impossible, since the amount of gas will always be finite. 
+	For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
+	They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
+	i.e infinite computation is impossible, since the amount of gas will always be finite. 
 
 		\subsection{Blockchain}
+		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
+		Each block contains the changes to the database since the last block, as well as a reference to the last block.
+		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding nonce to include in the block such that the hash of the block is prefixed with a number of zeroes, called the \emph{difficulty}\cite{bitcoin-white-paper}. 
+		The process of finding these hashes is commonly called \emph{mining}.
+		The difficulty is automatically adjusted according to the number of miners, to achieve a statistically bounded time between the publication of each subsequent block.
+		Multiple blocks can be published at the same, and thus reference the same preceding block, which is called a \emph{fork} in the blockchain.
+		Forks are handled slightly differently according to the specific blockchain implementation, but is generally based on some sort of the-longest-chain-wins scheme, i.e. the block most used in the system afterwards will be the block that the accepted block, while the other is rejected.
+		
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting points, which makes the Ethereum blockchain unique.
+		The most important change is the support of storing potentially arbitrary large amounts of data, as well as the integration of code execution into the block verification.
 
 		\subsection{Ethereum Virtual Machine}
 
@@ -270,6 +312,18 @@
 		IT-University of Copenhagen,
 		Denmark,
 		2016.
+
+		\bibitem{ethereum-white-paper}
+		Various authors.
+		\textit{White Paper}.
+		\url{https://github.com/ethereum/wiki/wiki/White-Paper},
+		Accessed 2017-05-09.
+
+		\bibitem{bitcoin-white-paper}
+		Nakamoto, S.
+		\textit{Bitcoin: A Peer-to-Peer Electronic Cash System}.
+		\url{https://bitcoin.org/bitcoin.pdf},
+		Accessed 2017-05-09.
 
 
 	\end{thebibliography}
