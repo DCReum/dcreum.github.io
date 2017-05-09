@@ -138,9 +138,14 @@
 
 	\appendix
 
+	\clearpage
+
 	\section{Gas prices}
 
-		\begin{tabular}{| l | l | l |}
+		As of May 9th, 2017, the gas prices are:
+		\begin{table}[h!]
+		\footnotesize
+		\noindent \begin{tabular}{| l | l | p{8cm} |}
 			\hline
 			Name 				& Value 	& Description \\ \hline
 			$G_{zero}$ 			& 0 		& Nothing paid for operations of set $W_{zero}$. \\ \hline
@@ -180,16 +185,18 @@
 			$G_{blockhash}$ 	& 20		& Payment for BLOCKHASH operation. \\ 
 			\hline
 		\end{tabular}
+		\end{table}
+		\FloatBarrier
 
 		\subsection{Instruction sets}
 		\begin{description}
-			\item[$W_{zero}$] \{STOP, RETURN\}
-			\item[$W_{base}$] \{ADDRESS, ORIGIN, CALLER, CALLVALUE, CALLDATASIZE, CODESIZE, GASPRICE, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, POP, PC, MSIZE, GAS \}
-			\item[$W_{verylow}$] \{ADD, SUB, NOT, LT, GT, SLT, SGT, EQ, ISZERO, AND, OR, XOR, BYTE, CALLDATALOAD, MLOAD, MSTORE, MSTORES, PUSH*, DUP*, SWAP*\}
-			\item[$W_{low}$] \{MUL, DIV, SDIV, MOD, SMOD, SIGNEXTEND\}
-			\item[$W_{mid}$] \{ADDMOD, MULMOD, JUMP\}
-			\item[$W_{high}$] \{JUMPI\}
-			\item[$W_{extcode}$] \{EXTCODESIZE\}			
+			\item[$W_{zero}$] = \{STOP, RETURN\}
+			\item[$W_{base}$] = \{ADDRESS, ORIGIN, CALLER, CALLVALUE, CALLDATASIZE, CODESIZE, GASPRICE, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, POP, PC, MSIZE, GAS \}
+			\item[$W_{verylow}$] = \{ADD, SUB, NOT, LT, GT, SLT, SGT, EQ, ISZERO, AND, OR, XOR, BYTE, CALLDATALOAD, MLOAD, MSTORE, MSTORES, PUSH*, DUP*, SWAP*\}
+			\item[$W_{low}$] = \{MUL, DIV, SDIV, MOD, SMOD, SIGNEXTEND\}
+			\item[$W_{mid}$] = \{ADDMOD, MULMOD, JUMP\}
+			\item[$W_{high}$] = \{JUMPI\}
+			\item[$W_{extcode}$] = \{EXTCODESIZE\}			
 		\end{description}
 
 	\section{Test workflow}
