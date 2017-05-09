@@ -1,4 +1,4 @@
-\documentclass{paper}
+\documentclass{article}
 
 \usepackage{graphicx}
 \usepackage{placeins}
@@ -29,7 +29,7 @@
 }
 
 \title{Consensus in declarative process models using distributed smart-contracts}
-\author{Mikkel Gaub, \\ Trondúr Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen }
+\author{Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen }
 \date{}
 
 \begin{document}
@@ -52,9 +52,113 @@
 
 	\section{Introduction}
 
-	\section{DCR}
+	\section{Distributed Condition Response graphs}
+	A Distributed Condition Response (DCR) graph is a representation of a workflow. 
+	The graph is made up of one or more activities with zero or more relations between them. 
+	The following section is loosely based on a similar description in our bachelor-project \cite{bachelor}. 
 
-	Exclusion of Spawn relation.
+	\subsection{Activity}
+	The activities in a DCR graph have three attributes: included, executed and pending. 
+	The attributes can be true or false. 
+	Furthermore an activity can have role and actor specific execution rights.
+
+	\subsubsection{Included attribute}
+	If the include attribute of an activity is true, the activity is included and it can be executed. 
+	If the attribute is false, the activity is excluded and can no longer be executed.
+
+	\subsubsection{Pending attribute}
+	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state. 
+	Every time an activity is executed its pending attribute is set to false.
+	This means that setting the pending attribute of an included activity to true is specifying that this activity \emph{must} be executed or excluded at some point to finish the workflow.
+
+	\subsubsection{Executed attribute}
+	If an activities executed attribute is false executing the activity will set its executed attribute to true.
+	Executing an already executed activity will have no effect on the executed attribute.
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=1\textwidth]{figures/activity_states.png}
+	 	\caption[Activity States]
+	 	{From left to right: A visual representation of an included, excluded, pending and executed activity as presented on \href{http://www.dcrgraphs.net}{dcrgraphs.net}}.
+	\end{figure}
+
+	\subsection{Relations}
+	There are five types of relations which define different types of relationships between activities in a workflow. 
+	These five are the \emph{condition}, \emph{response}, \emph{include}, \emph{exclude} and \emph{milestone} relations.
+
+	\subsubsection{Condition relation}
+	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
+	 	\caption[Condition relation]
+	 	{Condition relation}
+	\end{figure}
+
+	\subsubsection{Response relation}
+	If there is a response relation from activity A to activity B, then B's pending attribute will be set to true every time A is executed.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ResponseRelation.png}
+	 	\caption[Response relation]
+	 	{Response relation}
+	\end{figure}
+
+	\subsubsection{Include relation}
+	If there is an include relation from activity A to activity B, then B's included attribute will be set to true every time A is executed.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/IncludeRelation.png}
+	 	\caption[Include relation]
+	 	{Include relation}
+	\end{figure}
+
+	\subsubsection{Exclude relation}
+	If there is an exclude relation from activity A to activity B, then B's included attribute will be set to false every time A is executed.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/ExcludeRelation.png}
+	 	\caption[Exclude relation]
+	 	{Exclude relation}
+	\end{figure}
+
+	\paragraph{Milestone relation}
+	If there is a milestone relation from activity A to activity B, then B can only be executed if A's pending attribute is false or A's included attribute is false.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.3\textwidth]{figures/MilestoneRelation.png}
+	 	\caption[Milestone relation]
+	 	{Milestone relation}
+	\end{figure}
+
+	\subsection{Example workflow}
+	Figure \ref{fig:exampleWorkflow} shows an DCR graph modeling a support ticket workflow. When the workflow is created only \texttt{Submit ticket} is executable. 
+	\texttt{Close ticket} cannot be executed as it is excluded and there is a condition relation to it from an activity that is not executed. 
+	\texttt{Propose solution} and \texttt{Reject solution} cannot be executed as there are condition relations to them from activities that have not been executed. 
+	Lastly \texttt{Accept solution} cannot be executed as there is a milestone relation to it from \texttt{Propose solution} which is pending and not excluded.
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\textwidth]{figures/exampleWorkflow.png}
+	 	\caption[Example workflow]
+	 	{Example workflow}
+	 	\label{fig:exampleWorkflow}
+	\end{figure}
+	\FloatBarrier
+	A typical example of an execution order of the example workflow would look like this:
+	\begin{enumerate}
+		\item The customer executes \texttt{Submit ticket} which excludes itself. 
+		This includes \texttt{Close ticket}, but \texttt{Close ticket} is still not executable, as there is a condition relation to it from \texttt{Accept solution}.
+		\texttt{Propose solution} however is now executable.
+		\item The supporter executes \texttt{Propose solution}. Now \texttt{Accept solution} is executable as \texttt{Propose solution} is no longer pending and \texttt{Reject solution} is also executable as \texttt{Propose solution} is executed. 
+		Furthermore \texttt{Accept solution} is now pending and must therefore be executed or excluded at some point.
+		\item If the customer is not satisfied with the solution he can execute \texttt{Reject solution} which will prevent execution of \texttt{Accept solution}, as \texttt{Propose solution} is now pending and still included. 
+		The workflow is now in the same state as in step 2 except from the fact that \texttt{Reject solution} is executable. 
+		Executing \texttt{Reject solution} will however have no effect, as \texttt{Propose solution} is already pending.
+		\item If the customer on the other hand is satisfied with the supporters solution he can execute \texttt{Accept solution}.
+		Executing \texttt{Accept solution} will exclude \texttt{Propose solution} and \texttt{Reject solution}.
+		This leaves \texttt{Close ticket} executable and pending.
+		To leave the workflow in a finished state the supporter must execute \texttt{Close ticket}. 
+	\end{enumerate}
 
 	\section{Ethereum}
 
