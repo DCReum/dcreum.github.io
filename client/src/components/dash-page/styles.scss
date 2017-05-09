@@ -1,0 +1,16 @@
+html, body, #dash {
+  height: 100%;
+  position: relative;
+}
+
+#dash {
+  height: 100%;
+
+  section {
+    background-color: #f5f5f5;
+  }
+}
+
+#sidebar-column {
+  max-width: 350px;
+}

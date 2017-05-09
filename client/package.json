@@ -5,20 +5,29 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack -d --display-modules --progress",
-    "prod": "webpack -p --display-modules --progress"
+    "prod": "webpack -p --display-modules --progress",
+    "server": "webpack-dev-server -d --content-base dist/"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "d3": "^4.8.0",
+    "font-awesome": "^4.7.0",
+    "moment": "^2.18.1",
     "web3": "^0.18.2"
   },
   "devDependencies": {
     "babel-core": "^6.23.1",
     "babel-loader": "^6.4.0",
+    "babel-preset-es2015": "^6.22.0",
+    "bulma": "^0.3.2",
     "css-loader": "^0.26.2",
+    "file-loader": "^0.11.1",
+    "mithril": "^1.0.1",
     "node-sass": "^4.5.0",
     "sass-loader": "^6.0.2",
     "style-loader": "^0.13.2",
+    "url-loader": "^0.5.8",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1"
   }
