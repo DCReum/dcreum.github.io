@@ -203,12 +203,10 @@
 	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
 	Central for blockchain technologies is a cryptocurrency, which is used to provide incentive for mining and to pay for the verification and computation of the published code.
 	Ethereum's cryptocurrency is called \emph{Ether}.
-	As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) has costs associated with it
-
-	For the purposes of distribution and code execution via the Ethereum blockchain, the Ethereum yellow paper specifies a virtual machine, which achieves what the authors call "quasi-Turing-completeness"\cite{yellow-paper}. 
-	They define this to be Turing-completeness, with the amount of computation bounded by the amount of gas provided,
-	i.e infinite computation is impossible, since the amount of gas will always be finite. 
-
+	As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) have a value associated with it in a unit called gas, see appendix \ref{app:gas-prices}, which is then payed for with Ether by the person publishing that code.
+	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
+	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
+	
 		\subsection{Currency}
 		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
 		Additional rewards given for blocks which include uncles (see the following section). 
