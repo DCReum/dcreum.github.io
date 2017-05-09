@@ -93,7 +93,7 @@
 	\label{sec:dcr-graphs}
 	A DCR graph is a representation of a workflow.
 	The graph is made up of one or more activities with zero or more relations between them. 
-	The following section is loosely based on a similar description in our bachelor-project \cite{bachelor}. 
+	The following section is loosely based on a similar description in our bachelor's thesis \cite{bachelor}. 
 
 	\subsection{Activity}
 	The activities in a DCR graph have three attributes: included, executed and pending. 
@@ -234,11 +234,11 @@
 
 	\section{Implementation requirements}
 
-	In order to ensure that the initial implementations can be properly compared, they will support and be limited to the following functionality: 
+	In order to ensure that the implementations can be properly compared, they will support, and initially be limited to, the following functionality: 
 	
 	\begin{description}
 		\item[Workflow creation] The implementation must support the creation of a workflow. The creation of this workflow should be performed with a single method call and must be atomic, meaning that no workflow can be partially created. This also means that no workflow can be modified past its creation.
-		\item[Attempt activity execution] Any activity must be attempted to be executed at any time and be executed only when the state of the workflow allows it. The execution should also influence any other activity as prescribed by any outgoing relations it has.
+		\item[Attempt activity execution] Any activity must be attempted to be executed at any time and be executed only when the state of the workflow allows it. The execution must also influence any other activity as prescribed by any relations it has.
 		\item[Contract suicide] Any created contract must be allowed to self-destruct, when called by the creating user.
 		\item[Data retrieval] The data stored must be accessible by any user.
 	\end{description}
@@ -246,11 +246,11 @@
 	The data structure of the implementation will be as follows:
 
 	\begin{description}
-		\item[Workflow] The workflow should contain a name, a list of activities and a list of people who can modify the workflow.
-		\item[Activity] Each activity should contain a name, a list of each type of relation and a list of users who are allowed to execute it.
+		\item[Workflow] The workflow must contain a name, a list of activities and a list of people who can modify the workflow.
+		\item[Activity] Each activity must contain a name, a list the relations related to it and a list of users who are allowed to execute it.
 		\item[Relations] The 5 relations described in Section \ref{sec:dcr-graphs} must be supported. They should be implemented in two categories:
 			\begin{enumerate}
-				\item Incoming: The relations in this category are: \emph{milestone} and \emph{condition}. These relations specify which activities this activities execution might depend on and that those activities should be checked when an execution is attempted on this activity.
+				\item Incoming: The relations in this category are: \emph{milestone} and \emph{condition}. These relations specify which activities this activity's execution might depend on and that those activities should be checked when an execution is attempted on this activity.
 				\item Outgoing: The relations in this category are: \emph{response}, \emph{exclude} and \emph{include}. These relations specify which activities are affected by an execution on this activity.
 			\end{enumerate}
 		\item[Access rights] Should be indicated by the public key of a given user.
