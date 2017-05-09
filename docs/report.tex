@@ -105,9 +105,9 @@
 	If the attribute is false, the activity is excluded and can no longer be executed.
 
 	\subsubsection{Pending attribute}
-	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state. 
+	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state.
 	Every time an activity is executed its pending attribute is set to false.
-	This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to finish the workflow.
+	This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to leave the workflow in a finished state.
 
 	\subsubsection{Executed attribute}
 	If an activities executed attribute is false executing the activity will set its executed attribute to true.
@@ -215,8 +215,11 @@
 		The last reward is essentially equivalent to the transaction fees in Bitcoin.
 
 		To store data or run code on the Ethereum platform one has to spend an amount of gas. 
+		All computations have a set gas cost and can be seen in appendix \ref{app:gas-prices}, and Ethereum provides tools to calculate how much gas a proposed execution some code would cost.
 		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
-		All computations have a set gas cost, and Ethereum provides tools to calculate how much a proposed execution some code would cost. The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user set the amount of gas to low, no miner is willing to include the users code execution in his block.
+		The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user has set the price he is willing to pay per gas to low, no miner will to include the users code execution in his block.
+		If on the other hand miners set their minimum price for inclusion to high, no one is willing to use Ethereum. 
+		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
 
 		\subsection{Blockchain}
 		A blockchain is a distributed and decentralized database, consisting of so called \emph{blocks}\cite{bitcoin-white-paper}. 
