@@ -46,7 +46,7 @@
 		\textit{May 15, 2017}
 		\vspace{\fill}
 		\section*{Abstract}
-		This paper investigates how efficently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine will be implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine.
+		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine will be implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine.
 		\thispagestyle{empty}
 	\end{titlepage}
 	\clearpage
@@ -291,11 +291,31 @@
 
 	\section{Multi-contract implementation}
 
-	As the gas costs of Ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
-
 	The first proposed solution is creating a contract for each workflow...
 
 	\section{Mono-contract implementation}
+	The idea behind the second implementation is that the gas costs of Ethereum are largely dominated by the price of creating a contract. If we observe appendix \ref{app:gas-prices} we find that the most expensive operation is the contract creation operation $G_{create}$ which costs 32000 gas. 
+	This incentiveses us to create as few contracts as possible. 
+
+	The second implementation is therefore a single contract with all workflows. 
+	Workflows that are created are stored in a workflow array. 
+	The methods of the Mono-contract implementation are largely the same as in the Multi-contract implementation. 
+	The key difference is that the methods must access an index of the workflow array to retrieve the specified array before beginning modification of a workflow.
+
+	The limitations of Solidity are clearly reflected in the \texttt{createWorkflow} method which creates a workflow. 
+	Because of the limit on number of bytes the EVM can go back, the number of variables a method can take is limited. 
+	This limitation creates problems for methods which require large amount of different data. 
+	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
+	\begin{enumerate}
+		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-32 are used for group names and indexes 33-$n$ ($n = number \quad of \quad activities - 33$) are used for activity names.
+		\item Instead of three boolean list representing the attributes of the activities, the array \texttt{activityStates} of size three of boolean arrays is used.
+		\item An array of size three of unsigned integer arrays is used to represent activity data. 
+		\begin{enumerate}
+			\item The first array is used as a counter for how many relations will be stored on each activity. We use this counter as there is only one array containing the type of the relation and one array containing the id of the activity the relation should point to. But there is nothing indicating which activity the relation should be stored on.
+			\item The second array is used to represent the number of public keys that are authorized to execute an activity. This counter is used as there is only a single list with all authorized user, but there is nothing associating them with any specific activity.
+			\item The last array is used to represent the number of groups that are authorized to execute an activity. This is done for the same reasons as above; there is only one list with group authorizations.
+		\end{enumerate}
+	\end{enumerate}
 
 	\section{Comparison}
 	In order to compare the solutions to each other, a simple workflow has been created modeling each of the five relations...
