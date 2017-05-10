@@ -31,7 +31,7 @@ contract Workflow {
 
 
 // Workflow data and creation:
-    event Execution(address sender, uint32 id, bool successful);
+    event LogExecution(address sender, uint32 id, bool successful);
 
     Activity[] activities;
     address owner;
@@ -41,7 +41,7 @@ contract Workflow {
     /// included: array of activity included state, where included[i] is the included state of activity with id i 
     /// executed: array of activity executed state, where executed[i] is the executed state of activity with id i 
     /// pending: array of activity pending state, where pending[i] is the pending state of activity with id i 
-    function Workflow (
+    function createWorkflow (
         bytes32 wfName,
         bytes32[] names,
         bool[] included,
@@ -85,7 +85,7 @@ contract Workflow {
     }
 
 // Internal functions:
-    function authorize(uint32 actId) private {
+    function canExecute(uint32 actId) private {
         if(activities[actId].whitelist.length > 0) {
             for (var i = 0; i < activities[actId].whitelist.length; i++) 
                 if(activities[actId].whitelist[i] == msg.sender)
@@ -100,7 +100,7 @@ contract Workflow {
 // External functions:
     function execute(uint32 id) {
         // Check that activity is in executable state
-        authorize(id);
+        canExecute(id);
         Activity memory a = activities[id];
         
         if(!a.included){
@@ -130,7 +130,7 @@ contract Workflow {
         for (i = 0; i < a.response.length; i++) 
             activities[a.response[i]].pending = true; 
 
-        Execution(msg.sender, id, true);
+        LogExecution(msg.sender, id, true);
     }
 
     // Selfdestruct
@@ -140,28 +140,57 @@ contract Workflow {
         
         selfdestruct(owner);
     }
+
+    function getWorkflowName() public constant returns (bytes32){
+        return name;
+    }
+
+    function getActivityCount(uint i) public constant returns (uint256){
+        return activities.length;
+    }
+
+    function getActivityName(uint i) public constant returns (bytes32){
+        return activities[i].name;
+    }
+
     function isIncluded(uint i) public constant returns (bool){
         return activities[i].included;
     }
-    function isPending(uint i) public constant returns (bool){
-        return activities[i].pending;
-    }
+
     function isExecuted(uint i) public constant returns (bool){
         return activities[i].executed;
     }
-    function getIncludeRelations(uint i) public constant returns (uint32[]){
+
+    function isPending(uint i) public constant returns (bool){
+        return activities[i].pending;
+    }
+
+    function getIncludes(uint i) public constant returns (uint32[]){
         return activities[i].include;
     }
-    function getExcludeRelations(uint i) public constant returns (uint32[]){
+
+    function getExcludes(uint i) public constant returns (uint32[]){
         return activities[i].exclude;
     }
-    function getResponseRelations(uint i) public constant returns (uint32[]){
+
+    function getResponses(uint i) public constant returns (uint32[]){
         return activities[i].response;
     }
-    function getConditionRelations(uint i) public constant returns (uint32[]){
+
+    function getConditions(uint i) public constant returns (uint32[]){
         return activities[i].condition;
     }
-    function getMilestoneRelations(uint i) public constant returns (uint32[]){
+
+    function getMilestones(uint i) public constant returns (uint32[]){
         return activities[i].milestone;
     }
+
+    function getAccountWhitelist(uint i) public constant returns (address[]){
+        return activities[i].whitelist;
+    }
+    
+    function isAuthDisabled(uint i) public constant returns (bool){
+        return (activities[i].whitelist.length == 0);
+    }
+    
 }

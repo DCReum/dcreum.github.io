@@ -1,8 +1,7 @@
 pragma solidity 0.4.10;
 
 contract DCReum {
-  event LogWorkflowCreation(uint256 indexed workflowId, bytes32 indexed workflowName);
-  event LogActivityCreation(uint256 indexed workflowId, uint256 indexed activityId, bytes32 indexed activityName);
+  event LogWorkflowCreation(uint256 indexed workflowId, bytes32 indexed workflowName, address indexed creator);
   event LogExecution(uint256 indexed workflowId, uint256 indexed activityId, address indexed executor);
 
   enum RelationType {
@@ -59,7 +58,7 @@ contract DCReum {
     return (workflow, activity);
   }
 
-  function getName(uint256 workflowId) public constant returns (bytes32) {
+  function getWorkflowName(uint256 workflowId) public constant returns (bytes32) {
     return workflows[workflowId].name;
   }
 
@@ -71,7 +70,11 @@ contract DCReum {
     return workflows[workflowId].groupsOfAccount[account];
   }
 
-  function getName(uint256 workflowId, uint256 activityId) public constant returns (bytes32) {
+  function getActivityCount(uint256 workflowId) public constant returns (uint256) {
+    return workflows[workflowId].activities.length;
+  }
+
+  function getActivityName(uint256 workflowId, uint256 activityId) public constant returns (bytes32) {
     var (workflow, activity) = getWorkflowActivity(workflowId, activityId);
     return activity.name;
   }
@@ -277,6 +280,6 @@ contract DCReum {
       }
     }
     
-    LogWorkflowCreation(workflows.length - 1, workflow.name);
+    LogWorkflowCreation(workflows.length - 1, workflow.name, msg.sender);
   }
 }
