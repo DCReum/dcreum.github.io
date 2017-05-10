@@ -264,11 +264,18 @@
 	The first proposed solution is creating a contract for each workflow...
 
 	\section{Mono-contract implementation}
-	The idea behind the second implementation is that the gas costs of Ethereum are largely dominated by the price of creating a contract. If we observe appendix \ref{app:gas-prices} we find that the most expensive operation is the contract creation operation $G_{create}$ which costs 32000 gas. This incentiveses us to create as few contracts as possible. 
+	The idea behind the second implementation is that the gas costs of Ethereum are largely dominated by the price of creating a contract. If we observe appendix \ref{app:gas-prices} we find that the most expensive operation is the contract creation operation $G_{create}$ which costs 32000 gas. 
+	This incentiveses us to create as few contracts as possible. 
 
-	The second implementation is therefore a single contract with all workflows. Workflows that are created are stored in a workflow array. The methods of the Mono-contract implementation are largely the same as in the Multi-contract implementation. The key difference is that the methods must access an index of the workflow array to retrieve the specified array before beginning modification of a workflow.
+	The second implementation is therefore a single contract with all workflows. 
+	Workflows that are created are stored in a workflow array. 
+	The methods of the Mono-contract implementation are largely the same as in the Multi-contract implementation. 
+	The key difference is that the methods must access an index of the workflow array to retrieve the specified array before beginning modification of a workflow.
 
-	The limitations of Solidity are clearly reflected in the \texttt{createWorkflow} method which creates a workflow. Because of the limit on number of bytes the EVM can go back, the number of variables a method can take is limited. This limitation creates problems for methods which require large amount of different data. Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
+	The limitations of Solidity are clearly reflected in the \texttt{createWorkflow} method which creates a workflow. 
+	Because of the limit on number of bytes the EVM can go back, the number of variables a method can take is limited. 
+	This limitation creates problems for methods which require large amount of different data. 
+	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
 	\begin{enumerate}
 		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-32 are used for group names and indexes 33-$n$ ($n = number \quad of \quad activities - 33$) are used for activity names.
 		\item Instead of three boolean list representing the attributes of the activities, the array \texttt{activityStates} of size three of boolean arrays is used.
