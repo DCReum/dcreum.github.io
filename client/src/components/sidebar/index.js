@@ -16,7 +16,7 @@ class Sidebar {
     return m("aside#sidebar.menu", [
       m("p.menu-label", "Relevant"),
       m("ul.menu-list", this.relevant().map(wf =>
-        m("li", m("a", wf))
+        m("li", m("a", { href: "/workflow/1" }, wf))
       )),
       m("p.menu-label", "Recent"),
       m("ul.menu-list", this.relevant().map(wf =>
@@ -27,4 +27,4 @@ class Sidebar {
   }
 }
 
-export default new Sidebar();
+export default Sidebar;

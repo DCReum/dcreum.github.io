@@ -16,7 +16,7 @@ class Workflow {
     let tab = m.route.param("tab");
     let setTab = (to) => m.route.set(`/workflow/${workflowId}/${to}`);
 
-    return m("section#workspace", [
+    return m("section.workflow", [
       m("nav.nav.is-primary.has-shadow",
           m("div.nav-left", [
             m("a.nav-item.is-tab" + (tab === "workflow" ? ".is-active" : ""), { onclick: () => setTab("workflow") }, "Workflow"),
@@ -24,7 +24,7 @@ class Workflow {
             m("a.nav-item.is-tab" + (tab === "settings" ? ".is-active" : ""), { onclick: () => setTab("settings") }, "Settings")
           ])
       ),
-      m(panes[tab])
+      m("div.workspace", m(panes[tab]))
     ]);
   }
 }

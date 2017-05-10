@@ -1,14 +1,11 @@
+import "./styles.scss";
 import m from "mithril";
-import * as d3 from "d3";
+import DcrUi from "components/dcr-ui";
 
 class Workflow {
   view() {
-    return m("section.section",
-      m("svg", {
-        oncreate: (vnode) => {
-          let svg = d3.select(vnode.dom);
-        }
-      })
+    return m("div.workflow-tab",
+      m(DcrUi)
     );
   }
 }
