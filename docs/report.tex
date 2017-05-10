@@ -9,10 +9,19 @@
 \usepackage[nodayofweek,level]{datetime}
 \usepackage{ulem}
 \usepackage{mathtools}
+\usepackage{newfloat}
+\DeclareFloatingEnvironment[
+    fileext=los,
+    listname=List of code snippets,
+    name=Snippet,
+    placement=tbhp,
+    within=none,
+]{snippet}
 
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \definecolor{darkgreen}{RGB}{50,200,50}
+\definecolor{darkcyan}{RGB}{130,230,200}
 \definecolor{verylightgray}{gray}{0.85}
 \definecolor{goldenbrown}{rgb}{0.558215, 0.0, 0.135316}
 
@@ -22,6 +31,8 @@
 	keywordstyle=\color{blue},
 	keywords=[2]{pragma, contract, event, enum, struct, function, return, private, public, constant, returns, var, for, !, if, break, continue, throw, &&, ||, else, =, ==, <, >, <=, >=},
 	keywordstyle=[2]\color{magenta},
+	keywords=[3]{push, pull},	
+	keywordstyle=[3]\color{darkcyan},
 	comment=[l]{//},
 	commentstyle=\color{darkgreen},
 	numbers=left,
@@ -234,6 +245,7 @@
 		
 
 	\section{Implementation requirements}
+	\label{sec:implementation-requirements}
 
 	In order to ensure that the implementations can be properly compared, they will support, and initially be limited to, the following functionality: 
 	
@@ -259,9 +271,83 @@
 
 	\section{Multi-contract implementation}
 
-	As the gas costs of Ethereum are largely dominated by the price of creating a contract, creating a contract for each activity seems unfeasible and also has security concerns related to it which will be covered later...
+	% Design decisions
+	The first implementation approach, is creating an Ethereum contract for each workflow, called the Multi-contract implementation (since multiple workflows will multiple contracts). 
+	The contract contains the data for exactly one workflow, i.e. the workflow's name, the list of activities in the workflow etc, as well as the data of all the activities in the workflow as well as their relations. 
+	Furthermore each contract will contain functions to support the functionality described in section \ref{sec:implementation-requirements}.
 
-	The first proposed solution is creating a contract for each workflow...
+	This approach strikes a middle ground between the modularity obtained from having each self contained data structure, i.e. the activities and/or the relations being published as separate contracts, and the efficiency obtained from having multiple entire workflows published in a single contract. 
+	The multi-contract implementation achieves a relatively high cohesion as all data relevant to a single workflow is contained in a single contract, while reducing the coupling between contracts, since no external function calls are necessary to achieve the required functionality.
+
+		%Relatively expensive in theory - include?
+
+	% Important implementation details
+		%Data structure
+		\subsection{Implementation details}
+		The data structures in the Multi-contract implementation are relatively simple.
+		Only a single struct is defined, used to represent an activity.
+		The entire contract is the workflow, so no explicit data structure is need for the workflow, instead the contract's fields contain the relevant data for the workflow.
+		The contract contains a \texttt{bytes32 name} field representing the workflow's name, an array of activities and the Ethereum address of the creating account.
+		\begin{snippet}[!ht]
+			\centering
+			\begin{lstlisting}[language=solidity, numbers=none]
+struct Activity {
+    // State
+    bytes32 name;
+    bool included;
+    bool executed;
+    bool pending;
+
+    // Outgoing relations:
+    uint32[] include;
+    uint32[] exclude;
+    uint32[] response;
+    
+    // Incoming relations:
+    uint32[] condition;
+    uint32[] milestone;
+
+    // Access rights:
+    address[] whitelist;
+}				
+			\end{lstlisting}
+		 	\caption[The \texttt{Activity} struct]
+		 	{The \texttt{Activity} struct}
+		 	\label{sni:activity-struct}
+		\end{snippet}
+		The \texttt{Activity} struct (see snippet \ref{sni:activity-struct}) is made up a \texttt{bytes32} name, three booleans representing the activity's attributes, a list for each relation type and a list for containing the Ethereum addresses that are allowed to execute the activity.
+
+		%Construction
+		The entire workflow is initialized on contract construction. 
+		Since the Solidity language currently (v. 0.4.10) does not support neither structs nor nested arrays as parameters in contract construction, the workflow construction is a bit complicated. 
+
+				\begin{snippet}[!ht]
+			\centering
+			\begin{lstlisting}[language=solidity, numbers=none]
+// We expect the 'relations' array is formed such that the first index is the FROM activity and the next index is the TO activity. Rinse and repeat.
+for(i = 0; i < relations.length; i=i+2){
+    if(relationType[i/2] == RelationType.Include)        	activities[relations[i]].include.push(relations[i+1]);
+    else if(relationType[i/2] == RelationType.Exclude)   	activities[relations[i]].exclude.push(relations[i+1]);
+    else if(relationType[i/2] == RelationType.Response)  	activities[relations[i]].response.push(relations[i+1]);
+    else if(relationType[i/2] == RelationType.Condition) 	activities[relations[i+1]].condition.push(relations[i]);
+    else if(relationType[i/2] == RelationType.Milestone) 	activities[relations[i+1]].milestone.push(relations[i]);
+    else throw;
+}			
+			\end{lstlisting}
+		 	\caption[Mapping relations to activities in the multi-contract construction]
+		 	{Mapping relations to activities in the multi-contract construction}
+		 	\label{sni:relation-mapping}
+		\end{snippet}
+
+		For instance, every relation in the workflow is represented in a single \texttt{uint32} list in the constructor, called \texttt{relations}. 
+		To map these to activities (see snippet \ref{sni:relation-mapping}), the structure of the relations-array have to uphold the invariant that, for an even \texttt{i}, \texttt{relations[i]} is the id of the activity the relation is coming from, and \texttt{relations[i+1]} is the id of the activity the relation is going to.
+
+		Excluding contract construction, the rest of the functions are reasonably straight forward.
+		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
+
+
+
+	% How it runs missing
 
 	\section{Mono-contract implementation}
 
@@ -408,6 +494,7 @@
 	\section{Multi-contract}
 
 		\subsection{Code}
+		\label{app:multi-contract-code}
 
 			\lstinputlisting[language=solidity]{../contracts/workflow.sol}
 
