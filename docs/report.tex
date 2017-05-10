@@ -325,10 +325,22 @@
 	\section{Further features}
 
 		\subsection{External relations}
+		It would be feasible to extend either implementation to include external relation. 
+		External relations can both be inter-workflow relations roughly as described in \cite{distributed-workflows} or relations from activities in contracts which automatically execute activities based on certain criteria. Examples of the second type of external relations could be:
+		\begin{enumerate}
+			\item An condition relation from an activity $A_{ex}$ in a contract, which executes the activity at certain time, to activity $B$. This would disallow execution of $B$ until after a certain time.
+			\item A milestone relation from an activity $A_{ex}$ in a contract, which sets $A_{ex}$ to pending when the price of some commodity is above or below a certain value, to activity $B$.
+			This will only allow execution of $B$, when the price of the commodity is in a certain range.
+		\end{enumerate}
+
+		In practice external relations would be implemented by having an interface that external contracts would conform to, so other contracts could get the states of the activities stored there. 
+		
+		Implementing include, exclude and response relations would also be possible and would require an interface that all contracts would conform to. 
+		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive. 
+		An example of this is an exclude relation from an activity $A_{ex}$ in an external workflow to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
+		Executing $A_{ex}$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
 		\subsection{Workflow changes}
-
-		\subsection{External contract conditions}
 
 	\section{Vulnerabilities}
 
@@ -369,6 +381,11 @@
 		\url{https://bitcoin.org/bitcoin.pdf},
 		Accessed 2017-05-09.
 
+		\bibitem{distributed-workflows}
+		Hildebrandt, T., Mukkamala, R., and  Slaats, T.
+		\textit{Safe Distribution of Declarative Processes}.
+		\url{https://pure.itu.dk/ws/files/34548793/paper_5.pdf},
+		Accessed 2017-05-10.
 
 	\end{thebibliography}
 
