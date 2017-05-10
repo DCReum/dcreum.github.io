@@ -125,7 +125,7 @@
 	These five are the \emph{condition}, \emph{response}, \emph{include}, \emph{exclude} and \emph{milestone} relations.
 
 	\subsubsection{Condition relation}
-	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true.
+	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true or A is excluded.
 	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
@@ -236,27 +236,27 @@
 		
 
 	\section{Implementation requirements}
-
-	In order to ensure that the implementations can be properly compared, they will support, and initially be limited to, the following functionality: 
-	
-	\begin{description}
-		\item[Workflow creation] The implementation must support the creation of a workflow. The creation of this workflow should be performed with a single method call and must be atomic, meaning that no workflow can be partially created. This also means that no workflow can be modified past its creation.
-		\item[Attempt activity execution] Any activity must be attempted to be executed at any time and be executed only when the state of the workflow allows it. The execution must also influence any other activity as prescribed by any relations it has.
-		\item[Contract suicide] Any created contract must be allowed to self-destruct, when called by the creating user.
-		\item[Data retrieval] The data stored must be accessible by any user.
-	\end{description}
-
-	The data structure of the implementation will be as follows:
+	The data structure of the two implementation will be as follows:
 
 	\begin{description}
-		\item[Workflow] The workflow must contain a name, a list of activities and a list of people who can modify the workflow.
-		\item[Activity] Each activity must contain a name, a list the relations related to it and a list of users who are allowed to execute it.
-		\item[Relations] The 5 relations described in Section \ref{sec:dcr-graphs} must be supported. They should be implemented in two categories:
+		\item[Workflow] The workflow must contain a name, a list of activities and a list of access rights.
+		\item[Activity] Each activity must contain a name, a list of the relations related to it and a list of users who are allowed to execute it.
+		\item[Relations] The five relations described in Section \ref{sec:dcr-graphs} must be supported. They should be implemented in two categories:
 			\begin{enumerate}
-				\item Incoming: The relations in this category are: \emph{milestone} and \emph{condition}. These relations specify which activities this activity's execution might depend on and that those activities should be checked when an execution is attempted on this activity.
-				\item Outgoing: The relations in this category are: \emph{response}, \emph{exclude} and \emph{include}. These relations specify which activities are affected by an execution on this activity.
+				\item Incoming: The relations in this category are the \emph{milestone} and \emph{condition}. These relations specify which other activities have \emph{milestone} or \emph{condition} relations to the activity containing the relations. Those activities' attributes must be checked to ensure the activity containing the relation can be executed.
+				\item Outgoing: The relations in this category are the \emph{response}, \emph{exclude} and \emph{include} relation. These relations specify which activities' attributes must be updated after an execution on the activity containing the relation. 
 			\end{enumerate}
 		\item[Access rights] Should be indicated by the public key of a given user.
+	\end{description}
+
+	In order to ensure that the two implementations can be properly compared, they will support, and initially be limited to, the following functionality: 
+	
+	\begin{description}
+		\item[Workflow creation] The implementations must support the creation of a workflow. Workflow creation should be performed with a single method call and must be atomic, meaning that no workflow can be partially created. This also means that no workflow can be modified past its creation.
+		\item[Execution attempts] It must be possible to attempt to execute any activity at any time.
+		\item[Activity execution] If an activity is executable following DCR logic, it must be executed if a user with the necessary rights requests an execution of it. The execution must also update the attributes of any other activities as prescribed by the outgoing relations it has.
+		\item[Contract suicide] Any created contract must be allowed to self-destruct, when called by the creating user.
+		\item[Data retrieval] The data stored must be accessible by any authorized user.
 	\end{description}
 
 	\section{Multi-contract implementation}
@@ -267,10 +267,8 @@
 
 	\section{Mono-contract implementation}
 
-	The second proposed solution is creating a single contract which controls all workflows...
-
 	\section{Comparison}
-	In order to compare the solutions to each other, a simple workflow has been created modelling each of the five relations...
+	In order to compare the solutions to each other, a simple workflow has been created modeling each of the five relations...
 
 	\begin{description}
 		\item[Contract creation]
