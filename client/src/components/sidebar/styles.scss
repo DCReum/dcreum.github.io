@@ -1,0 +1,17 @@
+#sidebar {
+    background: #454545;
+    padding: 20px;
+    height: 100%;
+
+    .menu-label {
+        color: #fff;
+    }
+
+    .menu-list * {
+        color: #efefef;
+    }
+
+    .menu-list *:hover {
+        color: #454545;
+    }
+}
