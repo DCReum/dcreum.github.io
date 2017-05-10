@@ -235,6 +235,12 @@
 		This specialization undermines the decentralized aspect of the blockchain and in order to eliminate it, the proof-of-work in Ethereum is bound by memory, because checking the hash involves creating a large directed graph and thereafter checking the values of a number of leaf-nodes as specified by an interpretation of the nonce. 
 		The creators of Ethereum estimate that any significant progress in the performance of memory would be relatively cheap and useful in many more situations than just in the mining of Ethereum blocks, as opposed to the hardware used for mining in Bitcoin.
 
+		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves. 
+		This is very similar to how Ethereum miners are rewarded, however they are additionally rewarded for including blocks that are not included in the longest chain.
+		These are called uncles or ummers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
+		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. 
+		Both the miners of the uncle and the miner who includes the uncle is rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible.
+
 		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-defined programs, called contracts, which all users can interact with, given that they can pay for the execution of said program. 
 		When a transaction is included in a block, part of the verification of that block is running the code specified by the transaction and making sure that the state of the contract(s) affected by the transaction is mutated accordingly.
 
