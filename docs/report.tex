@@ -237,7 +237,7 @@
 
 		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves. 
 		This is very similar to how Ethereum miners are rewarded, however they are additionally rewarded for including blocks that are not included in the longest chain.
-		These are called uncles or ummers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
+		These are called uncles or ommers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
 		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. 
 		Both the miners of the uncle and the miner who includes the uncle is rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible.
 
@@ -249,6 +249,21 @@
 
 		\subsection{Ethereum Virtual Machine}
 		
+		Due to the unique environment in which the EVM is used, there are equally unique constraints in the EVM:
+		\begin{description}
+			\item [Max stack size and limited stack access] The stack is limited to 1024 elements and COPY and SWAP operations can only access the top 16 elements of the stack. This infers some limitations on the number of parameters which can be given to a function.
+			\item [No libraries] External functions are limited to what other contracts offer.  
+			\item [No types] The EVM only operates in words of 32-byte Big Endian integers, meaning no floating point operations exist.
+			\item [No true randoms] As part of block verification is ensuring that the state of a contract corresponds to the result of the functions performed on it, code needs to be deterministic and there are therefore no true random numbers.
+			\item [Contract data access] All contracts are sandboxed inside their own environment, meaning that they cannot access the data of other contracts, except by calling their functions.
+		\end{description}
+
+		\subsubsection{Programming languages}
+
+		There is a large number of options for programming languages which can compile to EVM, but due to Ethereum being a relatively new invention and that it is subject to frequent low-level changes, most languages which can be compiled to EVM stack code are languages specifically designed for Ethereum.
+		These languages include Solidity, Viper, Serpent, LLL and Mutan and they are all very basic at the moment, but are all being developed on, except for Mutan.
+
+		We have chosen to implement our solutions in Solidity as it seems most mature of the listed options, at the time of writing this.
 
 	\section{Implementation requirements}
 	The data structure of the two implementation will be as follows:
