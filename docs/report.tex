@@ -69,26 +69,26 @@
 	\pagebreak
 
 	\section{Introduction}
-	In this article we will continue to build upon our previous research with declarative process models on block chains. 
-	In our previous research we have shown how a block chain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins block chain to achieve consensus.
+	In this article we will continue to build upon our previous research with declarative process models on blockchain. 
+	In our previous research we have shown how a blockchain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins blockchain to achieve consensus.
 
 	The proof of work was...... 
-	We found Bitcoins block chain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
-	But the underlying technology, the block chain, has been used in many other applications and platforms. 
+	We found Bitcoins blockchain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
+	But the underlying technology, the blockchain, has been used in many other applications and platforms. 
 	We will implement a WfMS using a Declarative Condition Response (DCR) engine on one of these platforms, Ethereum.
 
 	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
 
 	\subsection{Previous work}
-	Our previous work with block chains was done for our bachelor thesis \cite{bachelor}. 
-	The main idea we will carry on from our bachelor thesis is that a block chain can be used to create a consensus protocol. 
-	We will therefore not go into great detail of how we can achieve consensus with a block chain. 
-	The following section will provide the information we deem necessary to understand how we can achieve consensus with a block chain, but no literature to support this. 
+	Our previous work with blockchains was done for our bachelor thesis \cite{bachelor}. 
+	The main idea we will carry on from our bachelor thesis is that a blockchain can be used to create a consensus protocol. 
+	We will therefore not go into great detail of how we can achieve consensus with a blockchain. 
+	The following section will provide the information we deem necessary to understand how we can achieve consensus with a blockchain, but no literature to support this. 
 	Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
-	\subsubsection{Achieving consensus with block chains}
+	\subsubsection{Achieving consensus with blockchains}
 
 	\subsubsection{Motivation to use Ethereum}
-	The previous DCR engine we built utilized Bitcoins block chain to validate workflow creation and execution attempts by storing the hash of these on the block chain.
+	The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
 	The actual verification of the legality of executions with respect to DCR logic and execution rights was done on a DCR engine running locally on a users machine.
 	Thus our application relied heavily on the majority of users involved in a workflow were actually using our DCR engine to verify the legality of executions. 
 
@@ -97,8 +97,8 @@
 	
 	If a user managed to remove all local traces of a workflow, it could be difficult to claim that the traces of executions belonged to a certain workflow and therefore hard to prove that a user actually did execute some specific activity. Furthermore reconstruction of a lost workflow would be nigh impossible without access to another copy of the workflow.
 
-	Ethereums block chain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the block chain \textbf{2)} if code on the block chain has been run \textbf{3)} if the code was run successfully or not.
-	Any user participating in a workflow using a DCR engine running on Ethereums block chain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins block chain verified workflow creation and execution attempts.
+	Ethereums blockchain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the blockchain \textbf{2)} if code on the blockchain has been run \textbf{3)} if the code was run successfully or not.
+	Any user participating in a workflow using a DCR engine running on Ethereums blockchain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins blockchain verified workflow creation and execution attempts.
 
 	\section{Dynamic Condition Response graphs}
 	\label{sec:dcr-graphs}
