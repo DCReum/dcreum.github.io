@@ -231,6 +231,11 @@
 		If on the other hand miners set their minimum price for inclusion to high, no one is willing to use Ethereum. 
 		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
 
+		If a user send to little gas to complete the computations he requested, the requested computations are rolled back as if they never happened. 
+		The used gas is not returned to the user. 
+		This is a security feature of Ethereum that prevents denial of service attacks by requesting many computationally heavy transactions without having the means to pay for them. 
+		This feature is also what makes Ethereum "quasi-Turing-complete" and not Turing complete.
+
 		\subsection{Blockchain}
 		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
 		Each block contains the changes to the database since the last block, as well as a reference to the block preceeding it, thereby forming a chain.
