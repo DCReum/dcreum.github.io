@@ -234,35 +234,40 @@
 		If on the other hand miners set their minimum price for inclusion to high, no one is willing to use Ethereum. 
 		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
 
+		If a user send to little gas to complete the computations he requested, the requested computations are rolled back as if they never happened. 
+		The used gas is not returned to the user. 
+		This is a security feature of Ethereum that prevents denial of service attacks by requesting many computationally heavy transactions without having the means to pay for them. 
+		This feature is also what makes Ethereum "quasi-Turing-complete" and not Turing complete.
+
 		\subsection{Blockchain}
 		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
-		Each block contains the changes to the database since the last block, as well as a reference to the block preceeding it, thereby forming a chain.
+		Each block contains the changes to the database since the last block, as well as a reference to the block preceding it, thereby forming a chain.
 		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding a nonce, a proof-of-work, to include in the block such that the hash of the block information is below a variable threshold, called the difficulty\cite{bitcoin-white-paper}. 
 		The process of finding a correct nonce is commonly called mining.
 		The difficulty is automatically adjusted according to the the frequency of mined blocks in relation to the desired frequency.
-		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is solved when one of the two chains has a higher accumulated difficulty than the other(s).
+		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is normally solved when one of the two chains has is longer than the other(s).
 
-		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting features, which differentiates it from most other blockchain technologies.
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contain some interesting features, which makes it different it from most other blockchain technologies.
 		
-		Finding a proof-of-work in Bitcoin consists of incrementing the nonce and hashing the block header to check if fulfills the difficulty requirements. This is purely a question of computational power and has spawned a market for hardware specifically adapted to hashing, giving it an advantage compared to the standard processing units of a generic user. 
-		As this hardware is fairly expensive, this favors the so called mining pools, which are large numbers of machines combining their computational power in order to find a proof-of-work and thereafter sharing the money. 
+		Finding a proof-of-work in Bitcoin consists of incrementing the nonce and hashing the block header to check if it fulfills the difficulty requirements. 
+		This is purely a question of computational power and has spawned a market for hardware specifically adapted to hashing, giving it an advantage compared to the standard processing units of a generic user. 
+		As this hardware is fairly expensive, this favors the so called mining pools, which are large numbers of machines combining their computational power in order to find a proof-of-work and thereafter sharing the reward for mining a block. 
 		This specialization undermines the decentralized aspect of the blockchain and in order to eliminate it, the proof-of-work in Ethereum is bound by memory, because checking the hash involves creating a large directed graph and thereafter checking the values of a number of leaf-nodes as specified by an interpretation of the nonce. 
 		The creators of Ethereum estimate that any significant progress in the performance of memory would be relatively cheap and useful in many more situations than just in the mining of Ethereum blocks, as opposed to the hardware used for mining in Bitcoin.
 
-		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves. 
+		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves.
 		This is very similar to how Ethereum miners are rewarded, however they are additionally rewarded for including blocks that are not included in the longest chain.
 		These are called uncles or ommers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
-		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. 
-		Both the miners of the uncle and the miner who includes the uncle is rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible.
+		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. Contrary to Bitcoins blockchain, where forks are resolved by choosing the longest chain, forks on Ethereums blockchain are solved by choosing the chain with the highest accumulated difficulty.
+		Both the miners of the uncle and the miner who includes the uncle are rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible but still prioritizing mining new blocks.
 
-		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-defined programs, called contracts, which all users can interact with, given that they can pay for the execution of said program. 
+		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-created code encapsulated in so called contracts. All users can interact with code on the blockchain, given that they can pay for the execution of said code. 
 		When a transaction is included in a block, part of the verification of that block is running the code specified by the transaction and making sure that the state of the contract(s) affected by the transaction is mutated accordingly.
 
 		Since this means that anyone attempting to verify a block needs to run arbitrary code, the allowed operations need to be very carefully formulated and vetted. 
-		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM).  
+		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM). 
 
-		\subsection{Ethereum Virtual Machine}
-		
+		\subsection{Ethereum Virtual Machine}	
 		Due to the unique environment in which the EVM is used, there are equally unique constraints in the EVM:
 		\begin{description}
 			\item [Max stack size and limited stack access] The stack is limited to 1024 elements and COPY and SWAP operations can only access the top 16 elements of the stack. This infers some limitations on the number of parameters which can be given to a function.
@@ -273,11 +278,11 @@
 		\end{description}
 
 		\subsubsection{Programming languages}
+		There is a large number of options for programming languages which can compile to EVM bytecode, but due to Ethereum being a relatively new invention it is still subject to frequent low-level changes. 
+		Most languages which can be compiled to EVM stack code are therefore languages specifically designed for Ethereum.
+		Some of the languages implemented for Ethereum are Solidity, Viper, Serpent, LLL and Mutan which all are very basic at the moment, but the languages are all in active development, except for Mutan.
 
-		There is a large number of options for programming languages which can compile to EVM, but due to Ethereum being a relatively new invention and that it is subject to frequent low-level changes, most languages which can be compiled to EVM stack code are languages specifically designed for Ethereum.
-		These languages include Solidity, Viper, Serpent, LLL and Mutan and they are all very basic at the moment, but are all being developed on, except for Mutan.
-
-		We have chosen to implement our solutions in Solidity as it seems most mature of the listed options, at the time of writing this.
+		We have chosen to implement our solutions in Solidity as it seems most mature of the listed options, at the time of writing.
 
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
