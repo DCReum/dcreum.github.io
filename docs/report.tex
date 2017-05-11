@@ -44,20 +44,18 @@
 	basicstyle=\linespread{1}\ttfamily\footnotesize
 }
 
-\title{Consensus in declarative process models using distributed smart-contracts}
-\author{Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen }
-\date{}
-
 \begin{document}
 
 \normalem
 	\begin{titlepage}
-		\maketitle		
+		\noindent{\huge Consensus in declarative process models using distributed smart-contracts} \\ \\
+		Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen	\\ \\
 		\hspace{-18pt}
 		\textit{May 15, 2017}
 		\vspace{\fill}
 		\section*{Abstract}
-		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine will be implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine.
+		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine is implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine. 
+		Two structurally different solutions are implemented and compared based on their cost and a number of potential further features are described and their viability evaluated within the Ethereum platform.
 		\thispagestyle{empty}
 	\end{titlepage}
 	\clearpage
@@ -65,17 +63,20 @@
 	\pagenumbering{arabic}
 	\setcounter{page}{1}
 
+	\setcounter{tocdepth}{2}
 	\tableofcontents
 	\pagebreak
 
 	\section{Introduction}
 	In this article we will continue to build upon our previous research with declarative process models on blockchain. 
 	In our previous research we have shown how a blockchain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins blockchain to achieve consensus.
-
-	The proof of work was...... 
+ 
 	We found Bitcoins blockchain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
 	But the underlying technology, the blockchain, has been used in many other applications and platforms. 
-	We will implement a WfMS using a Declarative Condition Response (DCR) engine on one of these platforms, Ethereum.
+	We will implement a WfMS using a Dynamic Condition Response (DCR) engine on one of these platforms, namely Ethereum.
+	Since everything costs money in Ethereum, optimization is key in order for a solution to be viable.
+	Ethereum is also a very new technology and is constantly subject to change, making it fairly undocumented aside from the yellow- and whitepaper.
+	We will therefore be experimenting with several different system structures and comparing their costs in order to find the best solution.
 
 	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
 
@@ -218,48 +219,54 @@
 	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
 	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
 
-		\subsection{Currency}
-		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
-		Additional rewards given for blocks which include uncles (see the following section). 
-		Lastly a miner also gets a reward based on how much computation power is needed to run the code included in a block. 
-		The last reward is essentially equivalent to the transaction fees in Bitcoin.
-
-		To store data or run code on the Ethereum platform one has to spend an amount of gas. 
-		All computations have a set gas cost and can be seen in appendix \ref{app:gas-prices}, and Ethereum provides tools to calculate how much gas a proposed execution some code would cost.
-		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
-		The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user has set the price he is willing to pay per gas to low, no miner will to include the users code execution in his block.
-		If on the other hand miners set their minimum price for inclusion to high, no one is willing to use Ethereum. 
-		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
-
 		\subsection{Blockchain}
+		\label{sec:blockchain}
 		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
-		Each block contains the changes to the database since the last block, as well as a reference to the block preceeding it, thereby forming a chain.
+		Each block contains the changes to the database since the last block, as well as a reference to the block preceding it, thereby forming a chain.
 		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding a nonce, a proof-of-work, to include in the block such that the hash of the block information is below a variable threshold, called the difficulty\cite{bitcoin-white-paper}. 
 		The process of finding a correct nonce is commonly called mining.
 		The difficulty is automatically adjusted according to the the frequency of mined blocks in relation to the desired frequency.
-		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is solved when one of the two chains has a higher accumulated difficulty than the other(s).
+		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is normally solved when one of the two chains has is longer than the other(s).
 
-		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contains some interesting features, which differentiates it from most other blockchain technologies.
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contain some interesting features, which makes it different it from most other blockchain technologies.
 		
-		Finding a proof-of-work in Bitcoin consists of incrementing the nonce and hashing the block header to check if fulfills the difficulty requirements. This is purely a question of computational power and has spawned a market for hardware specifically adapted to hashing, giving it an advantage compared to the standard processing units of a generic user. 
-		As this hardware is fairly expensive, this favors the so called mining pools, which are large numbers of machines combining their computational power in order to find a proof-of-work and thereafter sharing the money. 
+		Finding a proof-of-work in Bitcoin consists of incrementing the nonce and hashing the block header to check if it fulfills the difficulty requirements. 
+		This is purely a question of computational power and has spawned a market for hardware specifically adapted to hashing, giving it an advantage compared to the standard processing units of a generic user. 
+		As this hardware is fairly expensive, this favors the so called mining pools, which are large numbers of machines combining their computational power in order to find a proof-of-work and thereafter sharing the reward for mining a block. 
 		This specialization undermines the decentralized aspect of the blockchain and in order to eliminate it, the proof-of-work in Ethereum is bound by memory, because checking the hash involves creating a large directed graph and thereafter checking the values of a number of leaf-nodes as specified by an interpretation of the nonce. 
 		The creators of Ethereum estimate that any significant progress in the performance of memory would be relatively cheap and useful in many more situations than just in the mining of Ethereum blocks, as opposed to the hardware used for mining in Bitcoin.
 
-		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves. 
+		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves.
 		This is very similar to how Ethereum miners are rewarded, however they are additionally rewarded for including blocks that are not included in the longest chain.
 		These are called uncles or ommers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
-		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. 
-		Both the miners of the uncle and the miner who includes the uncle is rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible.
+		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. Contrary to Bitcoins blockchain, where forks are resolved by choosing the longest chain, forks on Ethereums blockchain are solved by choosing the chain with the highest accumulated difficulty.
+		Both the miners of the uncle and the miner who includes the uncle are rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible but still prioritizing mining new blocks.
 
-		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-defined programs, called contracts, which all users can interact with, given that they can pay for the execution of said program. 
+		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-created code encapsulated in so called contracts. All users can interact with code on the blockchain, given that they can pay for the execution of said code. 
 		When a transaction is included in a block, part of the verification of that block is running the code specified by the transaction and making sure that the state of the contract(s) affected by the transaction is mutated accordingly.
 
 		Since this means that anyone attempting to verify a block needs to run arbitrary code, the allowed operations need to be very carefully formulated and vetted. 
-		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM).  
+		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM). 
 
-		\subsection{Ethereum Virtual Machine}
-		
+		\subsection{Currency}
+		The distribution of Ether functions much like the distribution of bitcoins within the Bitcoin blockchain. 
+		Mining a block has a base reward of five Ether, if it is included in the main blockchain.
+		Ether is also earned in the creation of uncle blocks (See section \ref{sec:blockchain}).
+		Lastly a miner also gets a reward based on how much computation power is needed to run the code included in a block. 
+		The last reward is essentially equivalent to the transaction fees in Bitcoin.
+
+		To store data or run code on the Ethereum platform one has to spend gas. 
+		All computations have a set gas cost and can be seen in appendix \ref{app:gas-prices}, and Ethereum provides tools to estimate how much gas a proposed execution some code would cost.
+		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
+		The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user has set the price he is willing to pay per gas too low, no miner will include the users code execution in his block.
+		If on the other hand miners set their minimum price for inclusion too high, no one is willing to use Ethereum. 
+		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
+
+		If a user sends too little gas to complete the computations he requested, the requested computations are rolled back, but the user is still charged the spent gas.
+		This is a security feature of Ethereum which prevents denial of service attacks by requesting many computationally heavy transactions without having the means to pay for them. 
+		This feature is also what makes Ethereum quasi-Turing-complete rather than Turing-complete.
+
+		\subsection{Ethereum Virtual Machine}	
 		Due to the unique environment in which the EVM is used, there are equally unique constraints in the EVM:
 		\begin{description}
 			\item [Max stack size and limited stack access] The stack is limited to 1024 elements and COPY and SWAP operations can only access the top 16 elements of the stack. This infers some limitations on the number of parameters which can be given to a function.
@@ -270,11 +277,11 @@
 		\end{description}
 
 		\subsubsection{Programming languages}
+		There is a large number of options for programming languages which can compile to EVM bytecode, but due to Ethereum being a relatively new invention it is still subject to frequent low-level changes. 
+		Most languages which can be compiled to EVM stack code are therefore languages specifically designed for Ethereum.
+		Some of the languages implemented for Ethereum are Solidity, Viper, Serpent, LLL and Mutan which all are very basic at the moment, but the languages are all in active development, except for Mutan.
 
-		There is a large number of options for programming languages which can compile to EVM, but due to Ethereum being a relatively new invention and that it is subject to frequent low-level changes, most languages which can be compiled to EVM stack code are languages specifically designed for Ethereum.
-		These languages include Solidity, Viper, Serpent, LLL and Mutan and they are all very basic at the moment, but are all being developed on, except for Mutan.
-
-		We have chosen to implement our solutions in Solidity as it seems most mature of the listed options, at the time of writing this.
+		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
@@ -303,22 +310,25 @@
 
 	\section{Multi-contract implementation}
 	% Design decisions
-	The first implementation approach, is creating an Ethereum contract for each workflow, called the Multi-contract implementation (since multiple workflows will multiple contracts). 
-	The contract contains the data for exactly one workflow, i.e. the workflow's name, the list of activities in the workflow etc, as well as the data of all the activities in the workflow as well as their relations. 
-	Furthermore each contract will contain functions to support the functionality described in section \ref{sec:implementation-requirements}.
+	The first implementation approach is to deploy an Ethereum contract for each workflow. We will call this implementation the Multi-contract implementation.
+	Each deployed contract contains a workflows name, a list of the activities in the workflow and the address of the contract creator.
+	Furthermore each contract contains functions to support the functionality described in section \ref{sec:implementation-requirements}.
 
-	This approach strikes a middle ground between the modularity obtained from having each self contained data structure, i.e. the activities and/or the relations being published as separate contracts, and the efficiency obtained from having multiple entire workflows published in a single contract. 
-	The multi-contract implementation achieves a relatively high cohesion as all data relevant to a single workflow is contained in a single contract, while reducing the coupling between contracts, since no external function calls are necessary to achieve the required functionality.
+	This approach ensures that only data relevant to the workflow, represented by the contract, is stored on the contract. The Multi-contract implementation therefore achieves a relatively high level of cohesion.
+	Another approach could be to deploy each activity as its own contract.
+	However this approach would introduce a high level of coupling between contracts.
+	The Multi-contract implementation on the other hand achieves minimum coupling between contracts, since no inter-contract function calls are necessary to achieve the required functionality.
 
-		%Relatively expensive in theory - include?
+	%Relatively expensive in theory - include? - No (Thgn 11-05-17)
 
 	% Important implementation details
 		%Data structure
 		\subsection{Implementation details}
 		The data structures in the Multi-contract implementation are relatively simple.
-		Only a single struct is defined, used to represent an activity.
-		The entire contract is the workflow, so no explicit data structure is need for the workflow, instead the contract's fields contain the relevant data for the workflow.
-		The contract contains a \texttt{bytes32 name} field representing the workflow's name, an array of activities and the Ethereum address of the creating account.
+		Only a single struct is defined, which represents an activity.
+		The entire contract is the workflow, so no explicit data structure is need for the workflow. 
+		Instead the contract's fields contain the relevant data for the workflow.
+		The contract contains a \texttt{bytes32 name} field representing the workflows name, an array of activities and the Ethereum address of the creator of the workflow.
 		\begin{snippet}[!ht]
 			\centering
 			\begin{lstlisting}[language=solidity, numbers=none]
@@ -346,13 +356,19 @@ struct Activity {
 		 	{The \texttt{Activity} struct}
 		 	\label{sni:activity-struct}
 		\end{snippet}
-		The \texttt{Activity} struct (see snippet \ref{sni:activity-struct}) is made up a \texttt{bytes32} name, three booleans representing the activity's attributes, a list for each relation type and a list for containing the Ethereum addresses that are allowed to execute the activity.
+		The \texttt{Activity} struct shown in snippet \ref{sni:activity-struct} is made up of a \texttt{bytes32} name, three boolean values representing an activity's attributes, an array for each relation type and a list of Ethereum addresses that are authorized to execute the activity.
 
 		%Construction
-		The entire workflow is initialized on contract construction. 
-		Since the Solidity language currently (v. 0.4.10) does not support neither structs nor nested arrays as parameters in contract construction, the workflow construction is a bit complicated. 
+		The entire workflow is initialized when the contract is deployed.
+		Since the Solidity language currently does not support neither structs nor nested arrays as parameters in contract deployment, the workflow initialization is a bit complicated. 
 
-				\begin{snippet}[!ht]
+		For instance, every relation in the workflow is represented in a single \texttt{uint32} list in the constructor, called \texttt{relations}. 
+		To map the relations to activities (see snippet \ref{sni:relation-mapping}), the structure of the relations-array has to uphold the invariant that, for an even \texttt{i}, \texttt{relations[i]} is the id of the activity the relation is coming from, and \texttt{relations[i+1]} is the id of the activity the relation pointing to.
+
+		Excluding contract construction, the rest of the functions are reasonably simple.
+		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
+
+\begin{snippet}[!ht]
 			\centering
 			\begin{lstlisting}[language=solidity, numbers=none]
 // We expect the 'relations' array is formed such that the first index is the FROM activity and the next index is the TO activity. Rinse and repeat.
@@ -369,15 +385,6 @@ for(i = 0; i < relations.length; i=i+2){
 		 	{Mapping relations to activities in the multi-contract construction}
 		 	\label{sni:relation-mapping}
 		\end{snippet}
-
-		For instance, every relation in the workflow is represented in a single \texttt{uint32} list in the constructor, called \texttt{relations}. 
-		To map these to activities (see snippet \ref{sni:relation-mapping}), the structure of the relations-array have to uphold the invariant that, for an even \texttt{i}, \texttt{relations[i]} is the id of the activity the relation is coming from, and \texttt{relations[i+1]} is the id of the activity the relation is going to.
-
-		Excluding contract construction, the rest of the functions are reasonably straight forward.
-		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
-
-
-
 	% How it runs missing
 
 	\section{Mono-contract implementation}
@@ -420,30 +427,45 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Discussion}
 
 	\section{Further features}
+		As the optimized solution is a completely bare-bones implementation of the DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
+		These features would be fairly use-case dependent and since they would probably have an effect on the cost of running a workflow where those features are not even used, they should only be implemented in instances where they would actually be used.
+
+		\subsection{Workflow changes}
+		\label{sec:workflow-changes}
+
+		In a case where a companies definition of a workflow changes, but the history of the current workflow is still relevant in the context of the new, it could be beneficial to simply change the workflow according to the specifications of the new.
+		This poses some challenges in the way that the workflow might change its definition, subtly or drastically, as covered in \cite{hierarchical-declarative-modelling} with regards to refinement.
+		A verification of any given change to a workflow, as specified in the article, would be risky to implement in Ethereum, as it is a computationally very hard problem and a user would be hard pressed to pay for it.
+		Therefore a different method of verification would probably be more viable, for example by disallowing certain types of conditions.
+		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows. 
+
+			\subsubsection{Vulnerabilities}
 
 		\subsection{External relations}
-		It would be feasible to extend either implementation to include external relation. 
-		External relations can both be inter-workflow relations roughly as described in \cite{distributed-workflows} or relations from activities in contracts which automatically execute activities based on certain criteria. Examples of the second type of external relations could be:
-		\begin{enumerate}
-			\item An condition relation from an activity $A_{ex}$ in a contract, which executes the activity at certain time, to activity $B$. This would disallow execution of $B$ until after a certain time.
-			\item A milestone relation from an activity $A_{ex}$ in a contract, which sets $A_{ex}$ to pending when the price of some commodity is above or below a certain value, to activity $B$.
-			This will only allow execution of $B$, when the price of the commodity is in a certain range.
-		\end{enumerate}
+		\label{sec:external-relations}
+		In the proposed solutions, workflows are viewed as completely separate from each other. 
+		This means that if a connection between the two is desired, it would require the entire workflow to be duplicated per other workflow relevant to it.
+		An alternative to this, could be to create external relations between the workflows, as described in \cite{distributed-workflows}, given that the user creating the relations has some sort of ownership of both workflows.
 
-		In practice external relations would be implemented by having an interface that external contracts would conform to, so other contracts could get the states of the activities stored there. 
-		
-		Implementing include, exclude and response relations would also be possible and would require an interface that all contracts would conform to. 
-		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive. 
+		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
 		An example of this is an exclude relation from an activity $A_{ex}$ in an external workflow to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
 		Executing $A_{ex}$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
-		\subsection{Workflow changes}
+		An implementation of this in the mono-contract solution would be fairly simple, as well as cheap, as all the workflows are potentially stored in a single contract.
 
-	\section{Vulnerabilities}
+			\subsubsection{Vulnerabilities}
 
-		\subsection{External relations attack}
+		\subsection{External contract conditions}
 
-		\subsection{Workflow updating attack}
+		As the public methods of a contract on the Ethereum blockchain is accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
+		These dependencies could be to all sorts of sources, as long as they are trusted by the creator of the workflow. 
+		An example could be a contract showing the value of currencies or perhaps a contract producing synchronized random numbers.
+
+		In the case where each company has their own mono-contract, possibly due to their diverse needs for specific features, or the case where a multi-contract solution is used, this functionality would be closely tied to the functionality of external relations (See section \ref{sec:external-relations}).
+
+			\subsubsection{Vulnerabilities}
+
+		\subsection{Group authorization}
 
 	\section{Conclusion}
 
@@ -484,11 +506,19 @@ for(i = 0; i < relations.length; i=i+2){
 		\url{https://pure.itu.dk/ws/files/34548793/paper_5.pdf},
 		Accessed 2017-05-10.
 
+		\bibitem{hierarchical-declarative-modelling}
+		Debois, S., Hildebrandt, T., Slaats, T.
+		\textit{Hierarchical Declarative Modelling with Refinement and Sub-processes}.
+		\url{asd},
+		Accessed 2017-05-11
+
 	\end{thebibliography}
 
-	\appendix
-
 	\clearpage
+
+	\addcontentsline{toc}{part}{Appendices}	
+
+	\appendix
 
 	\section{Gas prices}
 		\label{app:gas-prices}
@@ -554,35 +584,76 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\includegraphics[scale=0.45]{figures/ExampleWorkflow.png}
 
-	\section{Multi-contract}
+	\section{Multi-contract code}
+	\label{app:multi-contract-code}
 
-		\subsection{Code}
-		\label{app:multi-contract-code}
+		\lstinputlisting[language=solidity]{../contracts/workflow.sol}
 
-			\lstinputlisting[language=solidity]{../contracts/workflow.sol}
+	\section{Mono-contract code}
 
-		\subsection{Costs}
+		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
 
-			\begin{tabular}{| l | l |}
-				\hline
-				Action & Cost (gas) \\ \hline
-				Contract creation & 0 \\
-				\hline
-			\end{tabular}
+	\section{Use cases}
 
-	\section{Mono-contract}
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Action 						& Multi-contract & Mono-contract \\ \hline
+			Contract creation 			& 0 & 0 \\\hline
+			Workflow creation 			& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Submit ticket	 			& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Propose solution 		 	& 0 & 0 \\\hline
+			Propose solution (dup)	 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Reject solution 		 	& 0 & 0 \\\hline
+			Reject solution (dup)	 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Propose solution 		 	& 0 & 0 \\\hline
+			Accept solution 		 	& 0 & 0 \\\hline
+			Reject solution (fails)	 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Close ticket 		 		& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Contract creation 			& 0 & 0 \\
+			\hline
+		\end{tabular}
 
-		\subsection{Code}
+	\section{Stress and edge tests}
+	\label{app:stress-and-edge-tests}
 
-			\lstinputlisting[language=solidity]{../contracts/monolith.sol}
-
-		\subsection{Costs}
-
-			\begin{tabular}{| l | l |}
-				\hline
-				Action & Cost (gas) \\ \hline
-				Contract creation & 0 \\
-				\hline
-			\end{tabular}
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Test & Multi-contract & Mono-contract \\ \hline
+			C1.1 & 0 & 0 \\ \hline
+			M1.1 & 0 & 0 \\ \hline
+			C2.1 & 0 & 0 \\ \hline
+			M2.1 & 0 & 0 \\ \hline
+			I1.1 & 0 & 0 \\ \hline
+			E1.1 & 0 & 0 \\ \hline
+			R1.1 & 0 & 0 \\ \hline
+			I2.1 & 0 & 0 \\ \hline
+			E2.1 & 0 & 0 \\ \hline
+			R2.1 & 0 & 0 \\ \hline
+			C-stress1 & 0 & 0 \\ \hline
+			C-stress2 & 0 & 0 \\ \hline
+			M-stress1 & 0 & 0 \\ \hline
+			M-stress2 & 0 & 0 \\ \hline
+			P-stress1 & 0 & 0 \\ \hline
+			I-stress1 & 0 & 0 \\ \hline
+			\hline
+		\end{tabular}
 
 \end{document}
