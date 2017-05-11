@@ -65,17 +65,20 @@
 	\pagenumbering{arabic}
 	\setcounter{page}{1}
 
+	\setcounter{tocdepth}{2}
 	\tableofcontents
 	\pagebreak
 
 	\section{Introduction}
 	In this article we will continue to build upon our previous research with declarative process models on blockchain. 
 	In our previous research we have shown how a blockchain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins blockchain to achieve consensus.
-
-	The proof of work was...... 
+ 
 	We found Bitcoins blockchain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
 	But the underlying technology, the blockchain, has been used in many other applications and platforms. 
-	We will implement a WfMS using a Declarative Condition Response (DCR) engine on one of these platforms, Ethereum.
+	We will implement a WfMS using a Dynamic Condition Response (DCR) engine on one of these platforms, namely Ethereum.
+	Since everything costs money in Ethereum, optimization is key in order for a solution to be viable.
+	Ethereum is also a very new technology and is constantly subject to change, making it fairly undocumented aside from the yellow- and whitepaper.
+	We will therefore be experimenting with several different system structures and comparing their costs in order to find the best solution.
 
 	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
 
@@ -486,9 +489,11 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\end{thebibliography}
 
-	\appendix
-
 	\clearpage
+
+	\addcontentsline{toc}{part}{Appendices}	
+
+	\appendix
 
 	\section{Gas prices}
 		\label{app:gas-prices}
