@@ -423,10 +423,12 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Discussion}
 
 	\section{Further features}
+		As the optimized solution is a completely bare-bones implementation of the DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
 
 		\subsection{External relations}
 		It would be feasible to extend either implementation to include external relation. 
-		External relations can both be inter-workflow relations roughly as described in \cite{distributed-workflows} or relations from activities in contracts which automatically execute activities based on certain criteria. Examples of the second type of external relations could be:
+		External relations can both be inter-workflow relations roughly as described in \cite{distributed-workflows} or relations from activities in contracts which automatically execute activities based on certain criteria. 
+		Examples of the second type of external relations could be:
 		\begin{enumerate}
 			\item An condition relation from an activity $A_{ex}$ in a contract, which executes the activity at certain time, to activity $B$. This would disallow execution of $B$ until after a certain time.
 			\item A milestone relation from an activity $A_{ex}$ in a contract, which sets $A_{ex}$ to pending when the price of some commodity is above or below a certain value, to activity $B$.
@@ -441,6 +443,9 @@ for(i = 0; i < relations.length; i=i+2){
 		Executing $A_{ex}$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
 		\subsection{Workflow changes}
+
+		Spawn relations?
+
 
 	\section{Vulnerabilities}
 
