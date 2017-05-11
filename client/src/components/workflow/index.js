@@ -3,8 +3,13 @@ import m from "mithril";
 import Stream from "mithril/stream";
 import WorkflowTab from "components/workflow-tab";
 import EventsTab from "components/events-tab";
+import WorkflowManager from "workflow-manager";
 
 class Workflow {
+  constructor() {
+    this.workflowManager = new WorkflowManager(m.route.param("workflowId"));
+  }
+
   view() {
     const panes = {
       workflow: WorkflowTab,
@@ -24,7 +29,7 @@ class Workflow {
             m("a.nav-item.is-tab" + (tab === "settings" ? ".is-active" : ""), { onclick: () => setTab("settings") }, "Settings")
           ])
       ),
-      m("div.workspace", m(panes[tab]))
+      m("div.workspace", m(panes[tab], { workflowManager: this.workflowManager }))
     ]);
   }
 }

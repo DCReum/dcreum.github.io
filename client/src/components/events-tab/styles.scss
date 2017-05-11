@@ -2,6 +2,7 @@
   thead, thead tr:hover {
     background-color: #454545;
   }
+
   thead {
     td {
       color: white;
@@ -10,14 +11,19 @@
 }
 
 .contract-event {
+  border-bottom: 1px solid #dbdbdb;
+
   td {
     vertical-align: middle;
   }
+  
   .dropdown {
     background-color: #fcfcfc;
+
     h1 {
       font-weight: bold;
     }
+
     .extra-info {
       color: #b7b7b7;
     }

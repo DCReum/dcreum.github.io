@@ -6,11 +6,7 @@ import { ExecutionEvent, WorkflowCreationEvent } from "components/events-tab/con
 import WorkflowManager from "workflow-manager";
 
 class Events {
-  constructor() {
-    this.manager = new WorkflowManager(m.route.param("workflowId"));
-  }
-
-  view() {
+  view(vnode) {
     return m("section.section.events-section", m("table.table", [
       m("thead", [
         m("tr", [
@@ -20,7 +16,7 @@ class Events {
           m("td")
         ])
       ]),
-      this.manager.events().map(event => {
+      vnode.attrs.workflowManager.events().map(event => {
         let component;
         switch (event.type) {
           case "execution":

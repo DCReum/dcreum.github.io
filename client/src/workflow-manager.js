@@ -67,12 +67,12 @@ class Activity {
 }
 
 class Relation {
-  constructor(other, type) {
-    this.other = other;
+  constructor(from, to, type) {
+    this.from = from;
+    this.to = to;
     this.type = type;
   }
 }
-
 
 // Converts a web3-style callback function to an ES6 promise
 function promiseCall(fn) {
@@ -89,10 +89,14 @@ class WorkflowManager {
   constructor(workflowId) {
     this.workflowId = workflowId;
 
-    this.name = Stream();
+    this.blockNumber = Stream();
+    this.transactionHash = Stream();
+    this.creatorAddress = Stream();
+    this.workflowName = Stream();
     this.events = Stream([]);
     this.activities = Stream([]);
-    this.relations = Stream([]);
+    this.relations = this.activities.map(activities =>
+      activities.map(activity => activity.relations).reduce((acc, relations) => acc.concat(relations), []));
 
     // Bind instance functions
     this.createEvent = this.createEvent.bind(this);
@@ -118,27 +122,41 @@ class WorkflowManager {
     this.execute = promiseCall(contract.execute).bind(null, this.workflowId);
     
     // Fetch  workflow name, activities and relations
-    this.getWorkflowName().then(this.workflowName);
+    this.block = contract.LogWorkflowCreation({
+      workflowId: workflowId
+    }, {
+      fromBlock: 0
+    }, (error, event) => {
+      this.creatorAddress(event.args.creator);
+      this.blockNumber(event.blockNumber);
+      this.transactionHash(event.transactionHash);
+    });
+
+    this.getWorkflowName()
+      .then(web3.toAscii)
+      .then(String.trim)
+      .then(this.workflowName);
+
     this.getActivityCount()
       .then(count => {
         let promises = [];
         for (let activityId = 0; activityId < count; activityId++) {
           this.activities()[activityId] = { relations: [] };
-          promises.push(this.getActivityName(activityId).then(name => this.activities()[activityId].name = name));
+          promises.push(this.getActivityName(activityId).then(web3.toAscii).then(name => this.activities()[activityId].name = name));
           promises.push(this.isIncluded(activityId).then(isIncluded => this.activities()[activityId].isIncluded = isIncluded));
           promises.push(this.isExecuted(activityId).then(isExecuted => this.activities()[activityId].isExecuted = isExecuted));
           promises.push(this.isPending(activityId).then(isPending => this.activities()[activityId].isPending = isPending));
           promises.push(this.canExecute(activityId).then(canExecute => this.activities()[activityId].canExecute = canExecute));
 
-          promises.push(this.getIncludes(activityId).then(includes => includes.forEach(to => this.activities()[activityId].relations.push(new Relation(to.toNumber(), "include")))));
-          promises.push(this.getExcludes(activityId).then(excludes => excludes.forEach(to => this.activities()[activityId].relations.push(new Relation(to.toNumber(), "exclude")))));
-          promises.push(this.getResponses(activityId).then(responses => responses.forEach(to => this.activities()[activityId].relations.push(new Relation(to.toNumber(), "response")))));
-          promises.push(this.getConditions(activityId).then(conditions => conditions.forEach(from => this.activities()[activityId].relations.push(new Relation(from.toNumber(), "condition")))));
-          promises.push(this.getMilestones(activityId).then(milestones => milestones.forEach(from => this.activities()[activityId].relations.push(new Relation(from.toNumber(), "milestone")))));
+          promises.push(this.getIncludes(activityId).then(includes => includes.forEach(to => this.activities()[activityId].relations.push(new Relation(activityId, to.toNumber(), "include")))));
+          promises.push(this.getExcludes(activityId).then(excludes => excludes.forEach(to => this.activities()[activityId].relations.push(new Relation(activityId, to.toNumber(), "exclude")))));
+          promises.push(this.getResponses(activityId).then(responses => responses.forEach(to => this.activities()[activityId].relations.push(new Relation(activityId, to.toNumber(), "response")))));
+          promises.push(this.getConditions(activityId).then(conditions => conditions.forEach(from => this.activities()[activityId].relations.push(new Relation(from.toNumber(), activityId, "condition")))));
+          promises.push(this.getMilestones(activityId).then(milestones => milestones.forEach(from => this.activities()[activityId].relations.push(new Relation(from.toNumber(), activityId, "milestone")))));
         }
         return Promise.all(promises);
       })
-      .then(() => console.log(this.activities()));
+      .then(() => this.activities(this.activities()));
 
     // Fetch all events so far and subscribe to future events
     contract.allEvents({ fromBlock: 0 }, (error, event) => {

@@ -2,12 +2,12 @@ import "./styles.scss";
 import m from "mithril";
 import DcrUi from "components/dcr-ui";
 
-class Workflow {
-  view() {
+class WorkflowTab {
+  view(vnode) {
     return m("div.workflow-tab",
-      m(DcrUi)
+      m(DcrUi, { workflowManager: vnode.attrs.workflowManager })
     );
   }
 }
 
-export default Workflow;
+export default WorkflowTab;
