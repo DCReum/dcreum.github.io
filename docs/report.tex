@@ -44,20 +44,18 @@
 	basicstyle=\linespread{1}\ttfamily\footnotesize
 }
 
-\title{Consensus in declarative process models using distributed smart-contracts}
-\author{Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen }
-\date{}
-
 \begin{document}
 
 \normalem
 	\begin{titlepage}
-		\maketitle		
+		\noindent{\huge Consensus in declarative process models using distributed smart-contracts} \\ \\
+		Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen	\\ \\
 		\hspace{-18pt}
 		\textit{May 15, 2017}
 		\vspace{\fill}
 		\section*{Abstract}
-		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine will be implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine.
+		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts, more concretely the Dynamic Condition Response (DCR) engine is implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine. 
+		Two structurally different solutions are implemented and compared based on their cost and a number of potential further features are described and their viability evaluated within the Ethereum platform.
 		\thispagestyle{empty}
 	\end{titlepage}
 	\clearpage
@@ -221,25 +219,8 @@
 	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
 	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
 
-		\subsection{Currency}
-		The currency of Ethereum is called Ether, and mining a block has a base reward of five Ether.
-		Additional rewards given for blocks which include uncles (see the following section). 
-		Lastly a miner also gets a reward based on how much computation power is needed to run the code included in a block. 
-		The last reward is essentially equivalent to the transaction fees in Bitcoin.
-
-		To store data or run code on the Ethereum platform one has to spend an amount of gas. 
-		All computations have a set gas cost and can be seen in appendix \ref{app:gas-prices}, and Ethereum provides tools to calculate how much gas a proposed execution some code would cost.
-		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
-		The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user has set the price he is willing to pay per gas to low, no miner will to include the users code execution in his block.
-		If on the other hand miners set their minimum price for inclusion to high, no one is willing to use Ethereum. 
-		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
-
-		If a user send to little gas to complete the computations he requested, the requested computations are rolled back as if they never happened. 
-		The used gas is not returned to the user. 
-		This is a security feature of Ethereum that prevents denial of service attacks by requesting many computationally heavy transactions without having the means to pay for them. 
-		This feature is also what makes Ethereum "quasi-Turing-complete" and not Turing complete.
-
 		\subsection{Blockchain}
+		\label{sec:blockchain}
 		A blockchain is a distributed and decentralized database, consisting of blocks\cite{bitcoin-white-paper}. 
 		Each block contains the changes to the database since the last block, as well as a reference to the block preceding it, thereby forming a chain.
 		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding a nonce, a proof-of-work, to include in the block such that the hash of the block information is below a variable threshold, called the difficulty\cite{bitcoin-white-paper}. 
@@ -266,6 +247,24 @@
 
 		Since this means that anyone attempting to verify a block needs to run arbitrary code, the allowed operations need to be very carefully formulated and vetted. 
 		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM). 
+
+		\subsection{Currency}
+		The distribution of Ether functions much like the distribution of bitcoins within the Bitcoin blockchain. 
+		Mining a block has a base reward of five Ether, if it is included in the main blockchain.
+		Ether is also earned in the creation of uncle blocks (See section \ref{sec:blockchain}).
+		Lastly a miner also gets a reward based on how much computation power is needed to run the code included in a block. 
+		The last reward is essentially equivalent to the transaction fees in Bitcoin.
+
+		To store data or run code on the Ethereum platform one has to spend gas. 
+		All computations have a set gas cost and can be seen in appendix \ref{app:gas-prices}, and Ethereum provides tools to estimate how much gas a proposed execution some code would cost.
+		Gas has no inherent value, but instead a user has to specify how much Ether he wants to spend per gas. 
+		The user then specifies how much gas he wants to send with the execution request and how much Ether he is willing to spend per gas. If the user has set the price he is willing to pay per gas too low, no miner will include the users code execution in his block.
+		If on the other hand miners set their minimum price for inclusion too high, no one is willing to use Ethereum. 
+		The price per gas is therefore based on the principle of supply and demand, where the commodity is computation power.
+
+		If a user sends too little gas to complete the computations he requested, the requested computations are rolled back, but the user is still charged the spent gas.
+		This is a security feature of Ethereum which prevents denial of service attacks by requesting many computationally heavy transactions without having the means to pay for them. 
+		This feature is also what makes Ethereum quasi-Turing-complete rather than Turing-complete.
 
 		\subsection{Ethereum Virtual Machine}	
 		Due to the unique environment in which the EVM is used, there are equally unique constraints in the EVM:
