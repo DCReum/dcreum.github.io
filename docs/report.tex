@@ -582,35 +582,76 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\includegraphics[scale=0.45]{figures/ExampleWorkflow.png}
 
-	\section{Multi-contract}
+	\section{Multi-contract code}
+	\label{app:multi-contract-code}
 
-		\subsection{Code}
-		\label{app:multi-contract-code}
+		\lstinputlisting[language=solidity]{../contracts/workflow.sol}
 
-			\lstinputlisting[language=solidity]{../contracts/workflow.sol}
+	\section{Mono-contract code}
 
-		\subsection{Costs}
+		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
 
-			\begin{tabular}{| l | l |}
-				\hline
-				Action & Cost (gas) \\ \hline
-				Contract creation & 0 \\
-				\hline
-			\end{tabular}
+	\section{Use cases}
 
-	\section{Mono-contract}
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Action 						& Multi-contract & Mono-contract \\ \hline
+			Contract creation 			& 0 & 0 \\\hline
+			Workflow creation 			& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Submit ticket	 			& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Propose solution 		 	& 0 & 0 \\\hline
+			Propose solution (dup)	 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Reject solution 		 	& 0 & 0 \\\hline
+			Reject solution (dup)	 	& 0 & 0 \\\hline
+			Accept solution (fails) 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Close ticket (fails) 		& 0 & 0 \\\hline
+			Propose solution 		 	& 0 & 0 \\\hline
+			Accept solution 		 	& 0 & 0 \\\hline
+			Reject solution (fails)	 	& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Close ticket 		 		& 0 & 0 \\\hline
+			Submit ticket (fails)		& 0 & 0 \\\hline
+			Propose solution (fails) 	& 0 & 0 \\\hline
+			Reject solution (fails) 	& 0 & 0 \\\hline
+			Contract creation 			& 0 & 0 \\
+			\hline
+		\end{tabular}
 
-		\subsection{Code}
+	\section{Stress and edge tests}
+	\label{app:stress-and-edge-tests}
 
-			\lstinputlisting[language=solidity]{../contracts/monolith.sol}
-
-		\subsection{Costs}
-
-			\begin{tabular}{| l | l |}
-				\hline
-				Action & Cost (gas) \\ \hline
-				Contract creation & 0 \\
-				\hline
-			\end{tabular}
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Test & Multi-contract & Mono-contract \\ \hline
+			C1.1 & 0 & 0 \\ \hline
+			M1.1 & 0 & 0 \\ \hline
+			C2.1 & 0 & 0 \\ \hline
+			M2.1 & 0 & 0 \\ \hline
+			I1.1 & 0 & 0 \\ \hline
+			E1.1 & 0 & 0 \\ \hline
+			R1.1 & 0 & 0 \\ \hline
+			I2.1 & 0 & 0 \\ \hline
+			E2.1 & 0 & 0 \\ \hline
+			R2.1 & 0 & 0 \\ \hline
+			C-stress1 & 0 & 0 \\ \hline
+			C-stress2 & 0 & 0 \\ \hline
+			M-stress1 & 0 & 0 \\ \hline
+			M-stress2 & 0 & 0 \\ \hline
+			P-stress1 & 0 & 0 \\ \hline
+			I-stress1 & 0 & 0 \\ \hline
+			\hline
+		\end{tabular}
 
 \end{document}
