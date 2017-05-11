@@ -282,7 +282,7 @@
 		Most languages which can be compiled to EVM stack code are therefore languages specifically designed for Ethereum.
 		Some of the languages implemented for Ethereum are Solidity, Viper, Serpent, LLL and Mutan which all are very basic at the moment, but the languages are all in active development, except for Mutan.
 
-		We have chosen to implement our solutions in Solidity as it seems most mature of the listed options, at the time of writing.
+		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
@@ -311,22 +311,25 @@
 
 	\section{Multi-contract implementation}
 	% Design decisions
-	The first implementation approach, is creating an Ethereum contract for each workflow, called the Multi-contract implementation (since multiple workflows will multiple contracts). 
-	The contract contains the data for exactly one workflow, i.e. the workflow's name, the list of activities in the workflow etc, as well as the data of all the activities in the workflow as well as their relations. 
-	Furthermore each contract will contain functions to support the functionality described in section \ref{sec:implementation-requirements}.
+	The first implementation approach is to deploy an Ethereum contract for each workflow. We will call this implementation the Multi-contract implementation.
+	Each deployed contract contains a workflows name, a list of the activities in the workflow and the address of the contract creator.
+	Furthermore each contract contains functions to support the functionality described in section \ref{sec:implementation-requirements}.
 
-	This approach strikes a middle ground between the modularity obtained from having each self contained data structure, i.e. the activities and/or the relations being published as separate contracts, and the efficiency obtained from having multiple entire workflows published in a single contract. 
-	The multi-contract implementation achieves a relatively high cohesion as all data relevant to a single workflow is contained in a single contract, while reducing the coupling between contracts, since no external function calls are necessary to achieve the required functionality.
+	This approach ensures that only data relevant to the workflow, represented by the contract, is stored on the contract. The Multi-contract implementation therefore achieves a relatively high level of cohesion.
+	Another approach could be to deploy each activity as its own contract.
+	However this approach would introduce a high level of coupling between contracts.
+	The Multi-contract implementation on the other hand achieves minimum coupling between contracts, since no inter-contract function calls are necessary to achieve the required functionality.
 
-		%Relatively expensive in theory - include?
+	%Relatively expensive in theory - include? - No (Thgn 11-05-17)
 
 	% Important implementation details
 		%Data structure
 		\subsection{Implementation details}
 		The data structures in the Multi-contract implementation are relatively simple.
-		Only a single struct is defined, used to represent an activity.
-		The entire contract is the workflow, so no explicit data structure is need for the workflow, instead the contract's fields contain the relevant data for the workflow.
-		The contract contains a \texttt{bytes32 name} field representing the workflow's name, an array of activities and the Ethereum address of the creating account.
+		Only a single struct is defined, which represents an activity.
+		The entire contract is the workflow, so no explicit data structure is need for the workflow. 
+		Instead the contract's fields contain the relevant data for the workflow.
+		The contract contains a \texttt{bytes32 name} field representing the workflows name, an array of activities and the Ethereum address of the creator of the workflow.
 		\begin{snippet}[!ht]
 			\centering
 			\begin{lstlisting}[language=solidity, numbers=none]
@@ -354,13 +357,19 @@ struct Activity {
 		 	{The \texttt{Activity} struct}
 		 	\label{sni:activity-struct}
 		\end{snippet}
-		The \texttt{Activity} struct (see snippet \ref{sni:activity-struct}) is made up a \texttt{bytes32} name, three booleans representing the activity's attributes, a list for each relation type and a list for containing the Ethereum addresses that are allowed to execute the activity.
+		The \texttt{Activity} struct shown in snippet \ref{sni:activity-struct} is made up of a \texttt{bytes32} name, three boolean values representing an activity's attributes, an array for each relation type and a list of Ethereum addresses that are authorized to execute the activity.
 
 		%Construction
-		The entire workflow is initialized on contract construction. 
-		Since the Solidity language currently (v. 0.4.10) does not support neither structs nor nested arrays as parameters in contract construction, the workflow construction is a bit complicated. 
+		The entire workflow is initialized when the contract is deployed.
+		Since the Solidity language currently does not support neither structs nor nested arrays as parameters in contract deployment, the workflow initialization is a bit complicated. 
 
-				\begin{snippet}[!ht]
+		For instance, every relation in the workflow is represented in a single \texttt{uint32} list in the constructor, called \texttt{relations}. 
+		To map the relations to activities (see snippet \ref{sni:relation-mapping}), the structure of the relations-array has to uphold the invariant that, for an even \texttt{i}, \texttt{relations[i]} is the id of the activity the relation is coming from, and \texttt{relations[i+1]} is the id of the activity the relation pointing to.
+
+		Excluding contract construction, the rest of the functions are reasonably simple.
+		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
+
+\begin{snippet}[!ht]
 			\centering
 			\begin{lstlisting}[language=solidity, numbers=none]
 // We expect the 'relations' array is formed such that the first index is the FROM activity and the next index is the TO activity. Rinse and repeat.
@@ -377,15 +386,6 @@ for(i = 0; i < relations.length; i=i+2){
 		 	{Mapping relations to activities in the multi-contract construction}
 		 	\label{sni:relation-mapping}
 		\end{snippet}
-
-		For instance, every relation in the workflow is represented in a single \texttt{uint32} list in the constructor, called \texttt{relations}. 
-		To map these to activities (see snippet \ref{sni:relation-mapping}), the structure of the relations-array have to uphold the invariant that, for an even \texttt{i}, \texttt{relations[i]} is the id of the activity the relation is coming from, and \texttt{relations[i+1]} is the id of the activity the relation is going to.
-
-		Excluding contract construction, the rest of the functions are reasonably straight forward.
-		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
-
-
-
 	% How it runs missing
 
 	\section{Mono-contract implementation}
