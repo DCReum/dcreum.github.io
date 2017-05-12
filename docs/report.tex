@@ -502,9 +502,20 @@ for(i = 0; i < relations.length; i=i+2){
 			\begin{table}[!ht]
 				\begin{tabular}{|c|c|c|}
 				\hline
-				Required rights 	& Incoming 	& Outgoing \\ \hline
-				$A \rightarrow B$ 	& Owns B    & Owns A \\ \hline
-				$B \rightarrow A$ 	& Owns A	& Owns B \\
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A \\
+				\hline
+				\end{tabular}
+			\end{table}
+
+			This satisfies the issues of the Ethereum aspect, but when an activity with an outgoing relation, going from $A$ to $B$, is executed, ownership of $A$ is required, while the state of $B$ is actually being modified.
+			Incoming relations are still only an issue for $B$, within DCR, as they only have an actual effect on the targeted activity.
+			To satisfy these issues, the required rights must therefore be modified accordingly:
+			\begin{table}[!ht]
+				\begin{tabular}{|c|c|c|}
+				\hline
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A+B \\
 				\hline
 				\end{tabular}
 			\end{table}
