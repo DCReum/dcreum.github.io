@@ -492,17 +492,39 @@ for(i = 0; i < relations.length; i=i+2){
 
 		An implementation of this in the mono-contract solution would be fairly simple, as well as cheap, as all the workflows are potentially stored in a single contract.
 
-			\subsubsection{Vulnerabilities}
+		\subsubsection{Vulnerabilities}
 
 		\subsection{External contract conditions}
-
-		As the public methods of a contract on the Ethereum blockchain is accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
+		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
 		These dependencies could be to all sorts of sources, as long as they are trusted by the creator of the workflow. 
 		An example could be a contract showing the value of currencies or perhaps a contract producing synchronized random numbers.
 
-		In the case where each company has their own mono-contract, possibly due to their diverse needs for specific features, or the case where a multi-contract solution is used, this functionality would be closely tied to the functionality of external relations (See section \ref{sec:external-relations}).
+		In the case where multiple companies have their own Mono-contract implementation, possibly due to their diverse needs for specific features, or the case where the Multi-contract implementation is used, this functionality would be closely tied to the functionality of external relations (See section \ref{sec:external-relations}).
+		\subsubsection{DCR conditions from external contracts}
+		One could also incorporate DCR logic from external contracts, if a user creates a workflow with an activity where the only address authorized to execute the activity was the address of another contract.
+		The external contract could either be created by the workflow creator, or it could be part of a service offered by external parties.
+		The external party could be someone who monitored the price of certain commodities and executed the activity when certain criteria were met.
+		
+		Figure \ref{fig:external-contract-relations} shows how external contract conditions can be implemented. 
+		An external contract has been authorized to execute \texttt{Price of commodity above x} and \texttt{Price of commodity below x}. 
+		Executing them will exclude or include \texttt{Price of commodity acceptable} which will allow or disallow execution of \texttt{Sell commodity}.
+		
+		In this example the activity \texttt{Price of commodity acceptable} is simply a placeholder activity and no user has the right to execute it.
+		This can seem somewhat counterintuitive as activities usually are executable entities. 
+		One could also place include and exclude relations from \texttt{Price of commodity above x} and \texttt{Price of commodity below x} directly to \texttt{Sell commodity}.
+		This approach can however lead to complications if \texttt{Sell activity} has any condition relations to other activities as excluding \texttt{Sell activity} would allow execution of these activities.
+		The first approach on the other hand preserves the restrictions of the original graph, and the external contract conditions can therefore be added after workflow creation, if such a feature is supported in the particular DCR engine.
+		Which approach is chosen is based on the intentions of the workflow creator.
 
-			\subsubsection{Vulnerabilities}
+		\begin{figure}[!ht]
+		\centering
+		\includegraphics{figures/external-contract-relations.png}
+	 	\caption[External contract relations]
+	 	{Example of a DCR graph dependent on other contracts}
+	 	\label{fig:external-contract-relations}
+		\end{figure}
+
+		\subsubsection{Vulnerabilities}
 
 		\subsection{Group authorization}
 
