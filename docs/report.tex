@@ -476,9 +476,19 @@ for(i = 0; i < relations.length; i=i+2){
 		This poses some challenges in the way that the workflow might change its definition, subtly or drastically, as covered in \cite{hierarchical-declarative-modelling} with regards to refinement.
 		A verification of any given change to a workflow, as specified in the article, would be risky to implement in Ethereum, as it is a computationally very hard problem and a user would be hard pressed to pay for it.
 		Therefore a different method of verification would probably be more viable, for example by disallowing certain types of conditions.
-		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows. 
+		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows.
 
 			\subsubsection{Vulnerabilities}
+			While including the option to change workflows dynamically does not directly add vulnerabilities on its own to the system, care must be taken to ensure everyone involved in the workflow understands the implications of allowing this.
+
+			Firstly adding an activity $A$ with 1000 condition relations to another activity $B$ would greatly increase the cost of running $B$, as an execution of $B$ would result in checking a 1000 times if $A$ was executed or excluded. 
+			Secondly changing a workflow could make it less restrictive. 
+			This is true when the added activities have include or exclude relations to existing activities in the workflow \cite{dynamic-workflows}.
+			Thirdly while only allowing activities with condition, response and milestone relations to other activities to be added to the workflow after creation, would only make the workflow more restrictive, a workflow could enter a deadlock where no activity could be executed.
+
+			A middle ground could be reached by implementing dynamic changes to workflows as staged changes, and then to allow affected parties to vote on whether or not the changes should be allowed.
+			Solidity supports implementing this kind of voting on Ethereums blockchain.\cite{voting} 
+			If dynamic changes should be allowed, which changes should be allowed and who should be allowed to perform them is subject to interpretation, and is based on the use case of each single workflow.
 
 		\subsection{External relations}
 		\label{sec:external-relations}
@@ -595,6 +605,11 @@ for(i = 0; i < relations.length; i=i+2){
 		\url{http://www.itu.dk/~debois/dcrstar-tr.pdf},
 		Accessed 2017-05-12
 		
+		\bibitem{voting}
+		Ethereum Foundation
+		\textit{How to build a democracy on the blockchain}.
+		\url{https://www.ethereum.org/dao},
+		Accessed 2017-05-12
 
 	\end{thebibliography}
 
