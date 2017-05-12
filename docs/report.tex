@@ -484,7 +484,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\label{sec:external-relations}
 		In the proposed solutions, workflows are viewed as completely separate from each other. 
 		This means that if a connection between the two is desired, it would require the entire workflow to be duplicated per other workflow relevant to it.
-		An alternative to this, could be to create external relations between the workflows, as described in \cite{distributed-workflows}, given that the user creating the relations has some sort of ownership of both workflows.
+		An alternative to this, could be to create external relations between the workflows, as described in \cite{distributed-workflows}, as long as that the user creating the relations has some sort of ownership of both workflows.
 
 		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
 		An example of this is an exclude relation from an activity $A_{ex}$ in an external workflow to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
@@ -496,10 +496,11 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\subsection{External contract conditions}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
-		These dependencies could be to all sorts of sources, as long as they are trusted by the creator of the workflow. 
-		An example could be a contract showing the value of currencies or perhaps a contract producing synchronized random numbers.
+		These dependencies would essentially be conditional statements calling the functions of another contract, when it is being evaluated whether or not an activity is executable. 
+		An example could be a contract returning the value of a currency and whether or not it is above or below a specified threshold.
 
 		In the case where multiple companies have their own Mono-contract implementation, possibly due to their diverse needs for specific features, or the case where the Multi-contract implementation is used, this functionality would be closely tied to the functionality of external relations (See section \ref{sec:external-relations}).
+
 		\subsubsection{DCR conditions from external contracts}
 		One could also incorporate DCR logic from external contracts, if a user creates a workflow with an activity where the only address authorized to execute the activity was the address of another contract.
 		The external contract could either be created by the workflow creator, or it could be part of a service offered by external parties.
