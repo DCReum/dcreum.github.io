@@ -368,7 +368,7 @@ struct Activity {
 		Excluding contract construction, the rest of the functions are reasonably simple.
 		The code for the Multi-contract implementation can be found in its entirety in appendix \ref{app:multi-contract-code}.
 
-\begin{snippet}[!ht]
+		\begin{snippet}[!ht]
 			\centering
 			\begin{lstlisting}[language=solidity, numbers=none]
 // We expect the 'relations' array is formed such that the first index is the FROM activity and the next index is the TO activity. Rinse and repeat.
@@ -412,6 +412,7 @@ for(i = 0; i < relations.length; i=i+2){
 	\end{enumerate}
 
 	\section{Comparison}
+	\label{sec:comparison}
 	In order to compare the solutions to each other, a simple workflow has been created modeling each of the five relations...
 
 	\begin{description}
@@ -421,8 +422,44 @@ for(i = 0; i < relations.length; i=i+2){
 	\end{description}
 
 	\section{Optimizations}
+		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
+		We have prioritized the optimizations according to an idea of the frequency of use.
+		That is, using the mono-contract implementation, we imagine workflow creation to be used more than contract creation, since we assume that, in the mono-contract implementation, workflow creation is much more common than contract creation. 
+		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
+		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
 
 		\subsection{Bitfields}
+
+		\begin{snippet}[ht!]
+			\centering
+			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
+		 	\caption[Activities as bitvectors]
+		 	{Activities as bitvectors}
+		 	\label{sni:bitvectors}
+		\end{snippet}
+
+		In order to reduce cost of activity executions, we have implemented the activities as bitvector fields. 
+		That is, we have removed the activity struct entirely, and instead put the state- and relation data into \texttt{uint256} types and store them in the workflow struct (see snippet \ref{sni:bitvectors}).
+		This optimization naturally has several effects.
+
+		Firstly, since each activity field is represented as a bit in an \texttt{uint256}, this limits each workflow to maximally contain 256 activities. 
+		While this is a shame, we do not expect workflows of size greater than 256 to be a normal occurrence.
+		If this functionality is needed, we suggest the problem could be solved by partitioning the the workflow into 256-activity sized sub-workflows, and using external relations to connect these to each other (see section \ref{sec:external-relations} for an in-depth explanation of external relations).
+
+		Secondly, since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
+		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
+		Excluding the overhead of the lists holding the bitvectors, the storage space required for relations after the optimization can be expressed as $s = 5 \cdot 256 \cdot a$, where $a$ is the number of activities, and $s$ it the storage required in bits.
+		Before the optimization, the relations were represented by a single \texttt{uint32} per relation.
+		So the storage requirements before the optimization, excluding any overhead on the lists holding the relations, can be expressed as $s = 32 \cdot r$, where $r$ is the number of relations.
+		Thus, for the bitvector optimization to be an optimization with regards to storage, there have to be more than 40 times as many relations as activities:
+
+		\begin{center}		
+			$32 \cdot r = 5 \cdot 256 \cdot a \iff r = \frac{1280 \cdot a}{32} \iff \frac{r}{a} = 40$
+		\end{center}
+		
+		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
+		
+
 
 	\section{Discussion}
 
@@ -592,6 +629,12 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Mono-contract code}
 
 		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
+
+	\section{Mono-contract code with bitfields}
+		\label{app:mono-contract-code-with-bitfields}
+
+
+		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
 
 	\section{Use cases}
 
