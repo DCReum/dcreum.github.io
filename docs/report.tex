@@ -434,7 +434,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\begin{snippet}[ht!]
 			\centering
-			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
+			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-bitfields.sol}
 		 	\caption[Activities as bitvectors]
 		 	{Activities as bitvectors}
 		 	\label{sni:bitvectors}
@@ -512,9 +512,20 @@ for(i = 0; i < relations.length; i=i+2){
 			\begin{table}[!ht]
 				\begin{tabular}{|c|c|c|}
 				\hline
-				Required rights 	& Incoming 	& Outgoing \\ \hline
-				$A \rightarrow B$ 	& Owns B    & Owns A \\ \hline
-				$B \rightarrow A$ 	& Owns A	& Owns B \\
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A \\
+				\hline
+				\end{tabular}
+			\end{table}
+
+			This satisfies the issues of the Ethereum aspect, but when an activity with an outgoing relation, going from $A$ to $B$, is executed, ownership of $A$ is required, while the state of $B$ is actually being modified.
+			Incoming relations are still only an issue for $B$, within DCR, as they only have an actual effect on the targeted activity.
+			To satisfy these issues, the required rights must therefore be modified accordingly:
+			\begin{table}[!ht]
+				\begin{tabular}{|c|c|c|}
+				\hline
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A+B \\
 				\hline
 				\end{tabular}
 			\end{table}
@@ -553,7 +564,14 @@ for(i = 0; i < relations.length; i=i+2){
 		\subsubsection{Vulnerabilities}
 
 		\subsection{Group authorization}
+		Instead of having a list of authorized users for each activity, and thus a potential source of data duplication which is a waste of storage on the blockchain, a natural extension of the authorization mechanism would be to allow group authentication.
+		That is, instead of storing the address of each user authorized to execute an activity, each address is a member of one or more groups, and each activity then only needs to store the ids of the groups allowed to execute it.   
+		Allowing for 32 distinct activity groups, the only things needed to be stored is a single \texttt{uint40}\footnote{We have chosen an \texttt{uint40} over an \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector for each address, representing the indices of the groups this address is member of in a given workflow, and for each activity a single \texttt{uint32} bitvector describing the groups authorized to execute the activity. 
+		It should be relatively simple to see that this is a storage optimization in workflows with just a little duplication of authorization.
 
+		However, even ignoring this optimization, group authorization is still a valuable feature.
+		The construction of workflows is much simpler without the amount of Ethereum-address duplication and the transparency of how access rights are granted is improved.
+		
 	\section{Conclusion}
 
 	\pagebreak
@@ -696,7 +714,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\label{app:mono-contract-code-with-bitfields}
 
 
-		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
+		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitfields.sol}
 
 	\section{Use cases}
 
@@ -757,7 +775,7 @@ for(i = 0; i < relations.length; i=i+2){
 			M-stress1 & 0 & 0 \\ \hline
 			M-stress2 & 0 & 0 \\ \hline
 			P-stress1 & 0 & 0 \\ \hline
-			I-stress1 & 0 & 0 \\ \hline
+			I-stress1 & 0 & 0 \\
 			\hline
 		\end{tabular}
 
