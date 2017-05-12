@@ -415,13 +415,16 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\section{Comparison}
 	\label{sec:comparison}
-	In order to compare the solutions to each other, a simple workflow has been created modeling each of the five relations...
 
-	\begin{description}
-		\item[Contract creation]
-		\item[Successful execution] ...
-		\item[Failed execution] ... 
-	\end{description}
+	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See table \ref{app:test-cases}).
+	Due to the nature of our solutions, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
+	Since there is no difference in creating the workflow and creating the contract in the multi-contract solution, but there is in the mono-contract solution, they will be hard to compare.
+
+	Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
+	This is done for each relation in order to get an estimate for the cost of a single such operation.
+	Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
+
+	Specifically to test the mono-contract solution, we also test for the cost of creating a number of workflows.
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
@@ -716,7 +719,8 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitfields.sol}
 
-	\section{Use cases}
+	\section{Test cases}
+	\label{app:test-cases}
 
 		\begin{tabular}{| l | l | l |}
 			\hline
