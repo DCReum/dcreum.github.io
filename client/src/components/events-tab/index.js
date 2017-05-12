@@ -16,21 +16,23 @@ class Events {
           m("td")
         ])
       ]),
-      vnode.attrs.workflowManager.events().map(event => {
-        let component;
-        switch (event.type) {
-          case "execution":
-            component = ExecutionEvent;
-            break;
-          case "workflow-creation":
-            component = WorkflowCreationEvent;
-            break;
-          default:
-            console.error("Unknown event type", event.type);
-            return m("tr");
-        }
-        return m(component, { event: event })
-      })
+      vnode.attrs.workflowManager.events()
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .map(event => {
+          let component;
+          switch (event.type) {
+            case "execution":
+              component = ExecutionEvent;
+              break;
+            case "workflow-creation":
+              component = WorkflowCreationEvent;
+              break;
+            default:
+              console.error("Unknown event type", event.type);
+              return m("tr");
+          }
+          return m(component, { event: event })
+        })
     ]));
   }
 }
