@@ -90,26 +90,27 @@
 
 	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
 
-	\subsection{Previous work}
-	Our previous work with blockchains was done for our bachelor thesis \cite{bachelor}. 
-	The main idea we will carry on from our bachelor thesis is that a blockchain can be used to create a consensus protocol. 
-	We will therefore not go into great detail of how we can achieve consensus with a blockchain. 
-	The following section will provide the information we deem necessary to understand how we can achieve consensus with a blockchain, but no literature to support this. 
-	Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
-	\subsubsection{Achieving consensus with blockchains}
+		\subsection{Previous work}
+		Our previous work with blockchains was done for our bachelor thesis \cite{bachelor}. 
+		The main idea we will carry on from our bachelor thesis is that a blockchain can be used to create a consensus protocol. 
+		We will therefore not go into great detail of how we can achieve consensus with a blockchain. 
+		The following section will provide the information we deem necessary to understand how we can achieve consensus with a blockchain, but no literature to support this. 
+		Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
 
-	\subsubsection{Motivation to use Ethereum}
-	The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
-	The actual verification of the legality of executions with respect to DCR logic and execution rights was done on a DCR engine running locally on a users machine.
-	Thus our application relied heavily on the majority of users involved in a workflow were actually using our DCR engine to verify the legality of executions. 
+			\subsubsection{Achieving consensus with blockchains}
 
-	Our previous DCR engine made it infeasible for an adversary to fake executions or claim that executions were part of another workflow than what benevolent users thought.
-	Instead it was vulnerable to loss of local data. 
-	
-	If a user managed to remove all local traces of a workflow, it could be difficult to claim that the traces of executions belonged to a certain workflow and therefore hard to prove that a user actually did execute some specific activity. Furthermore reconstruction of a lost workflow would be nigh impossible without access to another copy of the workflow.
+			\subsubsection{Motivation to use Ethereum}
+			The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
+			The actual verification of the legality of executions with respect to DCR logic and execution rights was done on a DCR engine running locally on a users machine.
+			Thus our application relied heavily on the majority of users involved in a workflow were actually using our DCR engine to verify the legality of executions. 
 
-	Ethereums blockchain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the blockchain \textbf{2)} if code on the blockchain has been run \textbf{3)} if the code was run successfully or not.
-	Any user participating in a workflow using a DCR engine running on Ethereums blockchain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins blockchain verified workflow creation and execution attempts.
+			Our previous DCR engine made it infeasible for an adversary to fake executions or claim that executions were part of another workflow than what benevolent users thought.
+			Instead it was vulnerable to loss of local data. 
+			
+			If a user managed to remove all local traces of a workflow, it could be difficult to claim that the traces of executions belonged to a certain workflow and therefore hard to prove that a user actually did execute some specific activity. Furthermore reconstruction of a lost workflow would be nigh impossible without access to another copy of the workflow.
+
+			Ethereums blockchain has other possibilities, as one is able to verify \textbf{1)} the existence of specific source code on the blockchain \textbf{2)} if code on the blockchain has been run \textbf{3)} if the code was run successfully or not.
+			Any user participating in a workflow using a DCR engine running on Ethereums blockchain can therefore be sure\footnote{Quite sure...ref til vulnerabilities} that the source code is unchanged and that every execution is validated with respect to both DCR logic and execution rights in the same way Bitcoins blockchain verified workflow creation and execution attempts.
 
 	\section{Dynamic Condition Response graphs}
 	\label{sec:dcr-graphs}
@@ -117,79 +118,79 @@
 	The graph is made up of one or more activities with zero or more relations between them. 
 	The following section is loosely based on a similar description in our bachelor's thesis \cite{bachelor}. 
 
-	\subsection{Activity}
-	The activities in a DCR graph have three attributes: included, executed and pending. 
-	The attributes can be true or false. 
-	Furthermore an activity can have role and actor specific execution rights.
+		\subsection{Activity}
+		The activities in a DCR graph have three attributes: included, executed and pending. 
+		The attributes can be true or false. 
+		Furthermore an activity can have role and actor specific execution rights.
 
-	\subsubsection{Included attribute}
-	If the include attribute of an activity is true, the activity is included and it can be executed. 
-	If the attribute is false, the activity is excluded and can no longer be executed.
+			\subsubsection{Included attribute}
+			If the include attribute of an activity is true, the activity is included and it can be executed. 
+			If the attribute is false, the activity is excluded and can no longer be executed.
 
-	\subsubsection{Pending attribute}
-	If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state.
-	Every time an activity is executed its pending attribute is set to false.
-	This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to leave the workflow in a finished state.
+			\subsubsection{Pending attribute}
+			If any activity in a workflow has a pending attribute that is true and the activity is included, the workflow is in an unfinished state.
+			Every time an activity is executed its pending attribute is set to false.
+			This means that setting the pending attribute of an included activity to true is specifying that this activity must be executed or excluded at some point to leave the workflow in a finished state.
 
-	\subsubsection{Executed attribute}
-	If an activities executed attribute is false executing the activity will set its executed attribute to true.
-	Executing an already executed activity will have no effect on the executed attribute.
+			\subsubsection{Executed attribute}
+			If an activities executed attribute is false executing the activity will set its executed attribute to true.
+			Executing an already executed activity will have no effect on the executed attribute.
 
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=1\textwidth]{figures/activity_states.png}
-	 	\caption[Activity States]
-	 	{From left to right: A visual representation of an included, excluded, pending and executed activity as presented on \href{http://www.dcrgraphs.net}{dcrgraphs.net}}.
-	\end{figure}
+		\begin{figure}[!ht]
+			\centering
+			\includegraphics[width=1\textwidth]{figures/activity_states.png}
+		 	\caption[Activity States]
+		 	{From left to right: A visual representation of an included, excluded, pending and executed activity as presented on \href{http://www.dcrgraphs.net}{dcrgraphs.net}}.
+		\end{figure}
 
-	\subsection{Relations}
-	There are five types of relations which define different types of relationships between activities in a workflow. 
-	These five are the \emph{condition}, \emph{response}, \emph{include}, \emph{exclude} and \emph{milestone} relations.
+		\subsection{Relations}
+		There are five types of relations which define different types of relationships between activities in a workflow. 
+		These five are the \emph{condition}, \emph{response}, \emph{include}, \emph{exclude} and \emph{milestone} relations.
 
-	\subsubsection{Condition relation}
-	If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true or A is excluded.
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
-	 	\caption[Condition relation]
-	 	{Condition relation}
-	\end{figure}
+			\subsubsection{Condition relation}
+			If there is a condition relation from activity A to activity B, then B can only be executed if A's executed attribute is true or A is excluded.
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=0.3\textwidth]{figures/ConditionRelation.png}
+			 	\caption[Condition relation]
+			 	{Condition relation}
+			\end{figure}
 
-	\subsubsection{Response relation}
-	If there is a response relation from activity A to activity B, then B's pending attribute will be set to true every time A is executed.
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{figures/ResponseRelation.png}
-	 	\caption[Response relation]
-	 	{Response relation}
-	\end{figure}
+			\subsubsection{Response relation}
+			If there is a response relation from activity A to activity B, then B's pending attribute will be set to true every time A is executed.
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=0.3\textwidth]{figures/ResponseRelation.png}
+			 	\caption[Response relation]
+			 	{Response relation}
+			\end{figure}
 
-	\subsubsection{Include relation}
-	If there is an include relation from activity A to activity B, then B's included attribute will be set to true every time A is executed.
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{figures/IncludeRelation.png}
-	 	\caption[Include relation]
-	 	{Include relation}
-	\end{figure}
+			\subsubsection{Include relation}
+			If there is an include relation from activity A to activity B, then B's included attribute will be set to true every time A is executed.
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=0.3\textwidth]{figures/IncludeRelation.png}
+			 	\caption[Include relation]
+			 	{Include relation}
+			\end{figure}
 
-	\subsubsection{Exclude relation}
-	If there is an exclude relation from activity A to activity B, then B's included attribute will be set to false every time A is executed.
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{figures/ExcludeRelation.png}
-	 	\caption[Exclude relation]
-	 	{Exclude relation}
-	\end{figure}
+			\subsubsection{Exclude relation}
+			If there is an exclude relation from activity A to activity B, then B's included attribute will be set to false every time A is executed.
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=0.3\textwidth]{figures/ExcludeRelation.png}
+			 	\caption[Exclude relation]
+			 	{Exclude relation}
+			\end{figure}
 
-	\paragraph{Milestone relation}
-	If there is a milestone relation from activity A to activity B, then B can only be executed if A's pending attribute is false or A's included attribute is false.
-	\begin{figure}[!ht]
-		\centering
-		\includegraphics[width=0.3\textwidth]{figures/MilestoneRelation.png}
-	 	\caption[Milestone relation]
-	 	{Milestone relation}
-	\end{figure}
+			\subsubsection{Milestone relation}
+			If there is a milestone relation from activity A to activity B, then B can only be executed if A's pending attribute is false or A's included attribute is false.
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=0.3\textwidth]{figures/MilestoneRelation.png}
+			 	\caption[Milestone relation]
+			 	{Milestone relation}
+			\end{figure}
 
 	\subsection{Example workflow}
 	Figure \ref{fig:exampleWorkflow} shows an DCR graph modeling a support ticket workflow. When the workflow is created only \texttt{Submit ticket} is executable. 
