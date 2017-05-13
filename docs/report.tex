@@ -464,8 +464,6 @@ for(i = 0; i < relations.length; i=i+2){
 		
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
-
-
 	\section{Discussion}
 
 	\section{Further features}
@@ -507,7 +505,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\subsubsection{Vulnerabilities}
 
-			Suppose a relation is added between workflows $A$ and $B$, if it is an incoming relation\ref{}, it would have significantly different behaviour than from an outgoing relation.
+			Suppose a relation is added between workflows $A$ and $B$, if it is an incoming relation (See section \ref{sec:implementation-requirements}), it would have significantly different behaviour than from an outgoing relation.
 			The outgoing relations propagate changes eagerly, whereas the incoming relations check lazily.
 			This means that an outgoing relation from workflow $A$ to workflow $B$ would make the affected activity in $A$ more expensive to execute, whereas an incoming relation would make it more expensive to check whether or not the affected activity in $B$ is executable. 
 
@@ -566,7 +564,15 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\subsubsection{Vulnerabilities}
 
+			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered, as an example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
+			The DAO was a venture capital fund, where the investors could vote on where to invest their collective money.
+			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether (REF). 
+			The investors had the option to withdraw their own funds, but an exploit was found in that the withdrawal finished by calling a given contract.
+			This allowed a user to withdraw an amount of money and withdraw it again.
+			This is not problematic in itself, but due to the balance only being updated as each method returns, a user was able to take 3.6 million Ether which was worth around 50 million dollars at the time.
+			This exploit is called re-entrancy and should be thoroughly investigated whenever external contract calls are allowed.
 
+			In the case of DCR graphs, an external
 
 		\subsection{Group authorization}
 		Instead of having a list of authorized users for each activity, and thus a potential source of data duplication which is a waste of storage on the blockchain, a natural extension of the authorization mechanism would be to allow group authentication.
