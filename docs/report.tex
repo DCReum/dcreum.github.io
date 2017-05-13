@@ -488,8 +488,8 @@ for(i = 0; i < relations.length; i=i+2){
 	This limitation creates problems for methods which require large amount of different data. 
 	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
 	\begin{enumerate}
-		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-$n$ ($n = number \quad of \quad activities - 31$) are used for activity names.
-		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates}contains the three boolean lists.
+		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indices 1 to $n$ (where $n$ is the number of activities minus 31) are used for activity names.
+		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates} contains the three boolean lists.
 		\item An array of size three of unsigned integer arrays is used to represent activity data. 
 		\begin{enumerate}
 			\item The first array is used as a counter for how many relations will be stored on each activity. We use this counter as there is only one array containing the type of the relation and one array containing the id of the activity the relation should point to. But there is nothing indicating which activity the relation should be stored on.
