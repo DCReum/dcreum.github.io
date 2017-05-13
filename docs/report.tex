@@ -105,6 +105,13 @@
 		Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
 
 			\subsubsection{Achieving consensus with blockchains}
+			In 2014 it was shown formally that Bitcoin's blockchain is a Monte Carlo solution to the Consensus Problem in a system with byzantine failures \cite{anonymous-byzantine-consensus}. 
+			This proof is rather technical, and we will not go into further detail here.
+
+			The consensus algorithms in Bitcoin and Ethereum are nearly identical, in that they are based on blockchains. It is therefore trivial to show that the same arguments presented for Bitcoin's consensus algorithm in \cite{anonymous-byzantine-consensus} holds for Ethereum.
+			We have also given an argument for how the Bitcoin blockchain can be used to achieve consensus in a third party application in our bachelor's thesis. 
+			For those interested in how consensus is ensured using blockchains, we suggest starting there.
+
 
 			\subsubsection{Motivation to use Ethereum}
 			The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
@@ -359,6 +366,12 @@
 
 		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
+		\subsection{Decentralized Applications}
+		Since Ethereum is built around the concept of decentralized code execution, it enables what are called Decentralized Applications, or DApps. 
+		A DApp is an application of which the back-end code is running on a decentralized peer-to-peer network, as for example on the Ethereum blockchain.
+		The front-end can then be published on any or all of readily available platforms, such that anyone who is participating the peer-to-peer network can access it, achieving a fully decentralized application.
+
+
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
 	The data structure of the two implementation will be as follows:
@@ -475,13 +488,12 @@ for(i = 0; i < relations.length; i=i+2){
 	This limitation creates problems for methods which require large amount of different data. 
 	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
 	\begin{enumerate}
-		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-32 are used for group names and indexes 33-$n$ ($n = number \quad of \quad activities - 33$) are used for activity names.
-		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates}contains the three boolean lists.
+		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indices 1 to $n$ (where $n$ is the number of activities minus 31) are used for activity names.
+		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates} contains the three boolean lists.
 		\item An array of size three of unsigned integer arrays is used to represent activity data. 
 		\begin{enumerate}
 			\item The first array is used as a counter for how many relations will be stored on each activity. We use this counter as there is only one array containing the type of the relation and one array containing the id of the activity the relation should point to. But there is nothing indicating which activity the relation should be stored on.
 			\item The second array is used to represent the number of public keys that are authorized to execute an activity. This counter is used as there is only a single list with all authorized user, but there is nothing associating them with any specific activity.
-			\item The last array is used to represent the number of groups that are authorized to execute an activity. This is done for the same reasons as above; there is only one list with group authorizations.
 		\end{enumerate}
 	\end{enumerate}
 
@@ -500,10 +512,9 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
-		We have prioritized the optimizations according to an idea of the frequency of use.
-		That is, using the mono-contract implementation, we imagine workflow creation to be used more than contract creation, since we assume that, in the mono-contract implementation, workflow creation is much more common than contract creation. 
-		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
-		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
+		We have prioritized the optimizations according to an idea of the frequency of use, meaning that for example the mono-contract solution is based on the assumption that workflow creation is much more frequent than contract creation.
+		Therefore a cost decrease of the workflow creation functionality is acceptable even if at the cost of making contract creation more expensive. 
+		Similarly, optimizations with regards to the cost of activity executions at the expense of workflow creation is desirable.
 
 		\subsection{Bitvectors}
 
@@ -537,6 +548,8 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 	\section{Discussion}
+
+	\section{GUI}
 
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
@@ -582,34 +595,28 @@ for(i = 0; i < relations.length; i=i+2){
 		\end{figure}
 
 
-		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
+		But great care would be needed when allowing external workflows to create incoming relations to another workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
 		An example of this can be seen in figure \ref{fig:external-relations-example}, where $A$ in an external workflow has an exclude relation to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
 		Executing $A$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
 		An implementation of this in the mono-contract solution would be fairly simple, as well as relatively cheap if the external workflow is stored in the same contract.
 
 			\subsubsection{Vulnerabilities}
+			Consider two workflows: $WF_{A}$ with activity $A$ and workflow $WF_{B}$ with activity $B$.
+			If a relation $R$ from $A$ to $B$ is created, the resulting consequences depend greatly on whether or not the relation is an incoming relation or an outgoing relation.\footnote{See section \ref{sec:implementation-requirements}.}
 
-			Suppose a relation is added between workflows $A$ and $B$. 
-			If it is an incoming relation (See section \ref{sec:implementation-requirements}), it would have significantly different behaviour than an outgoing relation.
-			The outgoing relations propagate changes eagerly, whereas the incoming relations check lazily.
-			This means that an outgoing relation from workflow $A$ to workflow $B$ would make the affected activity in $A$ more expensive to execute, whereas an incoming relation would make it more expensive to check whether or not the affected activity in $B$ is executable. 
+			If $R$ is an outgoing relation, the representation of it will exist on $A$. 
+			An execution of $A$ will propagate the changes of $R$ eagerly to $B$. 
+			The execution of $A$ will therefore be more expensive.
 
-			This means that either the user pushing the change must be the owner (or equivalent) of both workflows, or the following table must apply:
-			\begin{table}[!ht]
-				\begin{tabular}{|c|c|c|}
-				\hline
-				 					& Incoming 	& Outgoing \\ \hline
-				$A \rightarrow B$ 	& Owns B    & Owns A \\
-				\hline
-				\end{tabular}
-			\end{table}
+			If $R$ is an incoming relation, the representation of it will exist on $B$. 
+			An execution of $A$ will therefore be propagated lazily to $B$, as $B$ will not need to access the state of $A$ before a check if $B$ is executable is needed. 
+			Checking if $B$ is in an executable state will be therefore be more expensive.
 
-			This satisfies the issues of the Ethereum aspect, but when an activity with an outgoing relation, going from $A$ to $B$, is executed, ownership of $A$ is required, while the state of $B$ is actually being modified.
-			Incoming relations are still only an issue for $B$, within DCR, as they only have an actual effect on the targeted activity.
-			Furthermore, the user executing $A$ is going to pay for the changes made to $B$, which can be used as an attack on a workflow.
-			A malicious user could simply create a workflow with many activities, and create as many outgoing relations from the targeted workflow to each of the new activities as possible, thereby severely increasing the cost of executing activities in the targeted workflow.
-			To satisfy these issues, the required rights must therefore be modified accordingly:
+			Since an incoming relation from $A$ to $B$ both increases the cost of executing $A$ and propagates changes to $B$, the creator of $R$ must be the owner (or have equivalent rights) of $WF_{A}$ and $WF_{B}$.
+
+			When $R$ is an outgoing relation from $A$ to $B$ the requirements are not as strict. $R$ will increase the cost of checking the executability of $B$, but no attribute of any activity in $A$ will be affected in any way. 
+			Any external relation that conforms to the table below will therefore not result in any unwanted costs.
 
 			\begin{table}[!ht]
 				\begin{tabular}{|c|c|c|}
@@ -619,11 +626,11 @@ for(i = 0; i < relations.length; i=i+2){
 				\hline
 				\end{tabular}
 			\end{table}
-
-			Needing ownership of both workflows is quite restrictive, however.
-			So another approach could be to make the external outgoing relations lazy. 
-			This approach would require external relations to only be situated on the activity which changes state.
-			Each time the activity containing the external is accessed, a check is made to determine the execution order of it's dependencies. 
+			
+			Needing ownership of both workflows is however quite restrictive.
+			Another approach is to make the external outgoing relations lazy.
+			This approach requires external relations to only be situated on the activity which changes state.
+			Each time the activity containing the external relation is accessed, a check is made to determine the execution order of its dependencies.
 
 			\begin{figure}[!ht]
 				\centering
@@ -634,9 +641,10 @@ for(i = 0; i < relations.length; i=i+2){
 			\end{figure}
 
 			However, this check is not trivial to design.
-			Consider the situation in figure \ref{fig:lazy-external-relations-example}, where $A$ and $B$ are executed on the same block, and $C$'s state is accessed in a subsequent block.
-			Without an absolute ordering of the activity executions, the state of $C$ cannot be determined. 
-			It is not possible for contracts to access previous states on the Ethereum blockchain, so the timestamps for the executions are not accessible, nor are the transaction hashes, so an approach similar to that in \cite{bachelor}, where an absolute ordering is achieved by sorting on the hash, is not possible.
+			Consider the situation in figure \ref{fig:lazy-external-relations-example}, where activities $A$ and $B$ are executed and both transactions containing the executions are collected in the same block. If the state of activity $C$ is accessed in a subsequent block, the state of $C$ cannot be determined without an absolute ordering of the executions.
+
+			It is not possible for contracts to access previous states on the Ethereum blockchain, so the timestamps for the executions are not accessible, nor are the transaction hashes. 
+			So an approach similar to that in \cite{bachelor}, where an absolute ordering is achieved by sorting on the hash, is not possible.
 			Using logical clocks or vector clocks would also just conclude that the two executions are concurrent.
 			We leave this problem open for further study.
 
@@ -673,9 +681,10 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\subsubsection{Vulnerabilities}
 
-			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered, as an example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
+			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered. 
+			For example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
 			The DAO was a venture capital fund, where the investors could vote on where to invest their collective money.
-			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether (REF). 
+			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether\cite{DAO}. 
 			The investors had the option to withdraw their own funds, but an exploit was found in that the withdrawal finished by calling a given contract.
 			This allowed a user to withdraw an amount of money and withdraw it again.
 			This is not problematic in itself, but due to the balance only being updated as each method returns, a user was able to take 3.6 million Ether which was worth around 50 million dollars at the time.
@@ -769,6 +778,20 @@ if (callContract && included) //External call
 		\textit{How to build a democracy on the blockchain}.
 		\url{https://www.ethereum.org/dao},
 		Accessed 2017-05-12
+
+		\bibitem{anonymous-byzantine-consensus}
+		LaViola Jr, JJ and Miller, A.
+		\textit{Anonymous Byzantine Consensus from Moderately-Hard Puzzles: A Model for Bitcoin},
+		2014
+
+		\bibitem{DAO}
+		Unknown author
+		\textit{The DAO of accrue}.
+		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
+		Accessed 2017-05-13
+
+		
+		
 
 	\end{thebibliography}
 
