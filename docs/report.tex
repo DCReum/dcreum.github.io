@@ -433,11 +433,11 @@ for(i = 0; i < relations.length; i=i+2){
 		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
 		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
 
-		\subsection{Bitfields}
+		\subsection{bitvectors}
 
 		\begin{snippet}[ht!]
 			\centering
-			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-bitfields.sol}
+			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-bitvectors.sol}
 		 	\caption[Activities as bitvectors]
 		 	{Activities as bitvectors}
 		 	\label{sni:bitvectors}
@@ -564,7 +564,9 @@ for(i = 0; i < relations.length; i=i+2){
 		 	\label{fig:external-contract-relations}
 			\end{figure}
 
-		\subsubsection{Vulnerabilities}
+			\subsubsection{Vulnerabilities}
+
+
 
 		\subsection{Group authorization}
 		Instead of having a list of authorized users for each activity, and thus a potential source of data duplication which is a waste of storage on the blockchain, a natural extension of the authorization mechanism would be to allow group authentication.
@@ -713,11 +715,11 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
 
-	\section{Mono-contract code with bitfields}
-		\label{app:mono-contract-code-with-bitfields}
+	\section{Mono-contract code with bitvectors}
+		\label{app:mono-contract-code-with-bitvectors}
 
 
-		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitfields.sol}
+		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitvectors.sol}
 
 	\section{Test cases}
 	\label{app:test-cases}
