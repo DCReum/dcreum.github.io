@@ -467,17 +467,17 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Discussion}
 
 	\section{Further features}
-		As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
-		These features would be fairly use-case dependent and since they would have an effect on the cost of running a workflow, they should only be implemented in instances where they would actually be used.
+	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
+	These features would be fairly use-case dependent and since they would have an effect on the cost of running a workflow, they should only be implemented in instances where they would actually be used.
 
 		\subsection{Workflow changes}
 		\label{sec:workflow-changes}
 
-		In a case where a companies definition of a workflow changes, but the history of the current workflow is still relevant in the context of the new, it could be beneficial to simply change the workflow according to the specifications of the new.
+		In the case where a companies definition of a workflow changes, but the workflow models an ongoing process, it would be beneficial to simply change the workflow according to the specifications of the new workflow.
 		This poses some challenges in the way that the workflow might change its definition, subtly or drastically, as covered in \cite{hierarchical-declarative-modelling} with regards to refinement.
-		A verification of any given change to a workflow, as specified in the article, would be risky to implement in Ethereum, as it is a computationally very hard problem and a user would be hard pressed to pay for it.
-		Therefore a different method of verification would probably be more viable, for example by disallowing certain types of conditions.
-		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows.
+		
+		Implementing an algorithm that could verify that any given change to a workflow does not make the workflow less restrictive and deploying it on Ethereums blockchain would be possible.
+		However this is a very hard problem computationally and a user would be hard pressed to pay for it.\footnote{Nok en ref på at det er svært}
 
 			\subsubsection{Vulnerabilities}
 			While including the option to change workflows dynamically does not directly add vulnerabilities on its own to the system, care must be taken to ensure everyone involved in the workflow understands the implications of allowing this.
