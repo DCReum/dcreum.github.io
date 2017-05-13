@@ -4,12 +4,14 @@
   .dcr-ui-graph {
     height: 100%;
     width: 70%;
+    overflow: hidden;
   }
 
   .dcr-ui-menu {
     position: absolute;
     height: 100%;
     width: 30%;
+    max-width: 300px;
     top: 0;
     right: 0;
     overflow-y: auto;
@@ -68,6 +70,43 @@
     .execution-tx {
       min-width: 0;
     }
+
+    .whitelist-heading {
+      margin-bottom: 0;
+    }
+  }
+
+  .ctx-menu {
+    position: absolute;
+    background-color: white;
+
+    .panel-seperator {
+      padding: 0;
+    }
+
+    .include .panel-icon {
+      color: #29A81A;
+    }
+
+    .exclude .panel-icon {
+      color: #FF0000;
+    }
+
+    .condition .panel-icon {
+      color: #FFA500;
+    }
+
+    .response .panel-icon {
+      color: #1E90FF;
+    }
+
+    .milestone .panel-icon {
+      color: #BC1AF2;
+    }
+  }
+  
+  .extra-info {
+    color: #b7b7b7;
   }
 }
 

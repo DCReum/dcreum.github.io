@@ -56,13 +56,86 @@ class ExecutionEvent extends WorkflowEvent {
   }
 }
 
+class Workflow {
+  constructor(workflowName, activities, relations) {
+    this.workflowName = workflowName;
+    this.activities = activities;
+    this.relations = relations;
+    this.getContractArguments = this.getContractArguments.bind(this);
+  }
+
+  getContractArguments() {
+    const count = (array, predicate) => array.filter(predicate).length;
+    const relationNode = (relation, isOther) => {
+      switch (relation.type) {
+        case "include":
+        case "exclude":
+        case "response":
+          return isOther ? relation.to : relation.from;
+        case "condition":
+        case "milestone":
+          return isOther ? relation.from : relation.to;
+        default:
+          throw "Invalid relation type";
+      }
+    }
+    const relationSelf = relation => relationNode(relation, false);
+    const relationOther = relation => relationNode(relation, true);
+    const padEnd = (str, targetLength, padStr) => str + padStr.repeat(targetLength - str.length);
+
+    let activities = this.activities.filter(x => x);
+    let relations = this.relations.filter(x => x)
+      .sort((lhs, rhs) => relationSelf(lhs) - relationSelf(rhs));
+
+    return [
+      // names
+      [this.workflowName]
+        .concat(Array(32).fill("G"))
+        .concat(activities.map(activity => activity.name))
+        .map(str => padEnd(str, 32, " ")),
+
+      // activityStates
+      activities.map(activity => [
+        activity.isIncluded,
+        activity.isExecuted,
+        activity.isPending
+      ]),
+
+      // activityData
+      activities.map(activity => [
+        // counts for relationTypes and relationActivityIds
+        count(relations, relation => relationSelf(relation) === activity.id),
+
+        // counts for accountWhitelist
+        activity.accountWhitelist.length
+      ]),
+
+      // relationTypes
+      relations.map(relation => relation.typeToNumber()),
+
+      // relationActivityIds
+      relations.map(relation => relationOther(relation)),
+
+      [], [],
+
+      // accountWhitelist
+      activities.map(activity => activity.accountWhitelist).reduce((prev, curr) => prev.concat(curr), []),
+
+      // authDisabled
+      activities.map(activity => activity.accountWhitelist.length === 0)
+    ];
+  }
+}
+
 class Activity {
   constructor(id, name, included, executed, pending) {
-    this.is = id;
+    this.id = id;
     this.name = name;
-    this.included = included;
-    this.executed = executed;
-    this.pending = pending;
+    this.isIncluded = included;
+    this.isExecuted = executed;
+    this.isPending = pending;
+    this.relations = [];
+    this.accountWhitelist = [];
   }
 }
 
@@ -71,6 +144,24 @@ class Relation {
     this.from = from;
     this.to = to;
     this.type = type;
+    this.typeToNumber = this.typeToNumber.bind(this);
+  }
+
+  typeToNumber() {
+    switch (this.type) {
+      case "include":
+        return 0;
+      case "exclude":
+        return 1;
+      case "response":
+        return 2;
+      case "condition":
+        return 3;
+      case "milestone":
+        return 4;
+      default:
+        throw "Invalid relation type";
+    }
   }
 }
 
@@ -121,10 +212,7 @@ class WorkflowManager {
     this.getAccountWhitelist = promiseCall(contract.getAccountWhitelist).bind(null, this.workflowId);
     this.isAuthDisabled = promiseCall(contract.isAuthDisabled).bind(null, this.workflowId);
     this.canExecute = promiseCall(contract.canExecute).bind(null, this.workflowId);
-
-    this.LogWorkflowCreation = promiseCall(contract.LogWorkflowCreation);
     this.LogExecution = promiseCall(contract.LogExecution);
-
     this.execute = contract.execute;
     
     // Fetch  workflow name, activities and relations
@@ -157,7 +245,7 @@ class WorkflowManager {
   sync() {
     let result = {};
     return Promise.all([
-      this.LogWorkflowCreation({ workflowId: this.workflowId }, { fromBlock: 0 }).then(event => {
+      WorkflowManager.LogWorkflowCreation({ workflowId: this.workflowId }, { fromBlock: 0 }).then(event => {
         result.creatorAddress = event.args.creator;
         result.blockNumber = event.blockNumber;
         result.transactionHash = event.transactionHash;
@@ -173,7 +261,7 @@ class WorkflowManager {
           result.activities = [];
           let promises = [];
           for (let activityId = 0; activityId < count; activityId++) {
-            result.activities[activityId] = { relations: [] };
+            result.activities[activityId] = new Activity(activityId);
             promises.push(this.getActivityName(activityId).then(web3.toAscii).then(name => result.activities[activityId].name = name));
             promises.push(this.isIncluded(activityId).then(isIncluded => result.activities[activityId].isIncluded = isIncluded));
             promises.push(this.isExecuted(activityId).then(isExecuted => result.activities[activityId].isExecuted = isExecuted));
@@ -211,6 +299,8 @@ class WorkflowManager {
   }
 }
 
+WorkflowManager.contract = contract;
 WorkflowManager.createWorkflow = promiseCall(contract.createWorkflow);
+WorkflowManager.LogWorkflowCreation = promiseCall(contract.LogWorkflowCreation);
 
-export default WorkflowManager;
+export { WorkflowManager, Workflow, Activity, Relation };

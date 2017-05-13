@@ -56,10 +56,11 @@ contract DCReum {
   }
 
   function getRelations(uint256 relations) private constant returns (uint32[]) {
-    uint32[] ret;
+    uint32[] memory ret = new uint32[](256);
+    uint8 j = 0;
     for(var i = 0; i < 256; i++){
       if(relations & (1<<i) != 0)
-        ret.push(i);
+        ret[j++] = i;
     }
     return ret;
   }

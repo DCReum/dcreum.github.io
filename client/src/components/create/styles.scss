@@ -1,0 +1,14 @@
+section.create {
+  height: 100%;
+  
+  .workspace {
+      background: #f5f5f5;
+      height: calc(100% - 49px);
+      overflow-y: auto;
+  }
+
+  .create-tab {
+    position: relative;
+    height: 100%;
+  }
+}

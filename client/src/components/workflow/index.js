@@ -3,7 +3,8 @@ import m from "mithril";
 import Stream from "mithril/stream";
 import WorkflowTab from "components/workflow-tab";
 import EventsTab from "components/events-tab";
-import WorkflowManager from "workflow-manager";
+import Create from "components/create";
+import { WorkflowManager } from "workflow-manager";
 
 class Workflow {
   constructor() {
@@ -13,22 +14,25 @@ class Workflow {
   view() {
     const panes = {
       workflow: WorkflowTab,
-      events: EventsTab,
-      settings: "span"
+      events: EventsTab
     };
 
     let workflowId = m.route.param("workflowId");
     let tab = m.route.param("tab");
-    let setTab = (to) => m.route.set(`/workflow/${workflowId}/${to}`);
+    let tabUrl = (to) => `/workflow/${workflowId}/${to}`;
+
+    console.log(tab);
 
     return m("section.workflow", [
-      m("nav.nav.is-primary.has-shadow",
+      m("nav.nav.is-primary.has-shadow", [
           m("div.nav-left", [
-            m("a.nav-item.is-tab" + (tab === "workflow" ? ".is-active" : ""), { onclick: () => setTab("workflow") }, "Workflow"),
-            m("a.nav-item.is-tab" + (tab === "events"   ? ".is-active" : ""), { onclick: () => setTab("events")   }, "Events"),
-            m("a.nav-item.is-tab" + (tab === "settings" ? ".is-active" : ""), { onclick: () => setTab("settings") }, "Settings")
+            m("a.nav-item.is-tab" + (tab === "workflow" ? ".is-active" : ""), { href: tabUrl("workflow"), oncreate: m.route.link }, "Workflow"),
+            m("a.nav-item.is-tab" + (tab === "events" ? ".is-active" : ""), { href: tabUrl("events"), oncreate: m.route.link }, "Events"),
+          ]),
+          m("div.nav-right", [
+            m("a.nav-item.is-tab", { href: "/create", oncreate: m.route.link }, "Create new")
           ])
-      ),
+      ]),
       m("div.workspace", m(panes[tab], { workflowManager: this.workflowManager }))
     ]);
   }
