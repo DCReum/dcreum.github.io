@@ -7,7 +7,52 @@ import Stream from "mithril/stream";
 class DcrUi {
   constructor() {
     this.createGraph = this.createGraph.bind(this);
+    this.updateGraph = this.updateGraph.bind(this);
     this.selectedActivityId = Stream();
+    this.executing = [];
+  }
+
+  updateGraph(vnode) {
+    let manager = vnode.attrs.workflowManager;
+
+    this.cy.batch(() => {
+      manager.activities().map((activity, i) => {
+        let classes = [];
+        if (activity.isIncluded) classes.push("included");
+        if (activity.isExecuted) classes.push("executed");
+        if (activity.isPending) classes.push("pending");
+        if (activity.canExecute) classes.push("executable");
+
+        let node = this.cy.elements("#n" + i);
+        if (node.empty()) {
+          this.cy.add({
+            data: {
+              id: "n" + i
+            },
+            classes: classes.join(" "),
+            style: {
+              label: activity.name
+            }
+          });
+        } else {
+          node.classes(classes.join(" "));
+        } 
+      });
+
+      manager.relations().map((relation, i) => {
+        let edge = this.cy.elements("#e" + i);
+        if (edge.empty()) {
+          this.cy.add({
+            data: {
+              id: "e" + i,
+              source: "n" + relation.from,
+              target: "n" + relation.to
+            },
+            classes: relation.type
+          });
+        }
+      });
+    });
   }
 
   createGraph(vnode) {
@@ -21,7 +66,7 @@ class DcrUi {
 
       return {
         data: {
-          id: i
+          id: "n" + i
         },
         classes: classes.join(" "),
         style: {
@@ -29,15 +74,16 @@ class DcrUi {
         }
       };
     })
-    let edges = manager.relations().map(relation => ({
+    let edges = manager.relations().map((relation, i) => ({
       data: {
-        source: relation.from,
-        target: relation.to
+        id: "e" + i,
+        source: "n" + relation.from,
+        target: "n" + relation.to
       },
       classes: relation.type
     }));
 
-    let cy = cytoscape({
+    this.cy = cytoscape({
       container: vnode.dom,
       elements: nodes.concat(edges),
       layout: { name: "grid" },
@@ -151,17 +197,25 @@ class DcrUi {
     });
 
     // Only allow single element to be selected
-    cy.on("select", "*", event =>
-      cy.collection("*:selected").not(event.target).unselect()
+    this.cy.on("select", "*", event =>
+      this.cy.collection("*:selected").not(event.target).unselect()
     );
 
-    cy.on("select", "node", event => {
-      this.selectedActivityId(event.target.data("id"))
+    this.cy.on("select", "node", event => {
+      this.selectedActivityId(parseInt(event.target.data("id").replace("n", "")))
       m.redraw();
     });
 
-    cy.on("unselect", "node", event => {
+    this.cy.on("unselect", "node", event => {
       this.selectedActivityId(null)
+      m.redraw();
+    });
+  }
+
+  onExecute(workflowManager) {
+    let activityId = this.selectedActivityId();
+    workflowManager.execute(m.route.param("workflowId"), activityId, (error, txhash) => {
+      this.executing[activityId] = txhash;
       m.redraw();
     });
   }
@@ -170,9 +224,18 @@ class DcrUi {
     let manager = vnode.attrs.workflowManager;
     let selected = manager.activities()[this.selectedActivityId()];
 
+    manager.events().forEach(event => {
+      this.executing.forEach((txhash, i) => {
+        if (event.transactionHash == txhash)
+          delete this.executing[i];
+      });
+    });
+
     return m("div.dcr-ui", [
       // TODO: Fix onupdate
-      m("div.dcr-ui-graph", { oncreate: this.createGraph, onupdate: this.createGraph, workflowManager: vnode.attrs.workflowManager }),
+      vnode.attrs.workflowManager.hasSynced()
+        ? m("div.dcr-ui-graph", { oncreate: this.createGraph, onupdate: this.updateGraph, workflowManager: vnode.attrs.workflowManager })
+        : null,
       m("div.column.dcr-ui-menu", [
         m("div", [
           m("h4", "WORKFLOW"),
@@ -228,11 +291,21 @@ class DcrUi {
               ])
             ])
           ),
-          m("div.field",
+          m("div.field.has-addons",
             m("p.control",
-              m("button.button.is-warning", { disabled: !selected.canExecute, onclick: () => manager.execute(this.selectedActivityId()) }, "EXECUTE")
+              m("button.button.is-warning" + (this.executing[this.selectedActivityId()] ? ".is-loading" : ""), {
+                disabled: !selected.canExecute,
+                onclick: this.onExecute.bind(this, vnode.attrs.workflowManager)
+              }, "EXECUTE")
+            ),
+            !this.executing[this.selectedActivityId()]
+              ? null
+              : m("p.control.execution-tx",
+                  m("div.input.imitate-disabled",
+                    m("a", this.executing[this.selectedActivityId()])
+                  )
+                )
             )
-          )
         ]),
       ])
     ]);

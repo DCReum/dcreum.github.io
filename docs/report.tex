@@ -20,8 +20,8 @@
 
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
-\definecolor{darkgreen}{RGB}{50,200,50}
-\definecolor{darkcyan}{RGB}{130,230,200}
+\definecolor{darkgreen}{RGB}{0, 128, 0}
+\definecolor{darkcyan}{RGB}{130, 230, 200}
 \definecolor{verylightgray}{gray}{0.85}
 \definecolor{goldenbrown}{rgb}{0.558215, 0.0, 0.135316}
 
@@ -44,6 +44,13 @@
 	basicstyle=\linespread{1}\ttfamily\footnotesize
 }
 
+\lstdefinelanguage{pseudocode}
+{
+	keywords={if, &&, true, false},
+	keywordstyle=\color{blue},
+	comment=[l]{//},
+	commentstyle=\color{darkgreen}
+}
 \begin{document}
 
 \normalem
@@ -481,13 +488,16 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\section{Comparison}
 	\label{sec:comparison}
-	In order to compare the solutions to each other, a simple workflow has been created modeling each of the five relations...
 
-	\begin{description}
-		\item[Contract creation]
-		\item[Successful execution] ...
-		\item[Failed execution] ... 
-	\end{description}
+	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See table \ref{app:test-cases}).
+	Due to the nature of our solutions, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
+	Since there is no difference in creating the workflow and creating the contract in the multi-contract solution, but there is in the mono-contract solution, they will be hard to compare.
+
+	Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
+	This is done for each relation in order to get an estimate for the cost of a single such operation.
+	Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
+
+	Specifically to test the mono-contract solution, we also test for the cost of creating a number of workflows.
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
@@ -496,11 +506,11 @@ for(i = 0; i < relations.length; i=i+2){
 		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
 		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
 
-		\subsection{Bitfields}
+		\subsection{bitvectors}
 
 		\begin{snippet}[ht!]
 			\centering
-			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
+			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-bitvectors.sol}
 		 	\caption[Activities as bitvectors]
 		 	{Activities as bitvectors}
 		 	\label{sni:bitvectors}
@@ -527,13 +537,11 @@ for(i = 0; i < relations.length; i=i+2){
 		
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
-
-
 	\section{Discussion}
 
 	\section{Further features}
-		As the optimized solution is a completely bare-bones implementation of the DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
-		These features would be fairly use-case dependent and since they would probably have an effect on the cost of running a workflow where those features are not even used, they should only be implemented in instances where they would actually be used.
+		As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
+		These features would be fairly use-case dependent and since they would have an effect on the cost of running a workflow, they should only be implemented in instances where they would actually be used.
 
 		\subsection{Workflow changes}
 		\label{sec:workflow-changes}
@@ -542,9 +550,19 @@ for(i = 0; i < relations.length; i=i+2){
 		This poses some challenges in the way that the workflow might change its definition, subtly or drastically, as covered in \cite{hierarchical-declarative-modelling} with regards to refinement.
 		A verification of any given change to a workflow, as specified in the article, would be risky to implement in Ethereum, as it is a computationally very hard problem and a user would be hard pressed to pay for it.
 		Therefore a different method of verification would probably be more viable, for example by disallowing certain types of conditions.
-		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows. 
+		Verification could also be foregone in the favor of the simple method of requiring the user proposing the change to be authorized to change both workflows.
 
 			\subsubsection{Vulnerabilities}
+			While including the option to change workflows dynamically does not directly add vulnerabilities on its own to the system, care must be taken to ensure everyone involved in the workflow understands the implications of allowing this.
+
+			Firstly adding an activity $A$ with 1000 condition relations to another activity $B$ would greatly increase the cost of running $B$, as an execution of $B$ would result in checking a 1000 times if $A$ was executed or excluded. 
+			Secondly changing a workflow could make it less restrictive. 
+			This is true when the added activities have include or exclude relations to existing activities in the workflow \cite{dynamic-workflows}.
+			Thirdly while only allowing activities with condition, response and milestone relations to other activities to be added to the workflow after creation, would only make the workflow more restrictive, a workflow could enter a deadlock where no activity could be executed.
+
+			A middle ground could be reached by implementing dynamic changes to workflows as staged changes, and then to allow affected parties to vote on whether or not the changes should be allowed.
+			Solidity supports implementing this kind of voting on Ethereums blockchain.\cite{voting} 
+			If dynamic changes should be allowed, which changes should be allowed and who should be allowed to perform them is subject to interpretation, and is based on the use case of each single workflow.
 
 		\subsection{External relations}
 		\label{sec:external-relations}
@@ -560,7 +578,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\subsubsection{Vulnerabilities}
 
-			Suppose a relation is added between workflows $A$ and $B$, if it is an incoming relation\ref{}, it would have significantly different behaviour than from an outgoing relation.
+			Suppose a relation is added between workflows $A$ and $B$, if it is an incoming relation (See section \ref{sec:implementation-requirements}), it would have significantly different behaviour than from an outgoing relation.
 			The outgoing relations propagate changes eagerly, whereas the incoming relations check lazily.
 			This means that an outgoing relation from workflow $A$ to workflow $B$ would make the affected activity in $A$ more expensive to execute, whereas an incoming relation would make it more expensive to check whether or not the affected activity in $B$ is executable. 
 
@@ -568,26 +586,37 @@ for(i = 0; i < relations.length; i=i+2){
 			\begin{table}[!ht]
 				\begin{tabular}{|c|c|c|}
 				\hline
-				Required rights 	& Incoming 	& Outgoing \\ \hline
-				$A \rightarrow B$ 	& Owns B    & Owns A \\ \hline
-				$B \rightarrow A$ 	& Owns A	& Owns B \\
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A \\
 				\hline
 				\end{tabular}
 			\end{table}
 
-		\subsection{External contract conditions}
+			This satisfies the issues of the Ethereum aspect, but when an activity with an outgoing relation, going from $A$ to $B$, is executed, ownership of $A$ is required, while the state of $B$ is actually being modified.
+			Incoming relations are still only an issue for $B$, within DCR, as they only have an actual effect on the targeted activity.
+			To satisfy these issues, the required rights must therefore be modified accordingly:
+			\begin{table}[!ht]
+				\begin{tabular}{|c|c|c|}
+				\hline
+				 					& Incoming 	& Outgoing \\ \hline
+				$A \rightarrow B$ 	& Owns B    & Owns A+B \\
+				\hline
+				\end{tabular}
+			\end{table}
+
+		\subsection{External contract conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
 		These dependencies would essentially be conditional statements calling the functions of another contract, when it is being evaluated whether or not an activity is executable. 
 		An example could be a contract returning the value of a currency and whether or not it is above or below a specified threshold.
 
 		In the case where multiple companies have their own Mono-contract implementation, possibly due to their diverse needs for specific features, or the case where the Multi-contract implementation is used, this functionality would be closely tied to the functionality of external relations (See section \ref{sec:external-relations}).
 
-			\subsubsection{Modeling external conditions in DCR graphs}
+			\subsubsection{Modeling external conditionals in DCR graphs}
 			One could also incorporate DCR logic from external contracts, if a user creates a workflow with an activity where the only address authorized to execute the activity was the address of another contract.
 			The external contract could either be created by the workflow creator, or it could be part of a service offered by external parties.
 			The external party could be someone who monitored the price of certain commodities and executed the activity when certain criteria were met.
 			
-			Figure \ref{fig:external-contract-relations} shows how external contract conditions can be implemented. 
+			Figure \ref{fig:external-contract-relations} shows how external contract conditionals can be implemented. 
 			An external contract has been authorized to execute \texttt{Price of commodity above x} and \texttt{Price of commodity below x}. 
 			Executing them will exclude or include \texttt{Price of commodity acceptable} which will allow or disallow execution of \texttt{Sell commodity}.
 			
@@ -595,7 +624,7 @@ for(i = 0; i < relations.length; i=i+2){
 			This can seem somewhat counterintuitive as activities usually are executable entities. 
 			One could also place include and exclude relations from \texttt{Price of commodity above x} and \texttt{Price of commodity below x} directly to \texttt{Sell commodity}.
 			This approach can however lead to complications if \texttt{Sell activity} has any condition relations to other activities as excluding \texttt{Sell activity} would allow execution of these activities.
-			The first approach on the other hand preserves the restrictions of the original graph, and the external contract conditions can therefore be added after workflow creation, if such a feature is supported in the particular DCR engine.
+			The first approach on the other hand preserves the restrictions of the original graph, and the external contract conditionals can therefore be added after workflow creation, if such a feature is supported in the particular DCR engine.
 			Which approach is chosen is based on the intentions of the workflow creator.
 
 			\begin{figure}[!ht]
@@ -606,7 +635,32 @@ for(i = 0; i < relations.length; i=i+2){
 		 	\label{fig:external-contract-relations}
 			\end{figure}
 
-		\subsubsection{Vulnerabilities}
+			\subsubsection{Vulnerabilities}
+
+			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered, as an example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
+			The DAO was a venture capital fund, where the investors could vote on where to invest their collective money.
+			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether (REF). 
+			The investors had the option to withdraw their own funds, but an exploit was found in that the withdrawal finished by calling a given contract.
+			This allowed a user to withdraw an amount of money and withdraw it again.
+			This is not problematic in itself, but due to the balance only being updated as each method returns, a user was able to take 3.6 million Ether which was worth around 50 million dollars at the time.
+			This exploit is called reentrancy and should be thoroughly investigated whenever external contract calls are allowed.
+
+			In the case of DCR graphs, an external contract conditional could allow multiple executions when it shouldn't be possible, if the call is performed at the wrong time, as in this example:
+
+			\begin{lstlisting}[language=pseudocode]
+if (included)
+	if (callContract) //External call
+		...
+			\end{lstlisting}
+
+			The issue here is fairly anemic as it is not immediately apparent that this code is problematic.
+			The issue is the potential side-effect of \emph{callContract}, which could mean that the state in the first line could be inconsistent with the state after the second line and in a case where the called activity has an exclude relation to itself or another activity has an exclude relation to the former activity, the activity would be executed even though it technically is excluded.
+			Therefore the external call should be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
+
+			\begin{lstlisting}[language=pseudocode]
+if (callContract && included) //External call
+	...
+			\end{lstlisting}
 
 		\subsection{Group authorization}
 		Instead of having a list of authorized users for each activity, and thus a potential source of data duplication which is a waste of storage on the blockchain, a natural extension of the authorization mechanism would be to allow group authentication.
@@ -669,6 +723,11 @@ for(i = 0; i < relations.length; i=i+2){
 		Accessed 2017-05-12
 
 		
+		\bibitem{voting}
+		Ethereum Foundation
+		\textit{How to build a democracy on the blockchain}.
+		\url{https://www.ethereum.org/dao},
+		Accessed 2017-05-12
 
 	\end{thebibliography}
 
@@ -751,13 +810,14 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
 
-	\section{Mono-contract code with bitfields}
-		\label{app:mono-contract-code-with-bitfields}
+	\section{Mono-contract code with bitvectors}
+		\label{app:mono-contract-code-with-bitvectors}
 
 
-		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-without-group-auth-with-bits.sol}
+		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitvectors.sol}
 
-	\section{Use cases}
+	\section{Test cases}
+	\label{app:test-cases}
 
 		\begin{tabular}{| l | l | l |}
 			\hline
@@ -816,7 +876,7 @@ for(i = 0; i < relations.length; i=i+2){
 			M-stress1 & 0 & 0 \\ \hline
 			M-stress2 & 0 & 0 \\ \hline
 			P-stress1 & 0 & 0 \\ \hline
-			I-stress1 & 0 & 0 \\ \hline
+			I-stress1 & 0 & 0 \\
 			\hline
 		\end{tabular}
 
