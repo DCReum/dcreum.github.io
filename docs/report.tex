@@ -367,7 +367,7 @@
 		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
 		\subsection{Decentralized Applications}
-		Since Ethereum is built around the concept of decentralized code execution, it enables so-called Decentralized Applications, or DApps. 
+		Since Ethereum is built around the concept of decentralized code execution, it enables what are called Decentralized Applications, or DApps. 
 		A DApp is an application of which the back-end code is running on a decentralized peer-to-peer network, as for example on the Ethereum blockchain.
 		The front-end can then be published on any or all of readily available platforms, such that anyone who is participating the peer-to-peer network can access it, achieving a fully decentralized application.
 
@@ -488,8 +488,8 @@ for(i = 0; i < relations.length; i=i+2){
 	This limitation creates problems for methods which require large amount of different data. 
 	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
 	\begin{enumerate}
-		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-$n$ ($n = number \quad of \quad activities - 31$) are used for activity names.
-		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates}contains the three boolean lists.
+		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indices 1 to $n$ (where $n$ is the number of activities minus 31) are used for activity names.
+		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates} contains the three boolean lists.
 		\item An array of size three of unsigned integer arrays is used to represent activity data. 
 		\begin{enumerate}
 			\item The first array is used as a counter for how many relations will be stored on each activity. We use this counter as there is only one array containing the type of the relation and one array containing the id of the activity the relation should point to. But there is nothing indicating which activity the relation should be stored on.
@@ -512,10 +512,9 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
-		We have prioritized the optimizations according to an idea of the frequency of use.
-		That is, using the mono-contract implementation, we imagine workflow creation to be used more than contract creation, since we assume that, in the mono-contract implementation, workflow creation is much more common than contract creation. 
-		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
-		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
+		We have prioritized the optimizations according to an idea of the frequency of use, meaning that for example the mono-contract solution is based on the assumption that workflow creation is much more frequent than contract creation.
+		Therefore a cost decrease of the workflow creation functionality is acceptable even if at the cost of making contract creation more expensive. 
+		Similarly, optimizations with regards to the cost of activity executions at the expense of workflow creation is desirable.
 
 		\subsection{Bitvectors}
 
@@ -596,7 +595,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\end{figure}
 
 
-		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
+		But great care would be needed when allowing external workflows to create incoming relations to another workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
 		An example of this can be seen in figure \ref{fig:external-relations-example}, where $A$ in an external workflow has an exclude relation to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
 		Executing $A$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
