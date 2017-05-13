@@ -662,13 +662,18 @@ if (callContract && included) //External call
 			\end{lstlisting}
 
 		\subsection{Group authorization}
-		Instead of having a list of authorized users for each activity, and thus a potential source of data duplication which is a waste of storage on the blockchain, a natural extension of the authorization mechanism would be to allow group authentication.
-		That is, instead of storing the address of each user authorized to execute an activity, each address is a member of one or more groups, and each activity then only needs to store the ids of the groups allowed to execute it.   
-		Allowing for 32 distinct activity groups, the only things needed to be stored is a single \texttt{uint40}\footnote{We have chosen an \texttt{uint40} over an \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector for each address, representing the indices of the groups this address is member of in a given workflow, and for each activity a single \texttt{uint32} bitvector describing the groups authorized to execute the activity. 
-		It should be relatively simple to see that this is a storage optimization in workflows with just a little duplication of authorization.
+		A natural extension of the authorization mechanism would be to allow group authentication instead of only having a list of authorized users for each activity.
+		This could prevent potential data duplication in cases where two or more users are authorized to execute exactly the same activities, which is a waste of storage on the blockchain.
 
-		However, even ignoring this optimization, group authorization is still a valuable feature.
-		The construction of workflows is much simpler without the amount of Ethereum-address duplication and the transparency of how access rights are granted is improved.
+		Group authorization could be implemented by storing the addresses of users that are part of a group in a list and then associating activities with the id of the group requiring execution rights.
+
+		More specifically each user in a workflow should only need a single \emph{uint40}\footnote{We have chosen an \texttt{uint40} over a \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector to support membership of 32 groups with individual authorizations. Each bit in the \emph{uint40} would indicate if a user was part of a group or not.
+
+		Each activity in a workflow should then contain a \emph{uint32} where each bit represents whether or not a group has the rights to execute the activity.
+		Lastly a workflow should contain a \emph{byte32} array of length 40 to store the group names.
+
+		Even ignoring the optimizations this extension could bring, group authorization is still a valuable feature.
+		The construction of workflows is much simpler without duplication of Ethereum-address and the transparency of how access rights are granted is improved.
 		
 	\section{Conclusion}
 
