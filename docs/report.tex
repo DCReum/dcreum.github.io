@@ -625,12 +625,9 @@ for(i = 0; i < relations.length; i=i+2){
 			However, this check is not trivial to design.
 			Consider the situation in figure \ref{fig:lazy-external-relations-example}, where $A$ and $B$ are executed on the same block, and $C$'s state is accessed in a subsequent block.
 			Without an absolute ordering of the activity executions, the state of $C$ cannot be determined. 
-			It is not possible for contracts to access previous states on the Ethereum blockchain, so the timestamps for the executions are not accessible, nor are the transaction hashes, so an approach similar to that in \cite{bachelor} is not possible.
+			It is not possible for contracts to access previous states on the Ethereum blockchain, so the timestamps for the executions are not accessible, nor are the transaction hashes, so an approach similar to that in \cite{bachelor}, where an absolute ordering is achieved by sorting on the hash, is not possible.
 			Using logical clocks or vector clocks would also just conclude that the two executions are concurrent.
 			We leave this problem open for further study.
-
-
-
 
 		\subsection{External contract conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
@@ -656,11 +653,11 @@ for(i = 0; i < relations.length; i=i+2){
 			Which approach is chosen is based on the intentions of the workflow creator.
 
 			\begin{figure}[!ht]
-			\centering
-			\includegraphics{figures/external-contract-relations.png}
-		 	\caption[External contract relations]
-		 	{Example of a DCR graph dependent on other contracts}
-		 	\label{fig:external-contract-relations}
+				\centering
+				\includegraphics{figures/external-contract-relations.png}
+			 	\caption[External contract relations]
+			 	{Example of a DCR graph dependent on other contracts}
+			 	\label{fig:external-contract-relations}
 			\end{figure}
 
 			\subsubsection{Vulnerabilities}
