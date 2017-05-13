@@ -213,13 +213,13 @@
 	\end{enumerate}
 
 	\section{Ethereum}
-	In order to implement the DCR engine as a distributed smart-contract, we use the platform Ethereum. 
-	Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
-	Central for blockchain technologies is a cryptocurrency, which is used to provide incentive for mining and to pay for the verification and computation of the published code.
-	Ethereum's cryptocurrency is called \emph{Ether}.
-	As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) have a value associated with it in a unit called gas, see appendix \ref{app:gas-prices}, which is then payed for with Ether by the person publishing that code.
-	The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
-	This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
+		In order to implement the DCR engine as a distributed smart-contract, we use the platform Ethereum. 
+		Ethereum is a blockchain technology that allows for code publication and execution via the Ethereum blockchain.  
+		Central for blockchain technologies is a cryptocurrency, which is used to provide incentive for mining and to pay for the verification and computation of the published code.
+		Ethereum's cryptocurrency is called \emph{Ether}.
+		As an intermediary currency, the stack codes of the Ethereum Virtual Machine (EVM) have a value associated with it in a unit called gas, see appendix \ref{app:gas-prices}, which is then payed for with Ether by the person publishing that code.
+		The EVM is, in the words of the creators of Ethereum, a "quasi-Turing-completeness"\cite{yellow-paper}.
+		This is explained in that even if the gas is given away for free, there will be a structural limit in that unlimited gas is not representable.
 
 		\subsection{Blockchain}
 		\label{sec:blockchain}
@@ -227,28 +227,93 @@
 		Each block contains the changes to the database since the last block, as well as a reference to the block preceding it, thereby forming a chain.
 		To ensure that data cannot be overwritten, each block must be verified by a cryptographic puzzle, namely finding a nonce, a proof-of-work, to include in the block such that the hash of the block information is below a variable threshold, called the difficulty\cite{bitcoin-white-paper}. 
 		The process of finding a correct nonce is commonly called mining.
-		The difficulty is automatically adjusted according to the the frequency of mined blocks in relation to the desired frequency.
-		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is normally solved when one of the two chains has is longer than the other(s).
+		The difficulty is automatically adjusted according to the frequency of mined blocks in relation to a desired frequency.
+		Multiple blocks can be published simultaneously, and therefore reference the same preceding block. This situation is called a fork and is normally solved when one of the blocks has more subsequent blocks than the other(s), i.e. the chain with the appropriate block is the longest.
 
-		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contain some interesting features, which makes it different it from most other blockchain technologies.
+
+		The specification of Ethereum's blockchain\cite{yellow-paper, ethereum-white-paper} contain some interesting features, which makes it different from most other blockchain technologies.
 		
 		Finding a proof-of-work in Bitcoin consists of incrementing the nonce and hashing the block header to check if it fulfills the difficulty requirements. 
 		This is purely a question of computational power and has spawned a market for hardware specifically adapted to hashing, giving it an advantage compared to the standard processing units of a generic user. 
 		As this hardware is fairly expensive, this favors the so called mining pools, which are large numbers of machines combining their computational power in order to find a proof-of-work and thereafter sharing the reward for mining a block. 
-		This specialization undermines the decentralized aspect of the blockchain and in order to eliminate it, the proof-of-work in Ethereum is bound by memory, because checking the hash involves creating a large directed graph and thereafter checking the values of a number of leaf-nodes as specified by an interpretation of the nonce. 
+		This specialization undermines the decentralized aspect of the blockchain and in order to eliminate it, the proof-of-work in Ethereum is bound by memory.
+		The bound by memory is implemented by using a hashing algorithm which involves creating a large directed graph and thereafter checking the values of a number of leaf-nodes as specified by an interpretation of the nonce. 
 		The creators of Ethereum estimate that any significant progress in the performance of memory would be relatively cheap and useful in many more situations than just in the mining of Ethereum blocks, as opposed to the hardware used for mining in Bitcoin.
 
-		In Bitcoin miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves.
+		In Bitcoin, miners are rewarded by themselves when they mine the block, as they are allowed to include a transaction of a set amount of bitcoins to themselves.
 		This is very similar to how Ethereum miners are rewarded, however they are additionally rewarded for including blocks that are not included in the longest chain.
-		These are called uncles or ommers and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the current longest chain. 
+		These are called uncles, or ommers, and are included in order to not have miners waste computational power, which would result in attackers potentially needing less than the majority of the network in order to overtake the currently longest chain, since Ethereum's blocks are mined much more frequently than Bitcoin's, which means that the speed of which blocks propagate becomes more pronounced. 
 		The transactions contained in the uncles are ignored, as they could contain information conflicting with the contents of the blocks in the chain, but they are still included in the accumulated difficulty of the chain. Contrary to Bitcoins blockchain, where forks are resolved by choosing the longest chain, forks on Ethereums blockchain are solved by choosing the chain with the highest accumulated difficulty.
 		Both the miners of the uncle and the miner who includes the uncle are rewarded in this system, with a fraction of the reward for mining a block contained in the main blockchain, ensuring incentive for miners to make the chain as heavy, difficulty-wise, as possible but still prioritizing mining new blocks.
 
-		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-created code encapsulated in so called contracts. All users can interact with code on the blockchain, given that they can pay for the execution of said code. 
+		Aside from having to manage the balance of a users account, the blockchain of Ethereum also has the ability to store user-created code and arbitrary data encapsulated in so called smart-contracts (from hereon in called simply contracts). All users can interact with code on the blockchain, given that they can pay for the execution of said code. 
 		When a transaction is included in a block, part of the verification of that block is running the code specified by the transaction and making sure that the state of the contract(s) affected by the transaction is mutated accordingly.
 
 		Since this means that anyone attempting to verify a block needs to run arbitrary code, the allowed operations need to be very carefully formulated and vetted. 
 		This has led the creators of Ethereum to create their own virtual machine, namely the Ethereum Virtual Machine (EVM). 
+
+		\subsubsection{Data structure differences}
+		Ethereum supports data storage and code execution, which has left the structure of it's blockchain quite different from Bitcoin's.
+		Firstly, Ethereum tracks the balance of each account as an unsigned integer, while Bitcoin accounts do not have an explicit balance.
+		Instead, Bitcoin uses unspend transactions, \emph{UTXO}'s, which is the transactions that have been sent to a specific account, but not yet been sent from that account. 
+		This enables Bitcoin to track the origin of a single BTC all the way back to it's creation, when it was first mined.
+		The UTXO structure has both pros and cons, but since Ethereum has to support transactions which fails, but still transfers Eth to another account (see \ref{sec:ethereum-virtual-machine}), another structure had to be implemented none-the-less.
+		The UTXO-structure solves the problem of transferring the same digital currency token twice, the so-called \emph{double-spending} problem. 
+		Ethereum solves this by adding a counter to each account.
+		This counter must be incremented and sent together with each transaction, otherwise the transaction is rejected by the miners.
+
+		\begin{figure}[!ht]
+			\centering
+			\includegraphics[scale=0.4, trim={0 1.2cm 0 0}, clip=true]{figures/merkle-tree.png}
+		 	\caption[Bitcoin Merkle-tree]
+		 	{Bitcoin Merkle-tree. Please note that the data contained in the block header is simplified. Borrowed from \url{https://yos.io/2016/05/19/merkle-trees-in-elixir/}}
+		 	\label{fig:bitcoin-merkle-tree}
+		\end{figure}
+
+		Secondly, data and code must be stored somewhere, and verified on the blockchain.
+		This is solved by making the contracts and accounts virtually the same element.  
+		In Bitcoin, the integrity of accounts and transactions are verified by building a binary so-called \emph{Merkle-tree} of the transactions, and including the root of this tree in the blocks. 
+		A Merkle-tree is a tree of hashes (see figure \ref{fig:bitcoin-merkle-tree}), such that the parent of two leaves is the hash of the leaves concatenated. 
+		This provides a way to verify if a transaction is in a block, by providing only $O(log(n))$ hashes, where $n$ is the number of transactions.
+		It it also efficient to store in a block, since the root, which is a single hash, provides the integrity of a tree, and thus only the root-hash needs to be stored in the block.
+		By using UTXOs as currency tokens and Merkle-trees to verify transactions, Bitcoin sidesteps the issue of providing integrity for accounts; this is implied by the integrity of an account's corresponding transactions. 
+
+		Ethereum, however, needs data- and code integrity as well, and thus cannot sidestep this issue.
+		Where, in Bitcoin, a distinct transaction can only be found in a single Merkle-tree, Ethereum needs to provide a data structure that handles duplication between blocks better, since an account needs to be represented in the structure at any point after it's creation. 
+		To accomplish this, Ethereum uses a \emph{Merkle-Patricia tree} (also called Merkle-Patricia Trie). 
+
+		\begin{figure}[!ht]
+			\centering
+			\includegraphics[scale=0.14]{figures/merkle-patricia-tree.png}
+		 	\caption[Ethereum Merkle-Patricia tree example]
+		 	{Ethereum Merkle-Patricia tree example, visualizing the basic data structure. Borrowed from \url{https://ethereum.stackexchange.com/questions/6415/eli5-how-does-a-merkle-patricia-trie-tree-work}}
+		 	\label{fig:merkle-patricia-tree}
+		\end{figure}
+
+		The Merkle-Patricia tree is essentially a Merkle Radix tree, or Merkle trie, using hex representation as prefixes.
+		That is, it stores key-value pairs, in this case account addresses to account/contract structures, and stores pairs together according to their lexicographical prefixes.
+		As in figure \ref{fig:merkle-patricia-tree}, where all four accounts share the prefix \texttt{a7}, and thus are stored in the same extension node.
+		The trie now branches the accounts out on three branches, according to their respective shared prefixes. 
+		Since the accounts \texttt{a711355} and \texttt{a7f9365} does not share a prefix after \texttt{a7} with other accounts, they are stored directly at this depth, thus saving unnecessary deepening of the tree.
+		The fact that the Merkle-Patricia tree uses the account addresses (20 bytes) as prefixes, gives the tree a maximal depth of 40, and a branching factor of 16, making accesses to specific addresses very fast.  
+		Figure \ref{fig:merkle-patricia-tree} only shows the \emph{Patricia}-part of the tree, i.e. a radix tree.
+		The \emph{Merkle}-part comes from the fact that a reference to a node is not really a reference.
+		Instead it is a hash of the node.
+		This makes verification possible without having the entire tree, as in the Merkle-tree.  
+
+		\begin{figure}[!ht]
+			\centering
+			\includegraphics[scale=0.4]{figures/merkle-backref.png}
+		 	\caption[Ethereum block header showing references to earlier blocks]
+		 	{Ethereum block header showing references to earlier blocks' state-trees. Borrowed from \url{https://blog.ethereum.org/2015/06/26/state-tree-pruning/}}
+		 	\label{fig:merkle-patricia-tree}
+		\end{figure}
+
+		The clever this about the Merkle-Patricia tree, is the fact that a lot of data can be reused.
+		When a change is made to an account, only the hash of nodes in the branch containing the account needs to recomputed.
+		Theoretically, in a full tree containing $20$ byte addresses $= 160$ bit addresses $ = 2^{160}$ unique addresses, the maximal depth of 40 means that only 40 nodes' hashes needs to be recomputed when an account is changed, while the rest of the tree can be reused. 
+
+
 
 		\subsection{Currency}
 		The distribution of Ether functions much like the distribution of bitcoins within the Bitcoin blockchain. 
@@ -269,6 +334,7 @@
 		This feature is also what makes Ethereum quasi-Turing-complete rather than Turing-complete.
 
 		\subsection{Ethereum Virtual Machine}	
+		\label{sec:ethereum-virtual-machine}
 		Due to the unique environment in which the EVM is used, there are equally unique constraints in the EVM:
 		\begin{description}
 			\item [Max stack size and limited stack access] The stack is limited to 1024 elements and COPY and SWAP operations can only access the top 16 elements of the stack. This infers some limitations on the number of parameters which can be given to a function.
@@ -601,6 +667,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\textit{HSafety, Liveness and Run-Time Refinement for Modular Process-Aware Information Systems with Dynamic Sub Processes}.
 		\url{http://www.itu.dk/~debois/dcrstar-tr.pdf},
 		Accessed 2017-05-12
+
 		
 
 	\end{thebibliography}
