@@ -568,18 +568,28 @@ for(i = 0; i < relations.length; i=i+2){
 		\subsection{External relations}
 		\label{sec:external-relations}
 		In the proposed solutions, workflows are viewed as completely separate from each other. 
-		This means that if a connection between the two is desired, it would require the entire workflow to be duplicated per other workflow relevant to it.
+		This means that if a relation between the two is desired, it would require the entire workflow to be duplicated per other workflow relevant to it.
 		An alternative to this, could be to create external relations between the workflows, as described in \cite{distributed-workflows}.
 
-		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
-		An example of this is an exclude relation from an activity $A_{ex}$ in an external workflow to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
-		Executing $A_{ex}$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
+		\begin{figure}[!ht]
+			\centering
+			\includegraphics[scale=0.3]{figures/external-relations-example.png}
+		 	\caption[External relation example]
+		 	{External relation example. $A$ is a part of a different workflow than $B$ and $C$, but has an external exclude relation to $B$.}
+		 	\label{fig:external-relations-example}
+		\end{figure}
 
-		An implementation of this in the mono-contract solution would be fairly simple, as well as cheap, as all the workflows are potentially stored in a single contract.
+
+		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
+		An example of this can be seen in figure \ref{fig:external-relations-example}, where $A$ in an external workflow has an exclude relation to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
+		Executing $A$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
+
+		An implementation of this in the mono-contract solution would be fairly simple, as well as relatively cheap if the external workflow is stored in the same contract.
 
 			\subsubsection{Vulnerabilities}
 
-			Suppose a relation is added between workflows $A$ and $B$, if it is an incoming relation (See section \ref{sec:implementation-requirements}), it would have significantly different behaviour than from an outgoing relation.
+			Suppose a relation is added between workflows $A$ and $B$. 
+			If it is an incoming relation (See section \ref{sec:implementation-requirements}), it would have significantly different behaviour than an outgoing relation.
 			The outgoing relations propagate changes eagerly, whereas the incoming relations check lazily.
 			This means that an outgoing relation from workflow $A$ to workflow $B$ would make the affected activity in $A$ more expensive to execute, whereas an incoming relation would make it more expensive to check whether or not the affected activity in $B$ is executable. 
 
@@ -595,7 +605,10 @@ for(i = 0; i < relations.length; i=i+2){
 
 			This satisfies the issues of the Ethereum aspect, but when an activity with an outgoing relation, going from $A$ to $B$, is executed, ownership of $A$ is required, while the state of $B$ is actually being modified.
 			Incoming relations are still only an issue for $B$, within DCR, as they only have an actual effect on the targeted activity.
+			Furthermore, the user executing $A$ is going to pay for the changes made to $B$, which can be used as an attack on a workflow.
+			A malicious user could simply create a workflow with many activities, and create as many outgoing relations from the targeted workflow to each of the new activities as possible, thereby severely increasing the cost of executing activities in the targeted workflow.
 			To satisfy these issues, the required rights must therefore be modified accordingly:
+
 			\begin{table}[!ht]
 				\begin{tabular}{|c|c|c|}
 				\hline
@@ -604,6 +617,29 @@ for(i = 0; i < relations.length; i=i+2){
 				\hline
 				\end{tabular}
 			\end{table}
+
+			Needing ownership of both workflows is quite restrictive, however.
+			So another approach could be to make the external outgoing relations lazy. 
+			This approach would require external relations to only be situated on the activity which changes state.
+			Each time the activity containing the external is accessed, a check is made to determine the execution order of it's dependencies. 
+
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[scale=0.4]{figures/lazy-external-relation-example.PNG}
+			 	\caption[Lazy external relation example]
+			 	{Lazy external relation example. $\{A\}$, $\{B\}$ and $\{C, D\}$ are part of different workflows. The external relations to $C$ are only situated on $C$.}
+			 	\label{fig:lazy-external-relations-example}
+			\end{figure}
+
+			However, this check is not trivial to design.
+			Consider the situation in figure \ref{fig:lazy-external-relations-example}, where $A$ and $B$ are executed on the same block, and $C$'s state is accessed in a subsequent block.
+			Without an absolute ordering of the activity executions, the state of $C$ cannot be determined. 
+			It is not possible for contracts to access previous states on the Ethereum blockchain, so the timestamps for the executions are not accessible, nor are the transaction hashes, so an approach similar to that in \cite{bachelor} is not possible.
+			Using logical clocks or vector clocks would also just conclude that the two executions are concurrent.
+			We leave this problem open for further study.
+
+
+
 
 		\subsection{External contract conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
