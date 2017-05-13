@@ -595,7 +595,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\end{figure}
 
 
-		But great care would be needed when allowing external contracts to create incoming relations to a workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
+		But great care would be needed when allowing external workflows to create incoming relations to another workflow, as incoming relations can make workflows less restrictive, which is related to the issues outlined with regards to workflow changes (See section \ref{sec:workflow-changes}). 
 		An example of this can be seen in figure \ref{fig:external-relations-example}, where $A$ in an external workflow has an exclude relation to an activity $B$ with a condition relation to another activity $C$ in the original workflow. 
 		Executing $A$ would exclude $B$ and activity $C$ would be executable without executing $B$ as intended when constructing the condition relation.
 
