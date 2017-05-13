@@ -385,7 +385,7 @@
 	\end{description}
 
 	\section{Multi-contract implementation}
-	% Design decisions
+
 	The first implementation approach is to deploy an Ethereum contract for each workflow. We will call this implementation the Multi-contract implementation.
 	Each deployed contract contains a workflows name, a list of the activities in the workflow and the address of the contract creator.
 	Furthermore each contract contains functions to support the functionality described in section \ref{sec:implementation-requirements}.
@@ -394,8 +394,6 @@
 	Another approach could be to deploy each activity as its own contract.
 	However this approach would introduce a high level of coupling between contracts.
 	The Multi-contract implementation on the other hand achieves minimum coupling between contracts, since no inter-contract function calls are necessary to achieve the required functionality.
-
-	%Relatively expensive in theory - include? - No (Thgn 11-05-17)
 
 	% Important implementation details
 		%Data structure
@@ -507,7 +505,7 @@ for(i = 0; i < relations.length; i=i+2){
 		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
 		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
 
-		\subsection{bitvectors}
+		\subsection{Bitvectors}
 
 		\begin{snippet}[ht!]
 			\centering
