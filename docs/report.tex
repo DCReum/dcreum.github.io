@@ -105,6 +105,13 @@
 		Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
 
 			\subsubsection{Achieving consensus with blockchains}
+			In 2014 it was shown formally that Bitcoin's blockchain is a Monte Carlo solution to the Consensus Problem in a system with byzantine failures \cite{anonymous-byzantine-consensus}. 
+			This proof is rather technical, and we will not go into further detail here.
+
+			The consensus algorithms in Bitcoin and Ethereum are nearly identical, i.e. block mining, and thus it should be relatively trivial to show that the same arguments presented for Bitcoin's consensus algorithm in \cite{anonymous-byzantine-consensus} holds for Ethereum.
+			We have also given an argument for how the Bitcoin blockchain can be used to achieve consensus in a third party application in our bachelor's thesis. 
+			For further study, we suggest starting there.
+
 
 			\subsubsection{Motivation to use Ethereum}
 			The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
@@ -359,6 +366,8 @@
 
 		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
+		\subsection{Decentralized Applications}
+
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
 	The data structure of the two implementation will be as follows:
@@ -537,6 +546,8 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 	\section{Discussion}
+
+	\section{GUI}
 
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
@@ -769,6 +780,12 @@ if (callContract && included) //External call
 		\textit{How to build a democracy on the blockchain}.
 		\url{https://www.ethereum.org/dao},
 		Accessed 2017-05-12
+
+		\bibitem{anonymous-byzantine-consensus}
+		LaViola Jr, JJ and Miller, A.
+		\textit{Anonymous Byzantine Consensus from Moderately-Hard Puzzles: A Model for Bitcoin},
+		2014
+		
 
 	\end{thebibliography}
 
