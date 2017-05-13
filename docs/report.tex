@@ -682,9 +682,10 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\subsubsection{Vulnerabilities}
 
-			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered, as an example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
+			If this feature would be implemented with actual calls to contracts, there are issues which need to be considered. 
+			For example this was abused in the Decentralized Autonomous Organization (DAO) which existed on Ethereum.			
 			The DAO was a venture capital fund, where the investors could vote on where to invest their collective money.
-			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether (REF). 
+			It was one of the reasons for the growth of Ethereum and in May of 2016, they had attracted the users who owned 14\% of all Ether\cite{DAO}. 
 			The investors had the option to withdraw their own funds, but an exploit was found in that the withdrawal finished by calling a given contract.
 			This allowed a user to withdraw an amount of money and withdraw it again.
 			This is not problematic in itself, but due to the balance only being updated as each method returns, a user was able to take 3.6 million Ether which was worth around 50 million dollars at the time.
@@ -783,6 +784,14 @@ if (callContract && included) //External call
 		LaViola Jr, JJ and Miller, A.
 		\textit{Anonymous Byzantine Consensus from Moderately-Hard Puzzles: A Model for Bitcoin},
 		2014
+
+		\bibitem{DAO}
+		Unknown author
+		\textit{The DAO of accrue}.
+		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
+		Accessed 2017-05-13
+
+		
 		
 
 	\end{thebibliography}
