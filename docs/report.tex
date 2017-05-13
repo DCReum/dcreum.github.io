@@ -543,7 +543,9 @@ for(i = 0; i < relations.length; i=i+2){
 		However this is a computationally hard problem and therefore expensive to run on Ethereum.\footnote{Nok en ref på at det er svært}
 
 			\subsubsection{Vulnerabilities}
-			While vulnerabilities from including the option to change workflows dynamically depends on the implementation, and the feature does not introduce vulnerabilities itself, care must still be taken to ensure everyone involved in the workflow understands the implications of allowing dynamic changes.
+			Allowing dynamic changes to workflows does not directly introduce any vulnerabilities. 
+			However different implementations of this feature can lead to rising activity execution costs, unfairness and lessens the trust in the system. 
+			Care must therefore be taken to ensure everyone involved in the workflow understands the implications of allowing dynamic changes.
 
 			Firstly adding an activity $A$ with 1000 condition relations to another activity $B$ would greatly increase the cost of running $B$\footnote{This is only possible in the unoptimized implementations. However a case of adding 1000 activities $\{A_1, A_2, \dots, A_{1000}\}$, each with a condition to $B$ would have the same effect.}, as an execution of $B$ would result in checking a 1000 times if $A$ was executed or excluded. 
 
@@ -554,7 +556,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 			A middle ground could be reached by implementing dynamic changes to workflows as staged changes, and then to allow affected parties to vote on whether or not the changes should be allowed.
 			Solidity supports implementing this kind of voting on Ethereum's blockchain.\cite{voting} 
-			If dynamic changes should be allowed, then which changes should be allowed, and who should be allowed to perform them, is subject to interpretation, and is based on the use case of each single workflow.
+			If dynamic changes should be allowed, which changes should be allowed and who should be allowed to perform them is subject to interpretation, and is based on the use case of each single workflow.
 
 		\subsection{External relations}
 		\label{sec:external-relations}
