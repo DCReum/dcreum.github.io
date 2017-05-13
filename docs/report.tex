@@ -54,6 +54,7 @@
 \begin{document}
 
 \normalem
+\pagenumbering{Alph}
 	\begin{titlepage}
 		\noindent{\huge Consensus in declarative process models using distributed smart-contracts} \\ \\
 		Mikkel Gaub, \\ Tróndur Høgnason, \\ Malthe Ettrup Kirkbro, \\ \& Mads Frederik Madsen	\\ \\
@@ -537,20 +538,22 @@ for(i = 0; i < relations.length; i=i+2){
 		In the case where a companies definition of a workflow changes, but the workflow models an ongoing process, it would be beneficial to simply change the workflow according to the specifications of the new workflow.
 		This poses some challenges in the way that the workflow might change its definition, subtly or drastically, as covered in \cite{hierarchical-declarative-modelling} with regards to refinement.
 		
-		Implementing an algorithm that could verify that any given change to a workflow does not make the workflow less restrictive and deploying it on Ethereums blockchain would be possible.
-		However this is a very hard problem computationally and a user would be hard pressed to pay for it.\footnote{Nok en ref på at det er svært}
+		Implementing an algorithm that could verify that any given change to a workflow does not make the workflow less restrictive and deploying it on Ethereum's blockchain would be possible.
+		However this is a computationally hard problem and therefore expensive to run on Ethereum.\footnote{Nok en ref på at det er svært}
 
 			\subsubsection{Vulnerabilities}
-			While including the option to change workflows dynamically does not directly add vulnerabilities on its own to the system, care must be taken to ensure everyone involved in the workflow understands the implications of allowing this.
+			While vulnerabilities from including the option to change workflows dynamically depends on the implementation, and the feature does not introduce vulnerabilities itself, care must still be taken to ensure everyone involved in the workflow understands the implications of allowing dynamic changes.
 
-			Firstly adding an activity $A$ with 1000 condition relations to another activity $B$ would greatly increase the cost of running $B$, as an execution of $B$ would result in checking a 1000 times if $A$ was executed or excluded. 
+			Firstly adding an activity $A$ with 1000 condition relations to another activity $B$ would greatly increase the cost of running $B$\footnote{This is only possible in the unoptimized implementations. However a case of adding 1000 activities $\{A_1, A_2, \dots, A_{1000}\}$, each with a condition to $B$ would have the same effect.}, as an execution of $B$ would result in checking a 1000 times if $A$ was executed or excluded. 
+
 			Secondly changing a workflow could make it less restrictive. 
 			This is true when the added activities have include or exclude relations to existing activities in the workflow \cite{dynamic-workflows}.
+
 			Thirdly while only allowing activities with condition, response and milestone relations to other activities to be added to the workflow after creation, would only make the workflow more restrictive, a workflow could enter a deadlock where no activity could be executed.
 
 			A middle ground could be reached by implementing dynamic changes to workflows as staged changes, and then to allow affected parties to vote on whether or not the changes should be allowed.
-			Solidity supports implementing this kind of voting on Ethereums blockchain.\cite{voting} 
-			If dynamic changes should be allowed, which changes should be allowed and who should be allowed to perform them is subject to interpretation, and is based on the use case of each single workflow.
+			Solidity supports implementing this kind of voting on Ethereum's blockchain.\cite{voting} 
+			If dynamic changes should be allowed, then which changes should be allowed, and who should be allowed to perform them, is subject to interpretation, and is based on the use case of each single workflow.
 
 		\subsection{External relations}
 		\label{sec:external-relations}
