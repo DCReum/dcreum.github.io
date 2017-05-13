@@ -65,7 +65,7 @@
 		This paper investigates how efficiently declarative process models can be implemented using distributed smart-contracts. 
 		More concretely, a Dynamic Condition Response (DCR) workflow engine is implemented on the Ethereum platform, with a focus on minimizing the cost of running such an engine. 
 		Two structurally different solutions are implemented and compared based on their cost.
-		Then the best of the implementations is optimized, and a number of potential further features are described and their viability evaluated within the Ethereum platform.
+		Then the best of the implementations is optimized, and a number of potential further features are described and their viability within the Ethereum platform are evaluated.
 		\thispagestyle{empty}
 	\end{titlepage}
 	\clearpage
@@ -78,17 +78,24 @@
 	\pagebreak
 
 	\section{Introduction}
-	In this article we will continue to build upon our previous research with declarative process models on blockchain. 
-	In our previous research we have shown how a blockchain can be used to achieve consensus between multiple participants in a declarative process model, and we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoins blockchain to achieve consensus.
- 
-	We found Bitcoins blockchain to be restrictive which is understandable, as it is not intended for anything else than a ledger of transaction for the cryptocurrency Bitcoin. 
-	But the underlying technology, the blockchain, has been used in many other applications and platforms. 
-	We will implement a WfMS using a Dynamic Condition Response (DCR) engine on one of these platforms, namely Ethereum.
-	Since everything costs money in Ethereum, optimization is key in order for a solution to be viable.
-	Ethereum is also a very new technology and is constantly subject to change, making it fairly undocumented aside from the yellow- and whitepaper.
-	We will therefore be experimenting with several different system structures and comparing their costs in order to find the best solution.
+	Coordinating a collaboration between several companies can be a daunting task.
+	These collaborations can be complicated and time-sensitive.
+	If the collaborations require some actions to be performed in a specific sequence, a workflow can be a used to describe this sequence.
+	Ensuring agreement about the history of the workflow is pivotal.
+	Consequently a single company cannot be in charge of administering the workflow, as they can only be trusted to act in their own interest, and forgery of the workflow history would be easy.
+	Maintaining a valid history by preventing cheating while still giving all parties perfect information is therefore not a trivial task.
 
-	With the growing interest in decentralization in computer science we think it is of the utmost importance to continue to explore and improve upon existing decentralization techniques.
+	We have previously explored the viability of solving these problems with blockchains in \cite{bachelor}, where we have shown how a blockchain can be used to achieve consensus between multiple participants in a declarative process model. 
+	In this article we will continue to build upon our previous research with declarative process models on blockchain.
+
+	As part of the research we built a proof of work declarative workflow management system (WfMS) that utilized Bitcoin's blockchain to achieve consensus. 
+	We found Bitcoin's blockchain to be restrictive and expensive.
+	This is primarily because Bitcoin's blockchain is not intended for anything else than a ledger of transactions for the cryptocurrency. 
+	But the underlying technology, the blockchain, has been used in many other applications and platforms. 
+	We will implement a WfMS using a Dynamic Condition Response (DCR) engine on one of these platforms, namely Ethereum -- which allows for storage of data and code execution on their blockchain.
+	Since both code execution and storage costs money in Ethereum, optimization is key in order for a solution to be viable.
+	Ethereum is also a very new technology and is constantly subject to change, making it fairly undocumented aside from the yellow paper \cite{yellow-paper} and white paper \cite{ethereum-white-paper}.
+	We will therefore be experimenting with several different system structures and comparing their costs in order to find the best solution.
 
 		\subsection{Previous work}
 		Our previous work with blockchains was done for our bachelor thesis \cite{bachelor}. 
@@ -98,6 +105,13 @@
 		Interested parties can review the previously mentioned thesis in which there is references to a great deal of literature to support this claim.
 
 			\subsubsection{Achieving consensus with blockchains}
+			In 2014 it was shown formally that Bitcoin's blockchain is a Monte Carlo solution to the Consensus Problem in a system with byzantine failures \cite{anonymous-byzantine-consensus}. 
+			This proof is rather technical, and we will not go into further detail here.
+
+			The consensus algorithms in Bitcoin and Ethereum are nearly identical, i.e. block mining, and thus it should be relatively trivial to show that the same arguments presented for Bitcoin's consensus algorithm in \cite{anonymous-byzantine-consensus} holds for Ethereum.
+			We have also given an argument for how the Bitcoin blockchain can be used to achieve consensus in a third party application in our bachelor's thesis. 
+			For further study, we suggest starting there.
+
 
 			\subsubsection{Motivation to use Ethereum}
 			The previous DCR engine we built utilized Bitcoins blockchain to validate workflow creation and execution attempts by storing the hash of these on the blockchain.
@@ -352,6 +366,8 @@
 
 		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
+		\subsection{Decentralized Applications}
+
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
 	The data structure of the two implementation will be as follows:
@@ -481,7 +497,7 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Comparison}
 	\label{sec:comparison}
 
-	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See table \ref{app:test-cases}).
+	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See table \ref{app:test-cases-gas}).
 	Due to the nature of our solutions, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
 	Since there is no difference in creating the workflow and creating the contract in the multi-contract solution, but there is in the mono-contract solution, they will be hard to compare.
 
@@ -530,6 +546,8 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 	\section{Discussion}
+
+	\section{GUI}
 
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
@@ -758,6 +776,12 @@ if (callContract && included) //External call
 		\url{https://www.ethereum.org/dao},
 		Accessed 2017-05-12
 
+		\bibitem{anonymous-byzantine-consensus}
+		LaViola Jr, JJ and Miller, A.
+		\textit{Anonymous Byzantine Consensus from Moderately-Hard Puzzles: A Model for Bitcoin},
+		2014
+		
+
 	\end{thebibliography}
 
 	\clearpage
@@ -846,42 +870,50 @@ if (callContract && included) //External call
 
 		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitvectors.sol}
 
-	\section{Test cases}
-	\label{app:test-cases}
+	\section{Test cases transaction hashes}
+	\label{app:test-cases-tx}
 
 		\begin{tabular}{| l | l | l |}
 			\hline
-			Action 						& Multi-contract & Mono-contract \\ \hline
-			Contract creation 			& 0 & 0 \\\hline
-			Workflow creation 			& 0 & 0 \\\hline
-			Propose solution (fails) 	& 0 & 0 \\\hline
-			Reject solution (fails) 	& 0 & 0 \\\hline
-			Accept solution (fails) 	& 0 & 0 \\\hline
-			Close ticket (fails) 		& 0 & 0 \\\hline
-			Submit ticket	 			& 0 & 0 \\\hline
-			Submit ticket (fails)		& 0 & 0 \\\hline
-			Reject solution (fails) 	& 0 & 0 \\\hline
-			Accept solution (fails) 	& 0 & 0 \\\hline
-			Close ticket (fails) 		& 0 & 0 \\\hline
-			Propose solution 		 	& 0 & 0 \\\hline
-			Propose solution (dup)	 	& 0 & 0 \\\hline
-			Submit ticket (fails)		& 0 & 0 \\\hline
-			Close ticket (fails) 		& 0 & 0 \\\hline
-			Reject solution 		 	& 0 & 0 \\\hline
-			Reject solution (dup)	 	& 0 & 0 \\\hline
-			Accept solution (fails) 	& 0 & 0 \\\hline
-			Submit ticket (fails)		& 0 & 0 \\\hline
-			Close ticket (fails) 		& 0 & 0 \\\hline
-			Propose solution 		 	& 0 & 0 \\\hline
-			Accept solution 		 	& 0 & 0 \\\hline
-			Reject solution (fails)	 	& 0 & 0 \\\hline
-			Submit ticket (fails)		& 0 & 0 \\\hline
-			Propose solution (fails) 	& 0 & 0 \\\hline
-			Close ticket 		 		& 0 & 0 \\\hline
-			Submit ticket (fails)		& 0 & 0 \\\hline
-			Propose solution (fails) 	& 0 & 0 \\\hline
-			Reject solution (fails) 	& 0 & 0 \\\hline
-			Contract creation 			& 0 & 0 \\
+			Action 	& Multi-contract 													 \\ \hline
+			1. Test& 0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734  \\\hline
+			2. Test& - 																	 \\\hline 
+			3. Test& 0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99  \\\hline
+			4. Test& 0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8  \\\hline
+			5. Test& 0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f  \\\hline
+			6. Test& 0x8cfc647a65a840d59c32776f9d856e08af089ae3a51a8342a51db5716f072ff4  \\\hline
+			7. Test& 0x21fa6c5c8458cdee8a546892001b01778639ca4e4855e53df83fa1e049c8d309  \\\hline
+			8. Test& 0xb263f9e9f89a773ca1b4de65dc989e78e4cc9f939f13a161e27b8119e48a5cf4  \\\hline
+			9. Test& 0xcfb70b00e0357a98eeabcca60d3bf9fba69d0f4724aa31c99df3542db0cfd988  \\\hline
+			10. Test& 0x923f1506887ea6d93ecea8c63e97e9e7d32d2227780d1c27764efbf8449b3bac \\\hline
+			11. Test& 0x7e361c81e441689408b1be3cf800be705b69228a30583b21d7fac40d61671147 \\\hline
+			12. Test& 0xff45cb12d828dccab36f96fcf2d18bffc85873fc0159afe392c506026dfe360c \\\hline
+			13. Test& 0xd3373176d23c31cf1dc8e4314aec2d3d8012e5aff2edd4a57b56e278c6cf07b9 \\\hline
+			14. Test& 0xcff7205e63888de510e09c709f596d6dd65b559bba6a3f598a665c7f41ffcb60 \\\hline
+			15. Test& 0xbf0896427c4006153000cd5456d5ca23ba79f24da7242bb37b7746240d2038ce \\\hline
+		\end{tabular}
+
+	\section{Test cases gas comparison}
+	\label{app:test-cases-gas}
+
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Action 										& Multi-contract & Mono-contract \\ \hline
+			1. Contract creation						& 2221906		 & 0 \\\hline
+			2. Workflow creation						& included 		 & 0 \\\hline
+			3. Submit ticket (Authorization failure)	& -				 & 0 \\\hline
+			4. Propose solution (Condition failure)		& -				 & 0 \\\hline
+			5. Reject solution (Condition failure)		& -				 & 0 \\\hline
+			6. Accept solution (Milestone failure)		& -				 & 0 \\\hline
+			7. Close ticket (Excluded failure)			& -				 & 0 \\\hline
+			8. Submit ticket							& 61112			 & 0 \\\hline
+			9. Submit ticket (Excluded failure)			& -				 & 0 \\\hline
+			10. Propose solution						& 41208			 & 0 \\\hline
+			11. Propose solution (Duplicate)			& 41208			 & 0 \\\hline
+			12. Reject solution							& 41208			 & 0 \\\hline
+			13. Propose solution						& 41208			 & 0 \\\hline
+			14. Accept solution							& 54023			 & 0 \\\hline
+			15. Close ticket							& 34810			 & 0 \\\hline
 			\hline
 		\end{tabular}
 

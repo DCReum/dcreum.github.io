@@ -1,4 +1,4 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.4.10;
 
 contract Workflow {
 
@@ -113,7 +113,7 @@ contract Workflow {
     function execute(uint32 id) {
         // Check that activity is in executable state
         canExecute(id);
-        Activity memory a = activities[id];
+        Activity a = activities[id];
         
         if(!a.included){
             throw;
