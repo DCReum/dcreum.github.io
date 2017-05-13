@@ -367,7 +367,7 @@
 		We have chosen to implement our solutions in Solidity (v. 0.4.10) as it seems most mature of the listed options, at the time of writing.
 
 		\subsection{Decentralized Applications}
-		Since Ethereum is built around the concept of decentralized code execution, it enables so-called Decentralized Applications, or DApps. 
+		Since Ethereum is built around the concept of decentralized code execution, it enables what are called Decentralized Applications, or DApps. 
 		A DApp is an application of which the back-end code is running on a decentralized peer-to-peer network, as for example on the Ethereum blockchain.
 		The front-end can then be published on any or all of readily available platforms, such that anyone who is participating the peer-to-peer network can access it, achieving a fully decentralized application.
 
@@ -512,10 +512,9 @@ for(i = 0; i < relations.length; i=i+2){
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
-		We have prioritized the optimizations according to an idea of the frequency of use.
-		That is, using the mono-contract implementation, we imagine workflow creation to be used more than contract creation, since we assume that, in the mono-contract implementation, workflow creation is much more common than contract creation. 
-		Thus, a cost decrease of the workflow creation functionality is acceptable even if the cost of contract creation might suffer. 
-		Similarly, optimizations of activity executions at the expense of workflow creation is acceptable.
+		We have prioritized the optimizations according to an idea of the frequency of use, meaning that for example the mono-contract solution is based on the assumption that workflow creation is much more frequent than contract creation.
+		Therefore a cost decrease of the workflow creation functionality is acceptable even if at the cost of making contract creation more expensive. 
+		Similarly, optimizations with regards to the cost of activity executions at the expense of workflow creation is desirable.
 
 		\subsection{Bitvectors}
 
