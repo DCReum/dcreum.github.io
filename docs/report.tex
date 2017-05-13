@@ -462,12 +462,12 @@ for(i = 0; i < relations.length; i=i+2){
 	The key difference is that the methods must access an index of the workflow array to retrieve the specified array before beginning modification of a workflow.
 
 	The limitations of Solidity are clearly reflected in the \texttt{createWorkflow} method which creates a workflow. 
-	Because of the limit on number of bytes the EVM can go back, the number of variables a method can take is limited. 
+	Because of the limit on number of bytes the EVM can go back on the stack, the number of variables a method can take is limited. 
 	This limitation creates problems for methods which require large amount of different data. 
 	Some of the compromises we have made to limit the number of variables in the \texttt{createWorkflow} are listed below:
 	\begin{enumerate}
 		\item A byte array is used to represent all names relevant to the workflow. The first index is used for the workflow name, indexes 1-32 are used for group names and indexes 33-$n$ ($n = number \quad of \quad activities - 33$) are used for activity names.
-		\item Instead of three boolean list representing the attributes of the activities, the array \texttt{activityStates} of size three of boolean arrays is used.
+		\item Instead of three boolean lists representing the attributes of the activities, the array \texttt{activityStates}contains the three boolean lists.
 		\item An array of size three of unsigned integer arrays is used to represent activity data. 
 		\begin{enumerate}
 			\item The first array is used as a counter for how many relations will be stored on each activity. We use this counter as there is only one array containing the type of the relation and one array containing the id of the activity the relation should point to. But there is nothing indicating which activity the relation should be stored on.
@@ -641,7 +641,7 @@ for(i = 0; i < relations.length; i=i+2){
 			The external contract could either be created by the workflow creator, or it could be part of a service offered by external parties.
 			The external party could be someone who monitored the price of certain commodities and executed the activity when certain criteria were met.
 			
-			Figure \ref{fig:external-contract-relations} shows how external contract conditionals can be implemented. 
+			Figure \ref{fig:external-contract-conditionals} shows how external contract conditionals can be implemented. 
 			An external contract has been authorized to execute \texttt{Price of commodity above x} and \texttt{Price of commodity below x}. 
 			Executing them will exclude or include \texttt{Price of commodity acceptable} which will allow or disallow execution of \texttt{Sell commodity}.
 			
@@ -654,10 +654,10 @@ for(i = 0; i < relations.length; i=i+2){
 
 			\begin{figure}[!ht]
 				\centering
-				\includegraphics{figures/external-contract-relations.png}
-			 	\caption[External contract relations]
+				\includegraphics[scale=0.7]{figures/external-contract-conditionals.png}
+			 	\caption[External contract conditionals]
 			 	{Example of a DCR graph dependent on other contracts}
-			 	\label{fig:external-contract-relations}
+			 	\label{fig:external-contract-conditionals}
 			\end{figure}
 
 			\subsubsection{Vulnerabilities}
