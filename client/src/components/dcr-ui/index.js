@@ -318,7 +318,7 @@ class DcrUi {
                     this.ctxTargetGroup !== "none"
                       ? null
                       : m("a.panel-block", { onclick: () => {
-                          let activity = new Activity(this.activities.length, "New node", true, false, false);
+                          let activity = new Activity(this.activities.length, "New activity", true, false, false);
                           activity.canExecute = true;
                           activity.initialPosition = this.ctxPosition;
                           this.activities.push(activity);
@@ -412,7 +412,7 @@ class DcrUi {
                   ? null
                   : m("p.control.execution-tx",
                       m("div.input.imitate-disabled",
-                        m("a", this.publishHash())
+                        m("a", { href: WorkflowManager.transactionHref(this.publishHash()) }, this.publishHash())
                       )
                     )
               ),
@@ -422,7 +422,7 @@ class DcrUi {
                 size: "small",
                 label: "BLOCK",
                 value: manager.blockNumber() ? `#${manager.blockNumber()}` : null,
-                href: "#"
+                href: WorkflowManager.blockHref(manager.blockNumber())
               }),
           !manager
             ? null
@@ -430,7 +430,7 @@ class DcrUi {
                 size: "small",
                 label: "TRANSACTION",
                 value: manager.transactionHash(),
-                href: "#"
+                href: WorkflowManager.transactionHref(manager.transactionHash())
               }),
           !manager
             ? null
@@ -438,7 +438,7 @@ class DcrUi {
                 size: "small",
                 label: "CREATOR",
                 value: manager.creatorAddress(),
-                href: "#"
+                href: WorkflowManager.addressHref(manager.creatorAddress())
               })
         ]),
 
@@ -480,7 +480,7 @@ class DcrUi {
             size: "small",
             input: !editable ? null : m("input.input.is-small" + (web3.isAddress(address) ? "" : ".is-danger"), { value: address, oninput: m.withAttr("value", value => selected.accountWhitelist[i] = value) }),
             value: editable ? null : address,
-            href: editable ? null : "#"
+            href: editable ? null : WorkflowManager.addressHref(address)
           })),
           !editable
             ? null
@@ -510,7 +510,7 @@ class DcrUi {
                   ? null
                   : m("p.control.execution-tx",
                       m("div.input.imitate-disabled",
-                        m("a", this.executing[this.selectedActivityId()])
+                        m("a", { href: WorkflowManager.transactionHref(this.executing[this.selectedActivityId()]) }, this.executing[this.selectedActivityId()])
                       )
                     )
               )

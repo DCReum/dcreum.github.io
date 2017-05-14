@@ -1,4 +1,4 @@
-const address = "0x5c9a58675768678384186176d80c2bf9bEB7aF5d";
+const address = "0x513f9A8f6D84246B48C494297b40aDd088c1fEbc";
 
 const abi = [
   {
@@ -306,28 +306,6 @@ const abi = [
       {
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "workflowId",
-        "type": "uint256"
-      },
-      {
-        "name": "activityId",
-        "type": "uint256"
-      }
-    ],
-    "name": "test",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,

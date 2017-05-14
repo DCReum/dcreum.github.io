@@ -2,6 +2,7 @@ import "./styles.scss";
 import m from "mithril";
 import moment from "moment";
 import mutil from "mutil.js";
+import { WorkflowManager } from "workflow-manager";
 
 class ContractEvent {
   constructor(vnode) {
@@ -52,22 +53,22 @@ class ExecutionEvent extends ContractEvent {
       m("div", [
         m("div.column", [
           m("h1", "ACTIVITY"),
-          m("a", "Buy car"),
+          m("a", { href: `/workflow/${this.event.workflowId}`, oncreate: m.route.link }, this.event.activityName),
           m("p.extra-info", `Global ID ${this.activityId}`)
         ]),
         m("div.column", [
           m("h1", "EXECUTOR"),
-          m("a", { href: this.event.senderHref }, this.event.senderName),
+          m("a", { href: WorkflowManager.addressHref(this.event.senderAddress) }, this.event.senderName),
           showSenderAddress ? m("p.extra-info", `${this.event.senderAddress}`) : null
         ]),
         m("div.column", [
           m("h1", "BLOCK"),
-          m("a", { href: "#" }, `#${this.event.blockNumber}`),
+          m("a", { href: WorkflowManager.blockHref(this.event.blockNumber) }, `#${this.event.blockNumber}`),
           m("p.extra-info", this.event.blockHash)
         ]),
         m("div.column", [
           m("h1", "TRANSACTION"),
-          m("a", { href: this.event.transactionHref }, this.event.transactionHash)
+          m("a", { href: WorkflowManager.transactionHref(this.event.transactionHash) }, this.event.transactionHash)
         ])
       ]),
 
@@ -94,22 +95,22 @@ class WorkflowCreationEvent extends ContractEvent {
       m("div", [
         m("div.column", [
           m("h1", "WORKFLOW"),
-          m("a", this.event.workflowName),
+          m("a", { href: `/workflow/${this.event.workflowId}`, oncreate: m.route.link }, this.event.workflowName),
           m("p.extra-info", `Global ID ${this.workflowId}`)
         ]),
         m("div.column", [
           m("h1", "CREATOR"),
-          m("a", { href: this.event.senderHref }, this.event.senderName),
+          m("a", { href: WorkflowManager.addressHref(this.event.senderAddress) }, this.event.senderName),
           showSenderAddress ? m("p.extra-info", `${this.event.senderAddress}`) : null
         ]),
         m("div.column", [
           m("h1", "BLOCK"),
-          m("a", { href: "#" }, `#${this.event.blockNumber}`),
+          m("a", { href: WorkflowManager.blockHref(this.event.blockNumber) }, `#${this.event.blockNumber}`),
           m("p.extra-info", this.event.blockHash)
         ]),
         m("div.column", [
           m("h1", "TRANSACTION"),
-          m("a", { href: this.event.transactionHref }, this.event.transactionHash)
+          m("a", { href: WorkflowManager.transactionHref(this.event.transactionHash) }, this.event.transactionHash)
         ])
       ]),
 
