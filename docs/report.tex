@@ -641,7 +641,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
 		But since the parameters have to be kept in the transaction, the call data actually uses storage space and therefore costs gas.
-		So by packaging the data which the constructor is called with, more intelligently, we can make the creation of a workflow cheaper. 
+		So by packaging the data which the constructor is called with more intelligently, we can make the creation of a workflow cheaper. 
 		Because of the difference between the format used by the mono-contract implemented with bitvectors and the parameters accepted by the workflow constructor, a lot of work is done inside the contract itself to cast and convert these different data structures.
 		This is partly helped along by the bitvector implementation, as it is the most efficient way of calling the constructor.
 
@@ -669,11 +669,9 @@ for(i = 0; i < relations.length; i=i+2){
 		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
 		We are unable to explain this behavior, which is not insignificant as it is a difference of $~15,000$ gas.
 
-		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by id in each workflow, but this should only provide significant savings in situations where a contract contains many workflows where the same users reappear frequently.
+		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by ID in each workflow, but this should only provide significant savings in situations where a contract contains many workflows, in which the same users reappear frequently.
 
 	\section{Discussion}
-	%intro - blød overgang til viability
-	%Viability
 	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
 	There was no need for jumping though hoops to get one, or even several, working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
 	However, finding the low-level optimizations were not very simple.
