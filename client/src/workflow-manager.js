@@ -48,7 +48,7 @@ class ExecutionEvent extends WorkflowEvent {
           result.workflowId = event.args.workflowId;
           result.workflowName = workflowName;
           result.activityId = event.args.activityId;
-          result.activityName = activityName;
+          result.activityName = web3.toAscii(activityName).trim();
           resolve(result);
         });
       });
@@ -304,5 +304,9 @@ class WorkflowManager {
 WorkflowManager.contract = contract;
 WorkflowManager.createWorkflow = promiseCall(contract.createWorkflow);
 WorkflowManager.LogWorkflowCreation = promiseCall(contract.LogWorkflowCreation);
+
+WorkflowManager.blockHref = blockNumber => `https://etherscan.io/block/${blockNumber}`;
+WorkflowManager.transactionHref = hash => `https://etherscan.io/tx/${hash}`;
+WorkflowManager.addressHref = address => `https://etherscan.io/address/${address}`;
 
 export { WorkflowManager, Workflow, Activity, Relation };
