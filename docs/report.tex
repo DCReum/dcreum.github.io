@@ -659,18 +659,38 @@ for(i = 0; i < relations.length; i=i+2){
 	%intro - blød overgang til viability
 	%Viability
 	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
-	There was no need for jumping though hoops, to get several working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
-	However, finding the essential optimizations were not very simple.
+	There was no need for jumping though hoops to get one, or even several, working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
+	However, finding the low-level optimizations were not very simple.
 	While the cost of the instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some hidden costs, that are not readily available. 
-	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is behaviour we have not been able to figure out.
-	Notice from appendices \ref{}This is a common behaviour across  
+	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is a behaviour we have not been able to figure out.
+	Notice from appendices \ref{app:multi-contract-test-data}, \ref{app:mono-contract-test-data}, \ref{app:mono-contract-with-bitvectors-test-data}\& \ref{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data} that this is common behaviour across vastly different implementations. 
+	Our standing hypothesis is that there might be some data that is lazily initialized, however, we have not been able to produce anything that substantiate this claim.
+	As such, making low-level-optimized solutions in Ethereum is still a daunting task due to lacking documentation, perhaps because the technology is still relatively young.
+	While is of course relevant, it does not subtract from our opinion that DCR implementations on the Ethereum platform are completely viable.
 
-	%choosing implementation
-		% Many workflows vs many executions vs extendability(optimization bliver ødelagt)
-	%missing tools for easily checking gas price
-
-
-
+	Choosing the best of the above implementations is not easy.
+	Each implementation has its own merits, and would be optimal in certain situations:
+	\begin{description}
+	 	\item[Multi-contract] is a simple and easily understandable implementation. 
+	 		It has the absolutely lowest activity execution for our example workflow, although this cost growth linearly in the number of relations an activity has. 
+	 		However, it also has the highest workflow creation cost-growth. 
+	 		We recommend this solution only for easily implementable extra features, for instance external contract conditionals (see \ref{subsec:external-contract-conditionals}), in a single relatively small workflow.
+	 		As soon as several workflows are required, this is not the implementation to go with.
+	 	\item[Mono-contract] is also relatively simple, and so also easily extendable.
+	 		It has a lower workflow creation cost growth, and supports arbitrarily large workflows, at a cost. 
+	 		This makes it ideal for users with a need for workflows with more than 256 activities, and easily implementable extra features.
+	 		However, we expect that this implementation is also relatively rarely needed.k
+	 	\item[Bitvectors] is cheaper than the Mono-contract, but a bit less easily extendable.
+	 		It shares an interface with the Mono-contract implementation, and the two could probably be switched around according to need.
+	 		This also means that it is relatively easy to use, but this comes at the cost of extendability, and a maximum size of 256 activities.
+	 		It has an even lower cost growth of workflow creation than Mono-contract, and bounded cost on activity execution, making it ideal for workflows with more relations per activity than our example workflow, and the need for many activity execution.
+	 	\item[Bitvectors and call data] strikes a balance with our lowest workflow creation cost, and an insignificant difference of activity executions from the Bitvector implementation.
+	 	Generally this should be used over the Bitvector implementation, unless a lot of activity executions are expected.
+	 	However, this implementation is very specifically designed and optimized for basic DCR logic, making it hard to extend.
+	 	It is also relative hard to put workflows up on this contract, due to the very specific data format required. 
+	 	As such we have created a front-end implementation for ease-of-use, see section \ref{sec:gui}.
+	 \end{description} 
+	 
 	\section{GUI}
 
 	\section{Further features}
@@ -771,6 +791,7 @@ for(i = 0; i < relations.length; i=i+2){
 			We leave this problem open for further study.
 
 		\subsection{External contract conditionals}
+		\label{subsec:external-contract-conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
 		These dependencies would essentially be conditional statements calling the functions of another contract, when it is being evaluated whether or not an activity is executable. 
 		An example could be a contract returning the value of a currency and whether or not it is above or below a specified threshold.
