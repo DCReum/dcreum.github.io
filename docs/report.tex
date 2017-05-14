@@ -503,16 +503,16 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Comparison}
 	\label{sec:comparison}
 
-	In order to compare the implementations we have created an example workflow, see figure \ref{fig:exampleWorkflow}, on which we will execute activities in a specific order. Some of the executions should fail, as the executions are also used to test if the DCR logic is implemented correctly(See appendix \ref{app:test-cases-gas}).
+	In order to compare the implementations we have created an example workflow, see figure \ref{fig:exampleWorkflow}, on which we will execute activities in a specific order. Some of the executions should fail, as the executions are also used to test if the DCR logic is implemented correctly.
 	Due to the nature of our implementations, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
 
 	In the Multi-contract implementation the cost of creating a workflow is included in the cost of deploying the contract, while these two costs are separate in the Mono-contract implementation.
 	This difference complicates the comparison of the two implementation.
 
-	Appendix \ref{app:test-cases-gas} shows that the cost of creating a contract containing the example workflow in the Multi-contract implementation costs $2,221,906$ gas.
-	In the Mono-contract implementation, the equivalent operation cost 
+	Appendix \ref{app:multi-contract-test-data} shows that the cost of creating a contract containing the example workflow in the Multi-contract implementation costs $2,221,906$ gas.
+	In the Mono-contract implementation, the equivalent operation costs \\
 
-	$$2,183,805\quad(contract) + 1,010,934\quad(workflow) = 3,194,739$$
+	$2,183,805\quad(contract) + 1,010,934\quad(workflow) = 3,194,739$ \\
 
 	\noindent gas. These results give us the impression that the Multi-contract implementation might be the superior implementation in terms of gas cost
 	However, the point of the Mono-contract implementation is to minimize the cost of creating workflows after contract creation, since only one contract creations is required. 
@@ -520,27 +520,27 @@ for(i = 0; i < relations.length; i=i+2){
 	Table \ref{tab:cost-of-creating-multiple-workflows} shows that already after the second workflow creation, 253,139 gas has been saved by using the Mono-contract implementation.
 	Our assumption that the Mono-implementation is more cost-effective in the long run, therefore seems to hold.  
 
-	\begin{table}[]
+	\begin{table}[!ht]
 		\centering
 		\label{tab:cost-of-creating-multiple-workflows}
-		\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+		\begin{tabular}{| p{1.9cm} | r | r | r |}
 			\hline
-			Number of workflows & Multi-contract cost (gas) & Mono-contract cost (gas) 	& Difference (Multi $-$ Mono)   \\\hline
-			1                   & 2,221,906                 & 3,194,739                 & -972,833          			\\\hline
-			2                   & 4,443,812                 & 4,190,673                 & 253,139          				\\\hline
-			3                   & 6,665,718                 & 5,186,607                 & 1,479,111          			\\\hline
-			4                   & 8,887,624                 & 6,182,541                 & 2,705,083          			\\\hline
-			5                   & 11,109,530                & 7,178,475                 & 3,931,055          			\\\hline
-			6                   & 13,331,436                & 8,174,409                 & 5,157,027          			\\\hline
-			7                   & 15,553,342                & 9,170,343                 & 6,382,999          			\\\hline
-			8                   & 17,775,248                & 10,166,277                & 7,608,971          			\\\hline
-			9                   & 19,997,154                & 11,162,211                & 8,834,943          			\\\hline
-			10                  & 22,219,060                & 12,158,145                & 10,060,915          			\\\hline
+			\# workflows 		& Multi-contract cost 	& Mono-contract cost	& Diff.   		\\\hline
+			1                   & 2,221,906             & 3,194,739         	& -972,833 		\\\hline
+			2                   & 4,443,812             & 4,190,673         	& 253,139  		\\\hline
+			3                   & 6,665,718             & 5,186,607         	& 1,479,111 	\\\hline
+			4                   & 8,887,624             & 6,182,541         	& 2,705,083 	\\\hline
+			5                   & 11,109,530            & 7,178,475         	& 3,931,055 	\\\hline
+			6                   & 13,331,436            & 8,174,409         	& 5,157,027 	\\\hline
+			7                   & 15,553,342            & 9,170,343         	& 6,382,999 	\\\hline
+			8                   & 17,775,248            & 10,166,277        	& 7,608,971 	\\\hline
+			9                   & 19,997,154            & 11,162,211        	& 8,834,943 	\\\hline
+			10                  & 22,219,060            & 12,158,145        	& 10,060,915    \\\hline
 		\end{tabular}      
 		\caption{Gas cost of creating multiple instances of the example workflow, and the difference between implementations}
 	\end{table}
 
-	Interestingly it can also be observed in appendix \ref{app:test-cases-gas} that the second and third creation of the example workflow in the Mono-contract implementation are cheaper than the first creation of the example workflow.
+	Interestingly it can also be observed in appendix \ref{app:multi-contract-test-data} that the second and third creation of the example workflow in the Mono-contract implementation are cheaper than the first creation of the example workflow.
 
 	We expect this is due to the fact that the array holding the workflows must be initialized on creation of the first workflow.
 	Subsequent creations of the example workflow cost $995,934$ gas, a difference of $1,010,934 - 995,934 = 15,000$ gas.	
@@ -556,15 +556,15 @@ for(i = 0; i < relations.length; i=i+2){
 	\begin{table}[!ht]
 		\centering
 		\label{tab:cost-of-executing-activities}
-		\begin{tabular}{|p{3cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+		\begin{tabular}{| l | r | r | r |}
 			\hline
-			Activity                     & Multi-contract cost (gas) & Mono-contract cost (gas) & Difference (Mono $-$ Multi) \\\hline
-			Submit ticket                & 61,112          			 & 61,187         			& 75         \\\hline
-			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
-			Reject solution              & 41,208          			 & 41,263         			& 55         \\\hline
-			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
-			Accept solution              & 54,023          			 & 54,118         			& 95         \\\hline
-			Close ticket                 & 34,810          			 & 34,845         			& 35         \\\hline
+			Activity          & Multi-contract 	& Mono-contract & Diff. 	\\\hline
+			Submit ticket     & 61,112          & 61,187        & 75        \\\hline
+			Propose solution  & 41,208          & 41,263        & 55        \\\hline
+			Reject solution   & 41,208          & 41,263        & 55        \\\hline
+			Propose solution  & 41,208          & 41,263        & 55        \\\hline
+			Accept solution   & 54,023          & 54,118        & 95        \\\hline
+			Close ticket      & 34,810          & 34,845        & 35        \\\hline
 		\end{tabular}
 		\caption{Gas cost of executing activities in the example workflow, and the difference between implementations}
 	\end{table}
@@ -606,7 +606,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\begin{table}
 		\label{table:test-cases-bitvectors}
-			\begin{tabular}{| l | r | r | r |}
+			\begin{tabular}{| p{5cm} | r | r | r |}
 				\hline
 				Action 							& Mono-contract  	& bitvectors 	& Diff.		\\\hline
 				1. Contract creation			& 2,183,805		 	& 1,708,991 	& 474,814	\\\hline
@@ -622,6 +622,7 @@ for(i = 0; i < relations.length; i=i+2){
 				11.Workflow creation (3)		& 995,934 		 	& 820,045		& 175,889 	\\\hline
 			\end{tabular}
 		\end{table}
+		\FloatBarrier
 
 		Since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
@@ -637,15 +638,16 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 		\subsection{Call data}
-		Since a lot of work is now done in the mono-contract  
+
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
-		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
-		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
-		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
+		But since the parameters have to be kept in the transaction, the call data actually uses storage space and therefore costs gas.
+		So by packaging the data which the constructor is called with more intelligently, we can make the creation of a workflow cheaper. 
+		Because of the difference between the format used by the mono-contract implemented with bitvectors and the parameters accepted by the workflow constructor, a lot of work is done inside the contract itself to cast and convert these different data structures.
+		This is partly helped along by the bitvector implementation, as it is the most efficient way of calling the constructor.
 
 		\begin{table}[!ht]
 		\label{tbl:bit-call-data-comparison}
-			\begin{tabular}{| l | r | r | r |}
+			\begin{tabular}{| p{4cm} | r | r | r |}
 			\hline
 			Action 								& Bitvectors 	& Bitvectors and call data 	& Diff. 	\\ \hline
 			1. Contract creation				& 1,708,991		& 1,406,534					& 302,457	\\ \hline
@@ -661,13 +663,99 @@ for(i = 0; i < relations.length; i=i+2){
 			11.Workflow creation (3)			& 820,045		& 747,837					& 72,208	\\ \hline
 			\end{tabular}
 		\end{table}
+		\FloatBarrier
 
+		As can be seen in table \ref{tbl:bit-call-data-comparison}, the cost of creating both the contract and the workflow is significantly decreased, with minor changes to activity executions, as some checks performed by \texttt{canExecute} are slightly changed.
+		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
+		We are unable to explain this behavior, which is not insignificant as it is a difference of around 15,000 gas.
 
+		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by ID in each workflow, but this should only provide significant savings in situations where a contract contains many workflows, in which the same users reappear frequently.
 
 	\section{Discussion}
+	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
+	There was no need for jumping though hoops to get one, or even several, working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
+	However, finding the low-level optimizations were not very simple.
+	While the cost of the instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some hidden costs, that are not readily available. 
+	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is a behaviour we have not been able to figure out.
+	Notice from appendices \ref{app:multi-contract-test-data}, \ref{app:mono-contract-test-data}, \ref{app:mono-contract-with-bitvectors-test-data}\& \ref{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data} that this is common behaviour across vastly different implementations. 
+	Our standing hypothesis is that there might be some data that is lazily initialized, however, we have not been able to produce anything that substantiate this claim.
+	As such, making low-level-optimized solutions in Ethereum is still a daunting task due to lacking documentation, perhaps because the technology is still relatively young.
+	While is of course relevant, it does not subtract from our opinion that DCR implementations on the Ethereum platform are completely viable.
 
-	\section{GUI}
+	Choosing the best of the above implementations is not easy.
+	Each implementation has its own merits, and would be optimal in certain situations:
+	\begin{description}
+	 	\item[Multi-contract] is a simple and easily understandable implementation. 
+	 		It has the absolutely lowest activity execution for our example workflow, although this cost growth linearly in the number of relations an activity has. 
+	 		However, it also has the highest workflow creation cost-growth. 
+	 		We recommend this solution only for easily implementable extra features, for instance external contract conditionals (see \ref{subsec:external-contract-conditionals}), in a single relatively small workflow.
+	 		As soon as several workflows are required, this is not the implementation to go with.
+	 	\item[Mono-contract] is also relatively simple, and so also easily extendable.
+	 		It has a lower workflow creation cost growth, and supports arbitrarily large workflows, at a cost. 
+	 		This makes it ideal for users with a need for workflows with more than 256 activities, and easily implementable extra features.
+	 		However, we expect that this implementation is also relatively rarely needed.k
+	 	\item[Bitvectors] is cheaper than the Mono-contract, but a bit less easily extendable.
+	 		It shares an interface with the Mono-contract implementation, and the two could probably be switched around according to need.
+	 		This also means that it is relatively easy to use, but this comes at the cost of extendability, and a maximum size of 256 activities.
+	 		It has an even lower cost growth of workflow creation than Mono-contract, and bounded cost on activity execution, making it ideal for workflows with more relations per activity than our example workflow, and the need for many activity execution.
+	 	\item[Bitvectors and call data] strikes a balance with our lowest workflow creation cost, and an insignificant difference of activity executions from the Bitvector implementation.
+	 	Generally this should be used over the Bitvector implementation, unless a lot of activity executions are expected.
+	 	However, this implementation is very specifically designed and optimized for basic DCR logic, making it hard to extend.
+	 	It is also relative hard to put workflows up on this contract, due to the very specific data format required. 
+	 	As such we have created a front-end implementation for ease-of-use, see section \ref{sec:gui}.
+	 \end{description} 
+	 
+	\section{Graphical user interface}
+	\label{sec:gui}
+	To show that our DCR engine can be used in practice, we have implemented a graphical user interface (GUI), where user can create workflows and execute activities.
+	Since it is the front-end of a DApp, it is required for the user to have installed and be running the Ethereum client Parity\footnote{\url{https://parity.io/}}, along the a parity plugin for the browser in question, for example the Parity Ethereum Integration\footnote{\url{https://chrome.google.com/webstore/detail/parity-ethereum-integrati/himekenlppkgeaoeddcliojfddemadig}} plugin for the Chrome browser. 
+	The GUI is implemented in JavaScript using the library Cytoscape.js.\footnote{\url{http://js.cytoscape.org/}}
+	Cytoscape.js supports most basic operations on graphs and has methods to easily draw and nicely arrange nodes.
 
+		\subsection{Legend}
+		Included activities have a solid border, while excluded activities have a dotted border. 
+		The borders and text of executed activities are green, while not executed activities have black borders and black text.
+		The relations between activities are color coded with the same color scheme as the relations in \href{http://www.dcrgraphs.net}{dcrgraphs.net}. The color scheme is shown in the table below.
+
+		\begin{table}[!ht]
+			\label{table:relation-color}
+			\centering
+			\begin{tabular}{|c|c|c|}
+			\hline
+			\textbf{Relation} 	& \textbf{Color} \\ \hline
+			Include relation    & Green \\\hline
+			Exclude relation    & Red \\\hline
+			Response relation   & Blue \\\hline
+			Condition relation  & Yellow \\\hline
+			Milestone relation  & Purple \\\hline
+			\end{tabular}
+			\caption{Shows the color scheme of relations in the GUI}
+		\end{table}
+
+		\subsection{Usage}
+		Below is a short description of how to perform the most common DCR operations in the GUI:
+		\begin{description}
+			\item[Create workflow] To start creating a workflow, click on the \emph{Create workflow} button in the right hand side.
+			 A blank canvas with no activities will be shown.
+			 You can now start adding activities.
+			\item[Create activities] To create an activity, right click on the blank surface and left click \emph{Add activity} in the context menu.
+			\item[Set activity attributes] Select an activity by left clicking on it.
+			 The right hand side will show the attributes of the activity.
+			 Here an activities attributes can be manipulated be ticking or unticking the check boxes labeled \emph{Included}, \emph{Executed} or \emph{Pending}.
+			\item[Execution authorization] When an activity is selected, you can specify which Ethereum addresses are authorized to execute the activity.
+			 Start by clicking the button labeled \emph{Add account}.
+			 This creates a new text field where the Ethereum addresses of the authorized account can be pasted into.
+			 If an activity should be executable by several accounts, more accounts are added in the same way.
+			\item[Create relations] Select an activity and right click the activity you want to create a relation to.
+			 Click the appropriate relation in the context menu to create the relation between the activities.
+			\item[Upload workflow] When you are finished with the workflow press the \emph{Upload} button, and sign the request with the relevant Parity account's password.
+			 The button will change to a spinning circle, until a block containing the workflow transaction is mined.
+			 When Parity receives the block, the button will change into a "Open" button, redirecting you to the workflow page. 
+
+
+			\item[Execute activities] From the workflow page, you can execute the activities which are in an executable state, given that the account chosen in the Parity Integration plugin (lower right corner) has execution right to these.
+			Any activities that you do not have execution rights for, are grayed out as if they were not in an executable state.   
+		\end{description}
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
 	These features would be fairly use-case dependent and since they would have an effect on the cost of running a workflow, they should only be implemented in instances where they would actually be used.
@@ -766,6 +854,7 @@ for(i = 0; i < relations.length; i=i+2){
 			We leave this problem open for further study.
 
 		\subsection{External contract conditionals}
+		\label{subsec:external-contract-conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
 		These dependencies would essentially be conditional statements calling the functions of another contract, when it is being evaluated whether or not an activity is executable. 
 		An example could be a contract returning the value of a currency and whether or not it is above or below a specified threshold.
@@ -842,6 +931,14 @@ if (callContract && A.included) //External call
 		
 	\section{Conclusion}
 
+	In this article we have investigated to what extent the distributed smart-contracts of Ethereum can be used to implement the DCR engine and how it may be optimized.
+	As Ethereum is a relatively new platform, the available knowledge and support is somewhat lacking and subject to constant change.
+	This made it very difficult to find non-contradictory sources of information and when issues were encountered it was very rarely issues that were well understood.
+	The supporting interfaces built around Ethereum are also somewhat lackluster at the time this article is written.
+	The chosen language, Solidity, is incredibly basic and the lack of feedback from its compiler makes development cumbersome and unintuitive.
+	All of these shortcomings are to be expected from a concept this new and ambitious and they should be fixed gradually as Ethereum solidifies.
+	At this early stage we were still able to develop several fully functional DCR implementations and ...
+
 	\pagebreak
 	\addcontentsline{toc}{section}{References}	
 	\bibliographystyle{plain}
@@ -890,7 +987,6 @@ if (callContract && A.included) //External call
 		\textit{HSafety, Liveness and Run-Time Refinement for Modular Process-Aware Information Systems with Dynamic Sub Processes}.
 		\url{http://www.itu.dk/~debois/dcrstar-tr.pdf},
 		Accessed 2017-05-12
-
 		
 		\bibitem{voting}
 		Ethereum Foundation
@@ -906,7 +1002,7 @@ if (callContract && A.included) //External call
 		\bibitem{DAO}
 		Unknown author
 		\textit{The DAO of accrue}.
-		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
+		{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
 		Accessed 2017-05-13
 
 	\end{thebibliography}
