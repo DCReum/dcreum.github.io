@@ -606,7 +606,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\begin{table}
 		\label{table:test-cases-bitvectors}
-			\begin{tabular}{| l | r | r | r |}
+			\begin{tabular}{| p{5cm} | r | r | r |}
 				\hline
 				Action 							& Mono-contract  	& bitvectors 	& Diff.		\\\hline
 				1. Contract creation			& 2,183,805		 	& 1,708,991 	& 474,814	\\\hline
@@ -647,7 +647,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\begin{table}[!ht]
 		\label{tbl:bit-call-data-comparison}
-			\begin{tabular}{| l | r | r | r |}
+			\begin{tabular}{| p{4cm} | r | r | r |}
 			\hline
 			Action 								& Bitvectors 	& Bitvectors and call data 	& Diff. 	\\ \hline
 			1. Contract creation				& 1,708,991		& 1,406,534					& 302,457	\\ \hline
@@ -667,7 +667,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		As can be seen in table \ref{tbl:bit-call-data-comparison}, the cost of creating both the contract and the workflow is significantly decreased, with minor changes to activity executions, as some checks performed by \texttt{canExecute} are slightly changed.
 		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
-		We are unable to explain this behavior, which is not insignificant as it is a difference of $~15,000$ gas.
+		We are unable to explain this behavior, which is not insignificant as it is a difference of around 15,000 gas.
 
 		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by ID in each workflow, but this should only provide significant savings in situations where a contract contains many workflows, in which the same users reappear frequently.
 
@@ -979,7 +979,6 @@ if (callContract && A.included) //External call
 		\textit{HSafety, Liveness and Run-Time Refinement for Modular Process-Aware Information Systems with Dynamic Sub Processes}.
 		\url{http://www.itu.dk/~debois/dcrstar-tr.pdf},
 		Accessed 2017-05-12
-
 		
 		\bibitem{voting}
 		Ethereum Foundation
@@ -995,7 +994,7 @@ if (callContract && A.included) //External call
 		\bibitem{DAO}
 		Unknown author
 		\textit{The DAO of accrue}.
-		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
+		{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
 		Accessed 2017-05-13
 
 	\end{thebibliography}
