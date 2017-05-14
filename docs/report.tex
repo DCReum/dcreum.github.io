@@ -708,7 +708,8 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Graphical user interface}
 	\label{sec:gui}
 	To show that our DCR engine can be used in practice, we have implemented a graphical user interface (GUI), where user can create workflows and execute activities.
-	The GUI is implemented in JavaScript using the library Cytoscape.js.\footnote{http://js.cytoscape.org/}
+	Since it is the front-end of a DApp, it is required for the user to have installed and be running the Ethereum client Parity\footnote{\url{https://parity.io/}}, along the a parity plugin for the browser in question, for example the Parity Ethereum Integration\footnote{\url{https://chrome.google.com/webstore/detail/parity-ethereum-integrati/himekenlppkgeaoeddcliojfddemadig}} plugin for the Chrome browser. 
+	The GUI is implemented in JavaScript using the library Cytoscape.js.\footnote{\url{http://js.cytoscape.org/}}
 	Cytoscape.js supports most basic operations on graphs and has methods to easily draw and nicely arrange nodes.
 
 		\subsection{Legend}
@@ -734,13 +735,26 @@ for(i = 0; i < relations.length; i=i+2){
 		\subsection{Usage}
 		Below is a short description of how to perform the most common DCR operations in the GUI:
 		\begin{description}
-			\item[Create workflow] To start creating a workflow, click on the \emph{Create workflow} button in the right hand side. A blank canvas with no activities will be shown. You can now start adding activities.
+			\item[Create workflow] To start creating a workflow, click on the \emph{Create workflow} button in the right hand side.
+			 A blank canvas with no activities will be shown.
+			 You can now start adding activities.
 			\item[Create activities] To create an activity, right click on the blank surface and left click \emph{Add activity} in the context menu.
-			\item[Set activity attributes] Select an activity by left clicking on it. The right hand side will show the attributes of the activity. Here an activities attributes can be manipulated be ticking or unticking the check boxes labeled \emph{Included}, \emph{Executed} or \emph{Pending}.
-			\item[Execution authorization] When an activity is selected, you can specify which public keys are authorized to execute the activity. Start by clicking the button labeled \emph{Add account}. This creates a new text field where the public key of the authorized account can be pasted into. If an activity should be executable by several accounts, more accounts are added in the same way. 
-			\item[Create relations] Select an activity and right click the activity you want to create a relation to. Click the appropriate relation in the context menu to create the relation between the activities.
-			\item[Upload workflow] When you are finished with the workflow press "Et eller andet"....blablabla
-			\item[Execute activities]
+			\item[Set activity attributes] Select an activity by left clicking on it.
+			 The right hand side will show the attributes of the activity.
+			 Here an activities attributes can be manipulated be ticking or unticking the check boxes labeled \emph{Included}, \emph{Executed} or \emph{Pending}.
+			\item[Execution authorization] When an activity is selected, you can specify which Ethereum addresses are authorized to execute the activity.
+			 Start by clicking the button labeled \emph{Add account}.
+			 This creates a new text field where the Ethereum addresses of the authorized account can be pasted into.
+			 If an activity should be executable by several accounts, more accounts are added in the same way.
+			\item[Create relations] Select an activity and right click the activity you want to create a relation to.
+			 Click the appropriate relation in the context menu to create the relation between the activities.
+			\item[Upload workflow] When you are finished with the workflow press the \emph{Upload} button, and sign the request with the relevant Parity account's password.
+			 The button will change to a spinning circle, until a block containing the workflow transaction is mined.
+			 When Parity receives the block, the button will change into a "Open" button, redirecting you to the workflow page. 
+
+
+			\item[Execute activities] From the workflow page, you can execute the activities which are in an executable state, given that the account chosen in the Parity Integration plugin (lower right corner) has execution right to these.
+			Any activities that you do not have execution rights for, are grayed out as if they were not in an executable state.   
 		\end{description}
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
