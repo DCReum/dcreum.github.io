@@ -242,6 +242,8 @@ class WorkflowManager {
 
     let addEvent = event => {
       let events = this.events();
+      if (events.find(e => e.transactionHash === event.transactionHash))
+        return;
       events.push(event);
       this.events(events);
     };
