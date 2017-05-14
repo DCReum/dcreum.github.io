@@ -93,7 +93,6 @@ class Workflow {
     return [
       // names
       [this.workflowName]
-        .concat(Array(32).fill("G"))
         .concat(activities.map(activity => activity.name))
         .map(str => padEnd(str, 32, " ")),
 
@@ -111,9 +110,6 @@ class Workflow {
 
         // counts for accountWhitelist
         activity.accountWhitelist.length,
-
-        // TEMP: groupWhitelist
-        0
       ]),
 
       // relationTypes
@@ -121,8 +117,6 @@ class Workflow {
 
       // relationActivityIds
       relations.map(relation => relationOther(relation)),
-
-      [], [],
 
       // accountWhitelist
       activities.map(activity => activity.accountWhitelist).reduce((prev, curr) => prev.concat(curr), []),
