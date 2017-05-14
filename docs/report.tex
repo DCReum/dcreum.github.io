@@ -571,13 +571,6 @@ for(i = 0; i < relations.length; i=i+2){
 
 	We consider the large winnings in workflow creations to more than make up for cost increase in activity execution, and will continue to optimize on the Mono-contract implementation.
 
-		 
-
-	% Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
-	% This is done for each relation in order to get an estimate for the cost of a single such operation.
-	% Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
-
-
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
 		We have prioritized the optimizations according to an idea of the frequency of use, meaning that for example the mono-contract solution is based on the assumption that workflow creation is much more frequent than contract creation.
@@ -630,8 +623,6 @@ for(i = 0; i < relations.length; i=i+2){
 			\end{tabular}
 		\end{table}
 
-
-
 		Since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
 		Excluding the overhead of the lists holding the bitvectors, the storage space required for relations after the optimization can be expressed as $s = 5 \cdot 256 \cdot a$, where $a$ is the number of activities, and $s$ it the storage required in bits.
@@ -646,9 +637,7 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 		\subsection{Call data}
-		Since a lot of work is now done in the mono-contract 
-		% While the bitvector implementation might not be an optimization for activity execution, it comes at the cost of workflow creation. 
-		% However, there is a hidden optimization opportunity, gained by implementing the activities as bitvectors. 
+		Since a lot of work is now done in the mono-contract  
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
 		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
 		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
@@ -658,18 +647,18 @@ for(i = 0; i < relations.length; i=i+2){
 		\label{tbl:bit-call-data-comparison}
 			\begin{tabular}{| l | r | r | r |}
 			\hline
-			Action 								& Bitvectors 					& Bitvectors and call data 	& Diff. 	\\ \hline
-			1. Contract creation				& 1,708,991						& 1,406,534					& 302,457	\\ \hline
-			2. Workflow creation (1)			& 835,045						& 762,837					& 72,208	\\ \hline		
-			3. Submit ticket					& 66,591						& 66,229					& 362		\\ \hline
-			4. Propose solution					& 51,805						& 52,551					& -746		\\ \hline
-			5. Propose solution (Duplicate)		& 51,805						& 52,551					& -746		\\ \hline
-			6. Reject solution					& 51,805						& 51,493					& 312		\\ \hline
-			7. Propose solution					& 51,805						& 52,551					& -746		\\ \hline
-			8. Accept solution					& 51,805						& 51,493					& 312		\\ \hline
-			9. Close ticket						& 36,805						& 37,551					& -746		\\ \hline
-			10.Workflow creation (2)			& 820,045						& 732,773					& 87,272	\\ \hline
-			11.Workflow creation (3)			& 820,045						& 747,837					& 72,208	\\ \hline
+			Action 								& Bitvectors 	& Bitvectors and call data 	& Diff. 	\\ \hline
+			1. Contract creation				& 1,708,991		& 1,406,534					& 302,457	\\ \hline
+			2. Workflow creation (1)			& 835,045		& 762,837					& 72,208	\\ \hline		
+			3. Submit ticket					& 66,591		& 66,229					& 362		\\ \hline
+			4. Propose solution					& 51,805		& 52,551					& -746		\\ \hline
+			5. Propose solution (Duplicate)		& 51,805		& 52,551					& -746		\\ \hline
+			6. Reject solution					& 51,805		& 51,493					& 312		\\ \hline
+			7. Propose solution					& 51,805		& 52,551					& -746		\\ \hline
+			8. Accept solution					& 51,805		& 51,493					& 312		\\ \hline
+			9. Close ticket						& 36,805		& 37,551					& -746		\\ \hline
+			10.Workflow creation (2)			& 820,045		& 732,773					& 87,272	\\ \hline
+			11.Workflow creation (3)			& 820,045		& 747,837					& 72,208	\\ \hline
 			\end{tabular}
 		\end{table}
 
@@ -919,9 +908,6 @@ if (callContract && A.included) //External call
 		\textit{The DAO of accrue}.
 		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
 		Accessed 2017-05-13
-
-		
-		
 
 	\end{thebibliography}
 
