@@ -585,11 +585,9 @@ for(i = 0; i < relations.length; i=i+2){
 		Similarly, optimizations with regards to the cost of activity executions at the expense of workflow creation is desirable.
 
 		\subsection{Bitvectors}
-		In the previous section we saw that cost of executing an activity is largely influenced by the number relations it has -- how many lookups or changes in other activities' attributes are needed.
-
-		Since the number of relation an activity has is 
-
-		In order to  cost of activity executions, we have implemented the activities as bitvector fields. 
+		In the previous section we saw that the cost of executing an activity is largely influenced by the number relations it has -- how many lookups or changes in other activities' attributes are needed.
+		
+		Our approach to minimize the number of these operations is to implement the activities as bitvector fields. 
 		That is, we have removed the activity struct entirely, and instead put the state- and relation data into \texttt{uint256} types and store them in the workflow struct (see snippet \ref{sni:bitvectors}).
 		
 		\begin{snippet}[ht!]
@@ -604,9 +602,15 @@ for(i = 0; i < relations.length; i=i+2){
 		As a negative consequence, this limits the number of activities a workflow can contain to 256, since each bit of the three \texttt{uint256} represents one of an activity's three attributes.
 		However we do not expect workflows with more than 256 activities to be a normal occurrence.
 		If the need for workflows of a greater size arises, we suggest the need could be addressed by partitioning the the workflow into 256-activity sized sub-workflows, and connecting the two workflows using external relations (see section \ref{sec:external-relations} for an in-depth explanation of external relations).
+ 
+		In the previous Mono-contract implementation every outgoing relation from an executed activity would be interpreted as a $G_{sreset}$ bytecode instruction.
+		The $G_{sreset}$ bytecode instruction costs 5000 gas and is the instruction used in the EVM to update an initialized variable. 
+		Since changing the state of multiple activities in the Mono-contract-bitvector implementation maximally would result in three $G_{sreset}$ -- one for each of the three activity attributes: included, executed and pending -- we would achieve an upper bound on how much gas an activity execution can cost.
 
-		We expected workflow creation to become costlier as at trade-off for cheaper activity executions, however this was not the case. Table \ref{table:test-cases-bitvectors} shows a comparison of the costs of creating the example workflow and executing its activities in the Mono-contract implementation and the Mono-contract-bitvector implementation.
-		Surprisingly the creation of the example workflow was cheaper in the Mono-contract-bitvector implementation, and executions were generally more expensive.
+		Implementing an upper bound on the gas cost of an execution of an activity does however not necessarily lower the cost of the executions.
+		When the example workflow is uploaded and executed on the Mono-contract-bitvector implementation, the cost of executing most activities does actually increase.
+		The change to bitvectors is therefore not necessarily an optimization, but can give lower gas cost in certain scenarios, where activities have many outgoing relations. 
+
 		\begin{table}
 		\label{table:test-cases-bitvectors}
 			\begin{tabular}{| l | l | l |}
@@ -626,7 +630,10 @@ for(i = 0; i < relations.length; i=i+2){
 				\hline
 			\end{tabular}
 		\end{table}
-		Secondly, since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
+
+
+
+		Since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
 		Excluding the overhead of the lists holding the bitvectors, the storage space required for relations after the optimization can be expressed as $s = 5 \cdot 256 \cdot a$, where $a$ is the number of activities, and $s$ it the storage required in bits.
 		Before the optimization, the relations were represented by a single \texttt{uint32} per relation.
