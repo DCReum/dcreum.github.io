@@ -28,6 +28,10 @@ contract DCReum {
 
   Workflow[] workflows;
 
+  function getWorkflowCount() public constant returns (uint256) {
+    return workflows.length;
+  }
+
   function getWorkflowName(uint256 workflowId) public constant returns (bytes32) {
     return workflows[workflowId].name;
   }
