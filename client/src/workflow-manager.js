@@ -99,7 +99,7 @@ class Workflow {
       .map(relation => new Relation(packedActivityId(relation.from), packedActivityId(relation.to), relation.type))
       .sort((lhs, rhs) => relationSelf(lhs) - relationSelf(rhs));
     let authAccounts = Array.from(activities.reduce((set, activity) => {
-      activity.accountWhitelist.forEach(set.add);
+      activity.accountWhitelist.forEach(set.add.bind(set));
       return set;
     }, new Set()));
 
@@ -143,7 +143,7 @@ class Workflow {
       authAccounts,
 
       // authWhitelist
-      authAccounts.map(account => activities.map(activity => !!activity.accountWhitelist.find(accound)))
+      authAccounts.map(account => activities.map(activity => ~activity.accountWhitelist.indexOf(account)))
         .map(bitvector)
     ];
   }
