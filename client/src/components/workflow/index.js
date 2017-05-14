@@ -12,6 +12,9 @@ class Workflow {
   }
 
   view() {
+    if (m.route.param("workflowId") != this.workflowManager.workflowId)
+      this.workflowManager = new WorkflowManager(m.route.param("workflowId"));
+
     const panes = {
       workflow: WorkflowTab,
       events: EventsTab
