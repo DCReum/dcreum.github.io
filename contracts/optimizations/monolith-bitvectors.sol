@@ -44,44 +44,52 @@ contract DCReum {
   }
 
   function isIncluded(uint256 workflowId, uint256 activityId) public constant returns (bool) {
-    return ((workflows[workflowId].included & (1<<activityId)) == 0);
+    return ((workflows[workflowId].included & (1<<activityId)) != 0);
   }
 
   function isExecuted(uint256 workflowId, uint256 activityId) public constant returns (bool) {
-    return ((workflows[workflowId].executed & (1<<activityId)) == 0);
+    return ((workflows[workflowId].executed & (1<<activityId)) != 0);
   }
 
   function isPending(uint256 workflowId, uint256 activityId) public constant returns (bool) {
-    return ((workflows[workflowId].pending & (1<<activityId)) == 0);
+    return ((workflows[workflowId].pending & (1<<activityId)) != 0);
   }
-
-  function getRelations(uint256 relations) private constant returns (uint32[]) {
-    uint32[] memory ret = new uint32[](256);
-    uint8 j = 0;
-    for(var i = 0; i < 256; i++){
-      if(relations & (1<<i) != 0)
-        ret[j++] = i;
+  
+  function getRelations(uint256 relations) private constant returns (uint8[]) {
+    uint i;
+    uint count = 0;
+    for (i = 0; i < 256; i++) {
+      if ((relations & (1<<i)) != 0)
+        count++;
     }
-    return ret;
+
+    uint j = 0;
+    var result = new uint8[](count);
+    for (i = 0; i < 256; i++) {
+      if ((relations & (1<<i)) != 0)
+        result[j++] = uint8(i);
+    }
+
+    return result;
   }
 
-  function getIncludes(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+  function getIncludes(uint256 workflowId, uint256 activityId) external constant returns (uint8[]) {
     return getRelations(workflows[workflowId].includesTo[activityId]);
   }
 
-  function getExcludes(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+  function getExcludes(uint256 workflowId, uint256 activityId) external constant returns (uint8[]) {
     return getRelations(workflows[workflowId].excludesTo[activityId]);
   }
 
-  function getResponses(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+  function getResponses(uint256 workflowId, uint256 activityId) external constant returns (uint8[]) {
     return getRelations(workflows[workflowId].responsesTo[activityId]);
   }
 
-  function getConditions(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+  function getConditions(uint256 workflowId, uint256 activityId) external constant returns (uint8[]) {
     return getRelations(workflows[workflowId].conditionsFrom[activityId]);
   }
 
-  function getMilestones(uint256 workflowId, uint256 activityId) external constant returns (uint32[]) {
+  function getMilestones(uint256 workflowId, uint256 activityId) external constant returns (uint8[]) {
     return getRelations(workflows[workflowId].milestonesFrom[activityId]);
   }
 
@@ -110,7 +118,6 @@ contract DCReum {
         return false;
     }
     
-  
     // activity must be included
     if ((workflow.included & (1<<activityId)) == 0) return false;
 
@@ -132,11 +139,11 @@ contract DCReum {
 
     // executed activity
     workflow.executed = workflow.executed | (1<<activityId);
-    workflow.pending = workflow.pending & (~(1<<activityId));
+    workflow.pending = workflow.pending & ~(1<<activityId);
 
     // exclude and include relations pass
     // note includes happens after the exclude pass    
-    workflow.included = (workflow.included & (~workflow.excludesTo[activityId])) | workflow.includesTo[activityId];
+    workflow.included = (workflow.included & ~workflow.excludesTo[activityId]) | workflow.includesTo[activityId];
 
     // response relations pass
     workflow.pending = (workflow.pending | workflow.responsesTo[activityId]);
@@ -159,7 +166,7 @@ contract DCReum {
     RelationType[] relationTypes,
     uint32[] relationActivityIds,
 
-    address[] authAccounts, //mangler
+    address[] authAccounts,
     bool[] authDisabled
   ) {
     var workflow = workflows[workflows.length++];
@@ -174,6 +181,12 @@ contract DCReum {
 
     workflow.name = names[0];
     workflow.authAccounts.length = activityData.length;
+    workflow.activityNames.length = activityData.length;
+    workflow.includesTo.length = activityData.length;
+    workflow.excludesTo.length = activityData.length;
+    workflow.responsesTo.length = activityData.length;
+    workflow.conditionsFrom.length = activityData.length;
+    workflow.milestonesFrom.length = activityData.length;
 
     // authDisabled
     for (i = 0; i < authDisabled.length; i++){
@@ -198,29 +211,23 @@ contract DCReum {
     // relations and name
     for (i = 0; i < activityData.length; i++) {
         workflow.activityNames[i] = names[1 + i];
-        uint256[5] memory relations;
         for (j = 0; j < activityData[i][0]; j++) {
             if (relationTypes[relationIndex] == RelationType.Include)
-                relations[0] = relations[0] | (1<<(relationActivityIds[relationIndex])); 
+                workflow.includesTo[i] = workflow.includesTo[i] | (1<<(relationActivityIds[relationIndex])); 
             else if (relationTypes[relationIndex] == RelationType.Exclude)
-                relations[1] = relations[1] | (1<<(relationActivityIds[relationIndex])); 
+                workflow.excludesTo[i] = workflow.excludesTo[i] | (1<<(relationActivityIds[relationIndex])); 
             else if (relationTypes[relationIndex] == RelationType.Response)
-                relations[2] = relations[2] | (1<<(relationActivityIds[relationIndex])); 
+                workflow.responsesTo[i] = workflow.responsesTo[i] | (1<<(relationActivityIds[relationIndex])); 
             else if (relationTypes[relationIndex] == RelationType.Condition)
-                relations[3] = relations[3] | (1<<(relationActivityIds[relationIndex])); 
+                workflow.conditionsFrom[i] = workflow.conditionsFrom[i] | (1<<(relationActivityIds[relationIndex])); 
             else if (relationTypes[relationIndex] == RelationType.Milestone)
-                relations[4] = relations[4] | (1<<(relationActivityIds[relationIndex])); 
+                workflow.milestonesFrom[i] = workflow.milestonesFrom[i] | (1<<(relationActivityIds[relationIndex])); 
             
             relationIndex++;
         }
-        workflow.includesTo[i] = relations[0];
-        workflow.excludesTo[i] = relations[1];
-        workflow.responsesTo[i] = relations[2];
-        workflow.conditionsFrom[i] = relations[3];
-        workflow.milestonesFrom[i] = relations[4];
 
         for (j = 0; j < activityData[i][1]; j++) {
-          workflow.authAccounts[j].push(authAccounts[authAccountIndex++]);
+          workflow.authAccounts[i].push(authAccounts[authAccountIndex++]);
         }
     }
     

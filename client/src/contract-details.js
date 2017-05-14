@@ -1,27 +1,6 @@
-const address = "0x6E276e3F590d98770457F359762Ee8a73CCEb507";
+const address = "0x1a903Fee3A6645f86498ef41F1Cb0fd57246D480";
+
 const abi = [
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "workflowId",
-        "type": "uint256"
-      },
-      {
-        "name": "activityId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getGroupWhitelist",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
   {
     "constant": true,
     "inputs": [
@@ -38,7 +17,7 @@ const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint32[]"
+        "type": "uint8[]"
       }
     ],
     "payable": false,
@@ -67,51 +46,6 @@ const abi = [
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "names",
-        "type": "bytes32[]"
-      },
-      {
-        "name": "activityStates",
-        "type": "bool[3][]"
-      },
-      {
-        "name": "activityData",
-        "type": "uint32[3][]"
-      },
-      {
-        "name": "relationTypes",
-        "type": "uint8[]"
-      },
-      {
-        "name": "relationActivityIds",
-        "type": "uint32[]"
-      },
-      {
-        "name": "groupAccounts",
-        "type": "address[]"
-      },
-      {
-        "name": "groupMemberships",
-        "type": "uint40[]"
-      },
-      {
-        "name": "accountWhitelist",
-        "type": "address[]"
-      },
-      {
-        "name": "authDisabled",
-        "type": "bool[]"
-      }
-    ],
-    "name": "createWorkflow",
-    "outputs": [],
-    "payable": false,
-    "type": "function"
-  },
-  {
     "constant": true,
     "inputs": [
       {
@@ -127,7 +61,7 @@ const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint32[]"
+        "type": "uint8[]"
       }
     ],
     "payable": false,
@@ -166,7 +100,7 @@ const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint32[]"
+        "type": "uint8[]"
       }
     ],
     "payable": false,
@@ -209,6 +143,43 @@ const abi = [
         "type": "bytes32"
       }
     ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "names",
+        "type": "bytes32[]"
+      },
+      {
+        "name": "activityStates",
+        "type": "bool[3][]"
+      },
+      {
+        "name": "activityData",
+        "type": "uint32[2][]"
+      },
+      {
+        "name": "relationTypes",
+        "type": "uint8[]"
+      },
+      {
+        "name": "relationActivityIds",
+        "type": "uint32[]"
+      },
+      {
+        "name": "authAccounts",
+        "type": "address[]"
+      },
+      {
+        "name": "authDisabled",
+        "type": "bool[]"
+      }
+    ],
+    "name": "createWorkflow",
+    "outputs": [],
     "payable": false,
     "type": "function"
   },
@@ -262,24 +233,6 @@ const abi = [
       {
         "name": "workflowId",
         "type": "uint256"
-      }
-    ],
-    "name": "getGroupNames",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes32[32]"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "workflowId",
-        "type": "uint256"
       },
       {
         "name": "activityId",
@@ -312,29 +265,7 @@ const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint32[]"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "workflowId",
-        "type": "uint256"
-      },
-      {
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getGroupsOfAccount",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint40"
+        "type": "uint8[]"
       }
     ],
     "payable": false,
@@ -392,6 +323,28 @@ const abi = [
         "type": "uint256"
       }
     ],
+    "name": "test",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "workflowId",
+        "type": "uint256"
+      },
+      {
+        "name": "activityId",
+        "type": "uint256"
+      }
+    ],
     "name": "isAuthDisabled",
     "outputs": [
       {
@@ -418,7 +371,7 @@ const abi = [
     "outputs": [
       {
         "name": "",
-        "type": "uint32[]"
+        "type": "uint8[]"
       }
     ],
     "payable": false,

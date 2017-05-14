@@ -615,6 +615,12 @@ for(i = 0; i < relations.length; i=i+2){
 		
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
+		\subsection{Call data}
+		While the bitvector implementation is an optimization for activity execution, it comes at the cost of workflow creation. 
+		However, there is a hidden optimization opportunity, gained by implementing the activities as bitvectors. 
+		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
+		But since the parameters have to be kept in storage for the contract
+
 	\section{Discussion}
 
 	\section{GUI}
