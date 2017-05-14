@@ -256,6 +256,7 @@ class DcrUi {
   publish() {
     let args = new Workflow(this.workflowName(), this.activities, this.relations).getContractArguments();
     console.log("publish", args);
+    console.log(WorkflowManager.contract.createWorkflow.getData.apply(this, args));
     WorkflowManager.createWorkflow.apply(this, args)
       .then(this.publishHash)
       .then(() => m.redraw())
@@ -446,7 +447,7 @@ class DcrUi {
           m("hr"),
           m(MenuField, {
             value: selected ? selected.name : "",
-            input: m("input.input", { maxlength: 32, value: selected.name, oninput: m.withAttr("value", name => selected.name = name) })
+            input: !editable ? null : m("input.input", { maxlength: 32, value: selected.name, oninput: m.withAttr("value", name => selected.name = name) })
           }),
           editable
             ? null
@@ -477,7 +478,9 @@ class DcrUi {
           editable || selected.accountWhitelist.length ? null : m("p.extra-info", "Authorization disabled"),
           selected.accountWhitelist.map((address, i) => m(MenuField, {
             size: "small",
-            input: m("input.input.is-small" + (web3.isAddress(address) ? "" : ".is-danger"), { value: address, oninput: m.withAttr("value", value => selected.accountWhitelist[i] = value) })
+            input: !editable ? null : m("input.input.is-small" + (web3.isAddress(address) ? "" : ".is-danger"), { value: address, oninput: m.withAttr("value", value => selected.accountWhitelist[i] = value) }),
+            value: editable ? null : address,
+            href: editable ? null : "#"
           })),
           !editable
             ? null
