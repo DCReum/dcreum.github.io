@@ -204,8 +204,8 @@ contract DCReum {
     uint32 relationIndex = 0;
     uint32 authAccountIndex = 0;
 
-    // assert(activityData.length == names.length - 1);
-    // assert(activityData.length == authDisabled.length);
+    assert(activityData.length == names.length - 1);
+    assert(activityData.length == authDisabled.length);
 
     workflow.name = names[0];
 
