@@ -607,27 +607,25 @@ for(i = 0; i < relations.length; i=i+2){
 
 		We expected workflow creation to become costlier as at trade-off for cheaper activity executions, however this was not the case. Table \ref{table:test-cases-bitvectors} shows a comparison of the costs of creating the example workflow and executing its activities in the Mono-contract implementation and the Mono-contract-bitvector implementation.
 		Surprisingly the creation of the example workflow was cheaper in the Mono-contract-bitvector implementation, and executions were generally more expensive.
-
-		\begin{tabular}{| l | l | l |}
+		\begin{table}
 		\label{table:test-cases-bitvectors}
-			\hline
-			Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
-			1. Contract creation			& 2183805		 & 1708991 	\\\hline
-			2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
-			3. Submit ticket				& 61187			 & 66591	\\\hline
-			4. Propose solution				& 41263 		 & 51805	\\\hline
-			5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
-			6. Reject solution				& 41263 		 & 51805	\\\hline
-			7. Propose solution				& 41263 		 & 51805	\\\hline
-			8. Accept solution				& 54118 		 & 51805	\\\hline
-			9. Close ticket					& 34845 		 & 36805	\\\hline
-			10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
-			11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
-			\hline
-		\end{tabular}
-		\pagebreak
-
-
+			\begin{tabular}{| l | l | l |}
+				\hline
+				Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
+				1. Contract creation			& 2183805		 & 1708991 	\\\hline
+				2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
+				3. Submit ticket				& 61187			 & 66591	\\\hline
+				4. Propose solution				& 41263 		 & 51805	\\\hline
+				5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
+				6. Reject solution				& 41263 		 & 51805	\\\hline
+				7. Propose solution				& 41263 		 & 51805	\\\hline
+				8. Accept solution				& 54118 		 & 51805	\\\hline
+				9. Close ticket					& 34845 		 & 36805	\\\hline
+				10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
+				11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
+				\hline
+			\end{tabular}
+		\end{table}
 		Secondly, since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
 		Excluding the overhead of the lists holding the bitvectors, the storage space required for relations after the optimization can be expressed as $s = 5 \cdot 256 \cdot a$, where $a$ is the number of activities, and $s$ it the storage required in bits.
