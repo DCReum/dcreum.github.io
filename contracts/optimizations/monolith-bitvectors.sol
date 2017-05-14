@@ -227,7 +227,7 @@ contract DCReum {
         }
 
         for (j = 0; j < activityData[i][1]; j++) {
-          workflow.authAccounts[j].push(authAccounts[authAccountIndex++]);
+          workflow.authAccounts[i].push(authAccounts[authAccountIndex++]);
         }
     }
     
