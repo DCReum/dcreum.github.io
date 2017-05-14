@@ -641,7 +641,7 @@ for(i = 0; i < relations.length; i=i+2){
 
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
 		But since the parameters have to be kept in the transaction, the call data actually uses storage space and therefore costs gas.
-		So by packaging the data which the constructor is called with, more intelligently, we can make the creation of a workflow cheaper. 
+		So by packaging the data which the constructor is called with more intelligently, we can make the creation of a workflow cheaper. 
 		Because of the difference between the format used by the mono-contract implemented with bitvectors and the parameters accepted by the workflow constructor, a lot of work is done inside the contract itself to cast and convert these different data structures.
 		This is partly helped along by the bitvector implementation, as it is the most efficient way of calling the constructor.
 
@@ -669,12 +669,79 @@ for(i = 0; i < relations.length; i=i+2){
 		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
 		We are unable to explain this behavior, which is not insignificant as it is a difference of $~15,000$ gas.
 
-		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by id in each workflow, but this should only provide significant savings in situations where a contract contains many workflows where the same users reappear frequently.
+		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by ID in each workflow, but this should only provide significant savings in situations where a contract contains many workflows, in which the same users reappear frequently.
 
 	\section{Discussion}
+	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
+	There was no need for jumping though hoops to get one, or even several, working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
+	However, finding the low-level optimizations were not very simple.
+	While the cost of the instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some hidden costs, that are not readily available. 
+	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is a behaviour we have not been able to figure out.
+	Notice from appendices \ref{app:multi-contract-test-data}, \ref{app:mono-contract-test-data}, \ref{app:mono-contract-with-bitvectors-test-data}\& \ref{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data} that this is common behaviour across vastly different implementations. 
+	Our standing hypothesis is that there might be some data that is lazily initialized, however, we have not been able to produce anything that substantiate this claim.
+	As such, making low-level-optimized solutions in Ethereum is still a daunting task due to lacking documentation, perhaps because the technology is still relatively young.
+	While is of course relevant, it does not subtract from our opinion that DCR implementations on the Ethereum platform are completely viable.
 
-	\section{GUI}
+	Choosing the best of the above implementations is not easy.
+	Each implementation has its own merits, and would be optimal in certain situations:
+	\begin{description}
+	 	\item[Multi-contract] is a simple and easily understandable implementation. 
+	 		It has the absolutely lowest activity execution for our example workflow, although this cost growth linearly in the number of relations an activity has. 
+	 		However, it also has the highest workflow creation cost-growth. 
+	 		We recommend this solution only for easily implementable extra features, for instance external contract conditionals (see \ref{subsec:external-contract-conditionals}), in a single relatively small workflow.
+	 		As soon as several workflows are required, this is not the implementation to go with.
+	 	\item[Mono-contract] is also relatively simple, and so also easily extendable.
+	 		It has a lower workflow creation cost growth, and supports arbitrarily large workflows, at a cost. 
+	 		This makes it ideal for users with a need for workflows with more than 256 activities, and easily implementable extra features.
+	 		However, we expect that this implementation is also relatively rarely needed.k
+	 	\item[Bitvectors] is cheaper than the Mono-contract, but a bit less easily extendable.
+	 		It shares an interface with the Mono-contract implementation, and the two could probably be switched around according to need.
+	 		This also means that it is relatively easy to use, but this comes at the cost of extendability, and a maximum size of 256 activities.
+	 		It has an even lower cost growth of workflow creation than Mono-contract, and bounded cost on activity execution, making it ideal for workflows with more relations per activity than our example workflow, and the need for many activity execution.
+	 	\item[Bitvectors and call data] strikes a balance with our lowest workflow creation cost, and an insignificant difference of activity executions from the Bitvector implementation.
+	 	Generally this should be used over the Bitvector implementation, unless a lot of activity executions are expected.
+	 	However, this implementation is very specifically designed and optimized for basic DCR logic, making it hard to extend.
+	 	It is also relative hard to put workflows up on this contract, due to the very specific data format required. 
+	 	As such we have created a front-end implementation for ease-of-use, see section \ref{sec:gui}.
+	 \end{description} 
+	 
+	\section{Graphical user interface}
+	\label{sec:gui}
+	To show that our DCR engine can be used in practice, we have implemented a graphical user interface (GUI), where user can create workflows and execute activities.
+	The GUI is implemented in JavaScript using the library Cytoscape.js.\footnote{http://js.cytoscape.org/}
+	Cytoscape.js supports most basic operations on graphs and has methods to easily draw and nicely arrange nodes.
 
+		\subsection{Legend}
+		Included activities have a solid border, while excluded activities have a dotted border. 
+		The borders and text of executed activities are green, while not executed activities have black borders and black text.
+		The relations between activities are color coded with the same color scheme as the relations in \href{http://www.dcrgraphs.net}{dcrgraphs.net}. The color scheme is shown in the table below.
+
+		\begin{table}[!ht]
+			\label{table:relation-color}
+			\centering
+			\begin{tabular}{|c|c|c|}
+			\hline
+			\textbf{Relation} 	& \textbf{Color} \\ \hline
+			Include relation    & Green \\\hline
+			Exclude relation    & Red \\\hline
+			Response relation   & Blue \\\hline
+			Condition relation  & Yellow \\\hline
+			Milestone relation  & Purple \\\hline
+			\end{tabular}
+			\caption{Shows the color scheme of relations in the GUI}
+		\end{table}
+
+		\subsection{Usage}
+		Below is a short description of how to perform the most common DCR operations in the GUI:
+		\begin{description}
+			\item[Create workflow] To start creating a workflow, click on the \emph{Create workflow} button in the right hand side. A blank canvas with no activities will be shown. You can now start adding activities.
+			\item[Create activities] To create an activity, right click on the blank surface and left click \emph{Add activity} in the context menu.
+			\item[Set activity attributes] Select an activity by left clicking on it. The right hand side will show the attributes of the activity. Here an activities attributes can be manipulated be ticking or unticking the check boxes labeled \emph{Included}, \emph{Executed} or \emph{Pending}.
+			\item[Execution authorization] When an activity is selected, you can specify which public keys are authorized to execute the activity. Start by clicking the button labeled \emph{Add account}. This creates a new text field where the public key of the authorized account can be pasted into. If an activity should be executable by several accounts, more accounts are added in the same way. 
+			\item[Create relations] Select an activity and right click the activity you want to create a relation to. Click the appropriate relation in the context menu to create the relation between the activities.
+			\item[Upload workflow] When you are finished with the workflow press "Et eller andet"....blablabla
+			\item[Execute activities]
+		\end{description}
 	\section{Further features}
 	As the optimized solution is a completely bare-bones implementation of a DCR engine, there are multiple potential expansions of the functionality and features which could be implemented on top of the current structure, both with regards to the functionality supported by DCR and by Ethereum.
 	These features would be fairly use-case dependent and since they would have an effect on the cost of running a workflow, they should only be implemented in instances where they would actually be used.
@@ -773,6 +840,7 @@ for(i = 0; i < relations.length; i=i+2){
 			We leave this problem open for further study.
 
 		\subsection{External contract conditionals}
+		\label{subsec:external-contract-conditionals}
 		As the public methods of a contract on the Ethereum blockchain are accessible by other contracts, provided they are called correctly and with sufficient funds, it would be possible to construct a workflow where some activities are dependent on the values of other contracts.
 		These dependencies would essentially be conditional statements calling the functions of another contract, when it is being evaluated whether or not an activity is executable. 
 		An example could be a contract returning the value of a currency and whether or not it is above or below a specified threshold.
