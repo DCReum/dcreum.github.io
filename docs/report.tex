@@ -627,7 +627,6 @@ for(i = 0; i < relations.length; i=i+2){
 				9. Close ticket					& 34845 		 & 36805	\\\hline
 				10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
 				11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
-				\hline
 			\end{tabular}
 		\end{table}
 
@@ -653,6 +652,8 @@ for(i = 0; i < relations.length; i=i+2){
 		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
 		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
 		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
+
+
 
 	\section{Discussion}
 
@@ -991,18 +992,16 @@ if (callContract && A.included) //External call
 		\lstinputlisting[language=solidity]{../contracts/monolith/monolith-bitvectors.sol}
 
 	\pagebreak
-	\section{Example workflow transaction hashes Multi-contract}
-	\label{app:example-workflow-transaction-hashes-multi-contract}
+	\section{Multi-contract test data}
+	\label{app:multi-contract-test-data}
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the multi-contract implementation.
-		Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
-		However, they show that the execution behaves as expected.
-		Also note that workflow creation is included in the cost of contract creation in the multi-contract implementation.
+		Since executions which throw an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost aside from proving correct behavior.
+		Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
 		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 									& Gas cost 	  & TxHash on Ropsten Revived 													  \\\hline
 			1. Contract creation						& 2221906 	  & \seqsplit{0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734} \\\hline
-			2. Workflow creation						& Included 
-														in above cost & Included in transaction above \\\hline 
+			2. Workflow creation						& - 		  & Included in transaction above \\\hline 
 			3. Submit ticket (Authorization failure)	& - 		  & \seqsplit{0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99} \\\hline
 			4. Propose solution (Condition failure)		& - 		  & \seqsplit{0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8} \\\hline
 			5. Reject solution (Condition failure)		& - 		  & \seqsplit{0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f} \\\hline
@@ -1019,11 +1018,10 @@ if (callContract && A.included) //External call
 		\end{longtable}
 
 	\pagebreak
-	\section{Example workflow transaction hashes Mono-contract}
-	\label{app:example-workflow-transaction-hashes-mono-contract}
+	\section{Mono-contract test data}
+	\label{app:mono-contract-test-data}
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the mono-contract implementation.
-		Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
-		However, they show that the execution behaves as expected.
+		Since executions which throw an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost aside from proving correct behavior.
 		Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
 		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
 			\hline 	
@@ -1048,37 +1046,8 @@ if (callContract && A.included) //External call
 		\end{longtable}
 
 	\pagebreak
-	\section{Test cases gas comparison for example workflow}
-	\label{app:test-cases-gas}
-		The table below brings together the gas costs from appendencies \ref{app:example-workflow-transaction-hashes-multi-contract} and \ref{app:example-workflow-transaction-hashes-mono-contract} for gas cost comparison.
-
-		\begin{tabular}{| l | l | l |}
-			\hline
-			Action 										& Multi-contract & Mono-contract \\ \hline
-			1. Contract creation						& 2221906		 & 2183805 	\\\hline
-			2. Workflow creation						& included 		 & 1010934 	\\\hline
-			3. Submit ticket (Authorization failure)	& -				 & - 		\\\hline
-			4. Propose solution (Condition failure)		& -				 & - 		\\\hline
-			5. Reject solution (Condition failure)		& -				 & - 		\\\hline
-			6. Accept solution (Milestone failure)		& -				 & - 		\\\hline
-			7. Close ticket (Excluded failure)			& -				 & - 		\\\hline
-			8. Submit ticket							& 61112			 & 61187 	\\\hline
-			9. Submit ticket (Excluded failure)			& -				 & - 		\\\hline
-			10. Propose solution						& 41208			 & 41263 	\\\hline
-			11. Propose solution (Duplicate)			& 41208			 & 41263 	\\\hline
-			12. Reject solution							& 41208			 & 41263 	\\\hline
-			13. Propose solution						& 41208			 & 41263 	\\\hline
-			14. Accept solution							& 54023			 & 54118 	\\\hline
-			15. Close ticket							& 34810			 & 34845 	\\\hline
-			16. Workflow creation (2)					& -				 & 995934 	\\\hline
-			17. Workflow creation (3)					& -				 & 995934 	\\\hline
-			\hline
-		\end{tabular}
-
-		\pagebreak
-
-	\section{Example workflow transaction hashes Mono-contract with bitvectors}
-	\label{app:example-workflow-transaction-hashes-mono-contract-with-bitvectors}
+	\section{Mono-contract with bitvectors test data}
+	\label{app:mono-contract-with-bitvectors-test-data}
 		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 						& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
@@ -1095,30 +1064,9 @@ if (callContract && A.included) //External call
 			11.Workflow creation (3)		& 820045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
 		\end{longtable}
 
-	\section{Test cases gas comparison for example workflow}
-	\label{app:test-cases-gas}
-		The table below brings together the gas costs from appendencies \ref{app:example-workflow-transaction-hashes-multi-contract} and \ref{app:example-workflow-transaction-hashes-mono-contract} for gas cost comparison.
-
-		\begin{tabular}{| l | l | l |}
-			\hline
-			Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
-			1. Contract creation			& 2183805		 & 1708991 	\\\hline
-			2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
-			3. Submit ticket				& 61187			 & 66591	\\\hline
-			4. Propose solution				& 41263 		 & 51805	\\\hline
-			5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
-			6. Reject solution				& 41263 		 & 51805	\\\hline
-			7. Propose solution				& 41263 		 & 51805	\\\hline
-			8. Accept solution				& 54118 		 & 51805	\\\hline
-			9. Close ticket					& 34845 		 & 36805	\\\hline
-			10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
-			11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
-			\hline
-		\end{tabular}
-		\pagebreak
-
-	\section{Example workflow transaction hashes Mono-contract with bitvectors and compressed call data}
-	\label{app:example-workflow-transaction-hashes-mono-contract-with-bitvectors-and-compressed-call-data}
+		\clearpage
+	\section{Mono-contract with bitvectors and compressed call data test data}
+	\label{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data}
 		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 						& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
@@ -1135,114 +1083,4 @@ if (callContract && A.included) //External call
 			11.Workflow creation (3)		& 747837	& \seqsplit{0x8a9476eaeacb8533b999c65bb9de73d292414c037e679d8fe25908c14cae9c77} \\\hline
 		\end{longtable}
 	\pagebreak
-
-
-% \pagebreak
-	% \section{Edge and stress test workflow transaction hashes Multi-contract}
-	% \label{app:edge-and-stress-test-workflow-hashes-multi-contract}
-	% 	The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the multi-contract implementation.
-	% 	Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
-	% 	However, they show that the execution behaves as expected.
-	% 	Also note that workflow creation is included in the cost of contract creation in the multi-contract implementation.
-	% 	\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
-	% 		\hline 	
-	% 		Action 	 									& Gas cost 	  & TxHash on Ropsten Revived 													  \\\hline
-	% 		1. Contract creation						& 2221906 	  & \seqsplit{0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734} \\\hline
-	% 		2. Workflow creation						& Included 
-	% 													in above cost & Included in transaction above \\\hline 
-	% 		3. Submit ticket (Authorization failure)	& - 		  & \seqsplit{0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99} \\\hline
-	% 		4. Propose solution (Condition failure)		& - 		  & \seqsplit{0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8} \\\hline
-	% 		5. Reject solution (Condition failure)		& - 		  & \seqsplit{0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f} \\\hline
-	% 		6. Accept solution (Milestone failure)		& - 		  & \seqsplit{0x8cfc647a65a840d59c32776f9d856e08af089ae3a51a8342a51db5716f072ff4} \\\hline
-	% 		7. Close ticket (Excluded failure)			& - 		  & \seqsplit{0x21fa6c5c8458cdee8a546892001b01778639ca4e4855e53df83fa1e049c8d309} \\\hline
-	% 		8. Submit ticket							& 61112 	  & \seqsplit{0xb263f9e9f89a773ca1b4de65dc989e78e4cc9f939f13a161e27b8119e48a5cf4} \\\hline
-	% 		9. Submit ticket (Excluded failure)			& - 		  & \seqsplit{0xcfb70b00e0357a98eeabcca60d3bf9fba69d0f4724aa31c99df3542db0cfd988} \\\hline
-	% 		10. Propose solution						& 41208 	  & \seqsplit{0x923f1506887ea6d93ecea8c63e97e9e7d32d2227780d1c27764efbf8449b3bac} \\\hline
-	% 		11. Propose solution (Duplicate)			& 41208 	  & \seqsplit{0x7e361c81e441689408b1be3cf800be705b69228a30583b21d7fac40d61671147} \\\hline
-	% 		12. Reject solution							& 41208 	  & \seqsplit{0xff45cb12d828dccab36f96fcf2d18bffc85873fc0159afe392c506026dfe360c} \\\hline
-	% 		13. Propose solution						& 41208 	  & \seqsplit{0xd3373176d23c31cf1dc8e4314aec2d3d8012e5aff2edd4a57b56e278c6cf07b9} \\\hline
-	% 		14. Accept solution							& 54023 	  & \seqsplit{0xcff7205e63888de510e09c709f596d6dd65b559bba6a3f598a665c7f41ffcb60} \\\hline
-	% 		15. Close ticket							& 34810 	  & \seqsplit{0xbf0896427c4006153000cd5456d5ca23ba79f24da7242bb37b7746240d2038ce} \\\hline
-	% 	\end{longtable}
-
-	% \pagebreak
-	% \section{Edge and stress test workflow transaction hashes Mono-contract}
-	% \label{app:edge-and-stress-test-workflow-hashes-mono-contract}
-	% 	The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the mono-contract implementation.
-	% 	Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
-	% 	However, they show that the execution behaves as expected.
-	% 	Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
-	% 	\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
-	% 		\hline 	
-	% 		Action 	 									& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
-	% 		1. Contract creation						& 2183805	& \seqsplit{0x577ee5dd6c58747b983e4d6943ff6a14cbc380e630b0cbdca014a2837254e078} \\\hline
-	% 		2. Workflow creation (1)					& 1010934	& \seqsplit{0x12557a86b97721f87b471cbf1559e0dc8d0a1c6af2edb67b12cb796463a7cd92} \\\hline
-	% 		3. Submit ticket (Authorization failure) 	& -			& \seqsplit{0x301acf99c579ea0ed49099ff6c1e451fc9a5ef2e880c3292970e70c1af5cfcf9} \\\hline
-	% 		4. Propose solution (Condition failure)		& -			& \seqsplit{0x54fd86fb9388b6f2e5e89c83ff608f9fd81a48b08ff8d481e0bd41d4d2d78695} \\\hline
-	% 		5. Reject solution (Condition failure)		& -			& \seqsplit{0xe7d4485fb57cbeebc8a42107b4cd102e06ede6043e473fd99578d786ede469e5} \\\hline
-	% 		6. Accept solution (Milestone failure)		& -			& \seqsplit{0x2c097d5fdc31b0ffbb5ea424e8e1fc44af7addc89e4a707ba5f270ae9e650416} \\\hline
-	% 		7. Close ticket (Excluded failure)			& -			& \seqsplit{0xfaaad0773c564ad4913d55245f752871fabee7dca63bb3c93909e1a81e18bfb9} \\\hline
-	% 		8. Submit ticket							& 61187		& \seqsplit{0x95876f4c4a6652384c503593de0b609f3f7b41e28a9ae9eb6ee526241ff481e6} \\\hline
-	% 		9. Submit ticket (Excluded failure)			& -			& \seqsplit{0x81e047cd60aaa25ef3ef49c0a66bb74595aac4fd38e8bce809ff7c95bae0036c} \\\hline
-	% 		10. Propose solution						& 41263		& \seqsplit{0x5152469274c4f5f1958ee357640ebcb6b693118273b3defed26de3e58eff4cec} \\\hline
-	% 		11. Propose solution (Duplicate)			& 41263		& \seqsplit{0x6abcdff92de76d00d58afc9bb1816fb0c4da62077ec28a0bcf18dae1b0db3f63} \\\hline
-	% 		12. Reject solution							& 41263		& \seqsplit{0x662f8a264b1e4bea74d9e5255ff21b9395a23e72c120d6da7dc4bf798a820f59} \\\hline
-	% 		13. Propose solution						& 41263		& \seqsplit{0x9a021cd725465091372bc8ee7da4f17266cd829b57536bbcb8bdb8c08940070f} \\\hline
-	% 		14. Accept solution							& 54118		& \seqsplit{0x40e5e401f2b5bf46d64657df1695190460c560f56dacf0add8210c4db931c830} \\\hline
-	% 		15. Close ticket							& 34845		& \seqsplit{0x2f8b9c71252832f9975b1d95a7eb9f81090036fd2c4b54f42b6567cc96e1f6aa} \\\hline
-	% 		16. Workflow creation (2)					& 995934	& \seqsplit{0xe6b80f633324a9890a73c13542194d97048de1c326e3e23b5f2f6cc9b3f19ef6} \\\hline
-	% 		17. Workflow creation (3)					& 995934	& \seqsplit{0x860542d77bfc622cf4f97504876e4e4fbc8faaffa8189d6db1749ed43ec2762a} \\\hline
-	% 	\end{longtable}
-	% \pagebreak
-	% \section{Test cases gas comparison for example workflow}
-	% \label{app:test-cases-gas}
-
-	% 	\begin{tabular}{| l | l | l |}
-	% 		\hline
-	% 		Action 										& Multi-contract & Mono-contract \\ \hline
-	% 		1. Contract creation						& 2221906		 & 2183805 	\\\hline
-	% 		2. Workflow creation						& included 		 & 1010934 	\\\hline
-	% 		3. Submit ticket (Authorization failure)	& -				 & - 		\\\hline
-	% 		4. Propose solution (Condition failure)		& -				 & - 		\\\hline
-	% 		5. Reject solution (Condition failure)		& -				 & - 		\\\hline
-	% 		6. Accept solution (Milestone failure)		& -				 & - 		\\\hline
-	% 		7. Close ticket (Excluded failure)			& -				 & - 		\\\hline
-	% 		8. Submit ticket							& 61112			 & 61187 	\\\hline
-	% 		9. Submit ticket (Excluded failure)			& -				 & - 		\\\hline
-	% 		10. Propose solution						& 41208			 & 41263 	\\\hline
-	% 		11. Propose solution (Duplicate)			& 41208			 & 41263 	\\\hline
-	% 		12. Reject solution							& 41208			 & 41263 	\\\hline
-	% 		13. Propose solution						& 41208			 & 41263 	\\\hline
-	% 		14. Accept solution							& 54023			 & 54118 	\\\hline
-	% 		15. Close ticket							& 34810			 & 34845 	\\\hline
-	% 		16. Workflow creation (2)					& -				 & 995934 	\\\hline
-	% 		17. Workflow creation (3)					& -				 & 995934 	\\\hline
-	% 		\hline
-	% 	\end{tabular}
-
-	% \section{Stress and edge tests}
-	% \label{app:stress-and-edge-tests}
-
-	% 	\begin{tabular}{| l | l | l |}
-	% 		\hline
-	% 		Test & Multi-contract & Mono-contract \\ \hline
-	% 		C1.1 & 0 & 0 \\ \hline
-	% 		M1.1 & 0 & 0 \\ \hline
-	% 		C2.1 & 0 & 0 \\ \hline
-	% 		M2.1 & 0 & 0 \\ \hline
-	% 		I1.1 & 0 & 0 \\ \hline
-	% 		E1.1 & 0 & 0 \\ \hline
-	% 		R1.1 & 0 & 0 \\ \hline
-	% 		I2.1 & 0 & 0 \\ \hline
-	% 		E2.1 & 0 & 0 \\ \hline
-	% 		R2.1 & 0 & 0 \\ \hline
-	% 		C-stress1 & 0 & 0 \\ \hline
-	% 		C-stress2 & 0 & 0 \\ \hline
-	% 		M-stress1 & 0 & 0 \\ \hline
-	% 		M-stress2 & 0 & 0 \\ \hline
-	% 		P-stress1 & 0 & 0 \\ \hline
-	% 		I-stress1 & 0 & 0 \\
-	% 		\hline
-	% 	\end{tabular}
-
 \end{document}
