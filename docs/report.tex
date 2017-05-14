@@ -585,7 +585,13 @@ for(i = 0; i < relations.length; i=i+2){
 		Similarly, optimizations with regards to the cost of activity executions at the expense of workflow creation is desirable.
 
 		\subsection{Bitvectors}
+		In the previous section we saw that cost of executing an activity is largely influenced by the number relations it has -- how many lookups or changes in other activities' attributes are needed.
 
+		Since the number of relation an activity has is 
+
+		In order to  cost of activity executions, we have implemented the activities as bitvector fields. 
+		That is, we have removed the activity struct entirely, and instead put the state- and relation data into \texttt{uint256} types and store them in the workflow struct (see snippet \ref{sni:bitvectors}).
+		
 		\begin{snippet}[ht!]
 			\centering
 			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/monolith/monolith-bitvectors.sol}
@@ -594,14 +600,32 @@ for(i = 0; i < relations.length; i=i+2){
 		 	\label{sni:bitvectors}
 		\end{snippet}
 
-		In order to reduce cost of activity executions, we have implemented the activities as bitvector fields. 
-		That is, we have removed the activity struct entirely, and instead put the state- and relation data into \texttt{uint256} types and store them in the workflow struct (see snippet \ref{sni:bitvectors}).
-		This optimization naturally has several effects.
+		This change naturally has several effects.
+		As a negative consequence, this limits the number of activities a workflow can contain to 256, since each bit of the three \texttt{uint256} represents one of an activity's three attributes.
+		However we do not expect workflows with more than 256 activities to be a normal occurrence.
+		If the need for workflows of a greater size arises, we suggest the need could be addressed by partitioning the the workflow into 256-activity sized sub-workflows, and connecting the two workflows using external relations (see section \ref{sec:external-relations} for an in-depth explanation of external relations).
 
-		Firstly, since each activity field is represented as a bit in an \texttt{uint256}, this limits each workflow to maximally contain 256 activities. 
-		While this is a shame, we do not expect workflows of size greater than 256 to be a normal occurrence.
-		If this functionality is needed, we suggest the problem could be solved by partitioning the the workflow into 256-activity sized sub-workflows, and using external relations to connect these to each other (see section \ref{sec:external-relations} for an in-depth explanation of external relations).
-
+		We expected workflow creation to become costlier as at trade-off for cheaper activity executions, however this was not the case. Table \ref{table:test-cases-bitvectors} shows a comparison of the costs of creating the example workflow and executing its activities in the Mono-contract implementation and the Mono-contract-bitvector implementation.
+		Surprisingly the creation of the example workflow was cheaper in the Mono-contract-bitvector implementation, and executions were generally more expensive.
+		\begin{table}
+		\label{table:test-cases-bitvectors}
+			\begin{tabular}{| l | l | l |}
+				\hline
+				Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
+				1. Contract creation			& 2183805		 & 1708991 	\\\hline
+				2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
+				3. Submit ticket				& 61187			 & 66591	\\\hline
+				4. Propose solution				& 41263 		 & 51805	\\\hline
+				5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
+				6. Reject solution				& 41263 		 & 51805	\\\hline
+				7. Propose solution				& 41263 		 & 51805	\\\hline
+				8. Accept solution				& 54118 		 & 51805	\\\hline
+				9. Close ticket					& 34845 		 & 36805	\\\hline
+				10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
+				11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
+				\hline
+			\end{tabular}
+		\end{table}
 		Secondly, since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
 		Excluding the overhead of the lists holding the bitvectors, the storage space required for relations after the optimization can be expressed as $s = 5 \cdot 256 \cdot a$, where $a$ is the number of activities, and $s$ it the storage required in bits.
@@ -616,10 +640,12 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 		\subsection{Call data}
-		While the bitvector implementation is an optimization for activity execution, it comes at the cost of workflow creation. 
-		However, there is a hidden optimization opportunity, gained by implementing the activities as bitvectors. 
+		% While the bitvector implementation might not be an optimization for activity execution, it comes at the cost of workflow creation. 
+		% However, there is a hidden optimization opportunity, gained by implementing the activities as bitvectors. 
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
-		But since the parameters have to be kept in storage for the contract
+		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
+		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
+		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
 
 	\section{Discussion}
 
@@ -773,9 +799,9 @@ if (A.isIncluded)
 			\end{lstlisting}
 
 			The issue here is fairly anemic as it is not immediately apparent that this code is problematic.
-			The issue is the potential side-effect of \emph{callContract}. 
-			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \emph{isIncluded}.
-			The execution of activity $A$ would resume after \emph{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
+			The issue is the potential side-effect of \texttt{callContract}. 
+			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \texttt{isIncluded}.
+			The execution of activity $A$ would resume after \texttt{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
 			An external call should therefore be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
 
 			\begin{lstlisting}[language=pseudocode]
@@ -789,10 +815,10 @@ if (callContract && A.included) //External call
 
 		Group authorization could be implemented by storing the addresses of users that are part of a group in a list and then associating activities with the id of the group requiring execution rights.
 
-		More specifically each user in a workflow should only need a single \emph{uint40}\footnote{We have chosen an \texttt{uint40} over a \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector to support membership of 32 groups with individual authorizations. Each bit in the \emph{uint40} would indicate if a user was part of a group or not.
+		More specifically each user in a workflow should only need a single \texttt{uint40}\footnote{We have chosen an \texttt{uint40} over a \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector to support membership of 32 groups with individual authorizations. Each bit in the \texttt{uint40} would indicate if a user was part of a group or not.
 
-		Each activity in a workflow should then contain a \emph{uint32} where each bit represents whether or not a group has the rights to execute the activity.
-		Lastly a workflow should contain a \emph{byte32} array of length 40 to store the group names.
+		Each activity in a workflow should then contain a \texttt{uint32} where each bit represents whether or not a group has the rights to execute the activity.
+		Lastly a workflow should contain a \texttt{byte32} array of length 40 to store the group names.
 
 		Even ignoring the optimizations this extension could bring, group authorization is still a valuable feature.
 		The construction of workflows is much simpler without duplication of Ethereum-address and the transparency of how access rights are granted is improved.
@@ -1041,6 +1067,7 @@ if (callContract && A.included) //External call
 			17. Workflow creation (3)					& -				 & 995934 	\\\hline
 			\hline
 		\end{tabular}
+
 		\pagebreak
 
 	\section{Example workflow transaction hashes Mono-contract with bitvectors}
@@ -1060,6 +1087,28 @@ if (callContract && A.included) //External call
 			10.Workflow creation (2)		& 820045	& \seqsplit{0x497a26e6615a4262e25eadee29dbd5bd1f7e8f763255a4940ad574052d41ca5c} \\\hline
 			11.Workflow creation (3)		& 820045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
 		\end{longtable}
+
+	\section{Test cases gas comparison for example workflow}
+	\label{app:test-cases-gas}
+		The table below brings together the gas costs from appendencies \ref{app:example-workflow-transaction-hashes-multi-contract} and \ref{app:example-workflow-transaction-hashes-mono-contract} for gas cost comparison.
+
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
+			1. Contract creation			& 2183805		 & 1708991 	\\\hline
+			2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
+			3. Submit ticket				& 61187			 & 66591	\\\hline
+			4. Propose solution				& 41263 		 & 51805	\\\hline
+			5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
+			6. Reject solution				& 41263 		 & 51805	\\\hline
+			7. Propose solution				& 41263 		 & 51805	\\\hline
+			8. Accept solution				& 54118 		 & 51805	\\\hline
+			9. Close ticket					& 34845 		 & 36805	\\\hline
+			10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
+			11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
+			\hline
+		\end{tabular}
+		\pagebreak
 
 
 % \pagebreak
