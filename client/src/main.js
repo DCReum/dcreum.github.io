@@ -8,7 +8,9 @@ import Workflow from "components/workflow";
 let wrap = component => m(DashPage, m(component));
 
 m.route(document.body, "/", {
-  "/": DashPage,
+  "/": {
+    onmatch: (args, path) => m.route.set("/create")
+  },
   "/create": {
     render: () => wrap(Create)
   },

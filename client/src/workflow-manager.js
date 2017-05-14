@@ -82,10 +82,13 @@ class Workflow {
     const relationSelf = relation => relationNode(relation, false);
     const relationOther = relation => relationNode(relation, true);
     const padEnd = (str, targetLength, padStr) => str + padStr.repeat(targetLength - str.length);
+    const packedActivityId = oldId => count(this.activities.slice(0, oldId), x => x);
 
     let activities = this.activities.filter(x => x);
     let relations = this.relations.filter(x => x)
+      .map(relation => new Relation(packedActivityId(relation.from), packedActivityId(relation.to), relation.type))
       .sort((lhs, rhs) => relationSelf(lhs) - relationSelf(rhs));
+
 
     return [
       // names
@@ -107,7 +110,10 @@ class Workflow {
         count(relations, relation => relationSelf(relation) === activity.id),
 
         // counts for accountWhitelist
-        activity.accountWhitelist.length
+        activity.accountWhitelist.length,
+
+        // TEMP: groupWhitelist
+        0
       ]),
 
       // relationTypes
@@ -273,6 +279,8 @@ class WorkflowManager {
             promises.push(this.getResponses(activityId).then(responses => responses.forEach(to => result.activities[activityId].relations.push(new Relation(activityId, to.toNumber(), "response")))));
             promises.push(this.getConditions(activityId).then(conditions => conditions.forEach(from => result.activities[activityId].relations.push(new Relation(from.toNumber(), activityId, "condition")))));
             promises.push(this.getMilestones(activityId).then(milestones => milestones.forEach(from => result.activities[activityId].relations.push(new Relation(from.toNumber(), activityId, "milestone")))));
+
+            promises.push(this.getAccountWhitelist(activityId).then(whitelist => result.activities[activityId].accountWhitelist = whitelist));
           }
           return Promise.all(promises);
         })

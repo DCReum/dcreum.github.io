@@ -21,8 +21,6 @@ class Workflow {
     let tab = m.route.param("tab");
     let tabUrl = (to) => `/workflow/${workflowId}/${to}`;
 
-    console.log(tab);
-
     return m("section.workflow", [
       m("nav.nav.is-primary.has-shadow", [
           m("div.nav-left", [
