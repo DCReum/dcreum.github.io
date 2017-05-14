@@ -592,7 +592,7 @@ for(i = 0; i < relations.length; i=i+2){
 		
 		\begin{snippet}[ht!]
 			\centering
-			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/optimizations/monolith-bitvectors.sol}
+			\lstinputlisting[language=solidity, firstline=11, lastline=30, numbers=none]{../contracts/monolith/monolith-bitvectors.sol}
 		 	\caption[Activities as bitvectors]
 		 	{Activities as bitvectors}
 		 	\label{sni:bitvectors}
@@ -982,13 +982,13 @@ if (callContract && A.included) //External call
 
 	\section{Mono-contract code}
 
-		\lstinputlisting[language=solidity]{../contracts/monolith.sol}
+		\lstinputlisting[language=solidity]{../contracts/monolith/monolith-without-group-auth.sol}
 
 	\section{Mono-contract code with bitvectors}
 		\label{app:mono-contract-code-with-bitvectors}
 
 
-		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitvectors.sol}
+		\lstinputlisting[language=solidity]{../contracts/monolith/monolith-bitvectors.sol}
 
 	\pagebreak
 	\section{Example workflow transaction hashes Multi-contract}

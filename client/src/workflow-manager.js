@@ -3,6 +3,7 @@ import Stream from "mithril/stream";
 import moment from "moment";
 import m from "mithril";
 import { address, abi } from "contract-details";
+import BigNumber from "bignumber.js";
 
 const contract = web3.eth.contract(abi).at(address);
 
@@ -83,46 +84,67 @@ class Workflow {
     const relationOther = relation => relationNode(relation, true);
     const padEnd = (str, targetLength, padStr) => str + padStr.repeat(targetLength - str.length);
     const packedActivityId = oldId => count(this.activities.slice(0, oldId), x => x);
+    const bitvector = bools => bools.reduceRight((num, bool) => bool ? num.times(2).plus(1) : num.times(2), new BigNumber(0));
+    const relationVector = type =>
+      activities.map((_, selfId) =>
+        activities.map((_, otherId) =>
+          !!relations.find(relation =>
+            relation.type === type &&
+            relationSelf(relation) === selfId &&
+            relationOther(relation) === otherId)))
+        .map(bitvector);
 
     let activities = this.activities.filter(x => x);
     let relations = this.relations.filter(x => x)
       .map(relation => new Relation(packedActivityId(relation.from), packedActivityId(relation.to), relation.type))
       .sort((lhs, rhs) => relationSelf(lhs) - relationSelf(rhs));
-
+    let authAccounts = Array.from(activities.reduce((set, activity) => {
+      activity.accountWhitelist.forEach(set.add);
+      return set;
+    }, new Set()));
 
     return [
-      // names
-      [this.workflowName]
-        .concat(activities.map(activity => activity.name))
+      // workflowName
+      padEnd(this.workflowName, 32, " "),
+
+      // activityNames
+      activities
+        .map(activity => activity.name)
         .map(str => padEnd(str, 32, " ")),
 
-      // activityStates
-      activities.map(activity => [
-        activity.isIncluded,
-        activity.isExecuted,
-        activity.isPending
-      ]),
+      // includedStates
+      bitvector(activities.map(activity => activity.isIncluded)),
+      
+      // executedStates
+      bitvector(activities.map(activity => activity.isExecuted)),
+      
+      // pendingStates
+      bitvector(activities.map(activity => activity.isPending)),
 
-      // activityData
-      activities.map((activity, i) => [
-        // counts for relationTypes and relationActivityIds
-        count(relations, relation => relationSelf(relation) === i),
+      // includesTo
+      relationVector("include"),
 
-        // counts for accountWhitelist
-        activity.accountWhitelist.length,
-      ]),
+      // excludesTo
+      relationVector("exclude"),
 
-      // relationTypes
-      relations.map(relation => relation.typeToNumber()),
+      // responsesTo
+      relationVector("response"),
 
-      // relationActivityIds
-      relations.map(relation => relationOther(relation)),
+      // conditionsFrom
+      relationVector("condition"),
 
-      // accountWhitelist
-      activities.map(activity => activity.accountWhitelist).reduce((prev, curr) => prev.concat(curr), []),
-
+      // milestonesFrom
+      relationVector("milestone"),
+      
       // authDisabled
-      activities.map(activity => activity.accountWhitelist.length === 0)
+      bitvector(activities.map(activity => activity.accountWhitelist.length === 0)),
+
+      // authAccounts
+      authAccounts,
+
+      // authWhitelist
+      authAccounts.map(account => activities.map(activity => !!activity.accountWhitelist.find(accound)))
+        .map(bitvector)
     ];
   }
 }

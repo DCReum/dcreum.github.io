@@ -104,7 +104,6 @@ contract DCReum {
   function canExecute(uint256 workflowId, uint256 activityId) public constant returns (bool) {
     var workflow = workflows[workflowId];
     uint32 i;
-    uint32 fromId;
 
     // sender address must have rights to execute or authentication must be disabled entirely
     if ((workflow.authDisabled & (1<<activityId)) == 0){
