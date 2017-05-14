@@ -622,6 +622,7 @@ for(i = 0; i < relations.length; i=i+2){
 				11.Workflow creation (3)		& 995,934 		 	& 820,045		& 175,889 	\\\hline
 			\end{tabular}
 		\end{table}
+		\FloatBarrier
 
 		Since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
@@ -637,11 +638,12 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 		\subsection{Call data}
-		Since a lot of work is now done in the mono-contract  
+
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
-		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
-		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
-		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
+		But since the parameters have to be kept in the transaction, the call data actually uses storage space and therefore costs gas.
+		So by packaging the data which the constructor is called with, more intelligently, we can make the creation of a workflow cheaper. 
+		Because of the difference between the format used by the mono-contract implemented with bitvectors and the parameters accepted by the workflow constructor, a lot of work is done inside the contract itself to cast and convert these different data structures.
+		This is partly helped along by the bitvector implementation, as it is the most efficient way of calling the constructor.
 
 		\begin{table}[!ht]
 		\label{tbl:bit-call-data-comparison}
@@ -661,8 +663,13 @@ for(i = 0; i < relations.length; i=i+2){
 			11.Workflow creation (3)			& 820,045		& 747,837					& 72,208	\\ \hline
 			\end{tabular}
 		\end{table}
+		\FloatBarrier
 
+		As can be seen in table \ref{tbl:bit-call-data-comparison}, the cost of creating both the contract and the workflow is significantly decreased, with minor changes to activity executions, as some checks performed by \texttt{canExecute} are slightly changed.
+		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
+		We are unable to explain this behavior, which is not insignificant as it is a difference of $~15,000$ gas.
 
+		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by id in each workflow, but this should only provide significant savings in situations where a contract contains many workflows where the same users reappear frequently.
 
 	\section{Discussion}
 
