@@ -571,13 +571,6 @@ for(i = 0; i < relations.length; i=i+2){
 
 	We consider the large winnings in workflow creations to more than make up for cost increase in activity execution, and will continue to optimize on the Mono-contract implementation.
 
-		 
-
-	% Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
-	% This is done for each relation in order to get an estimate for the cost of a single such operation.
-	% Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
-
-
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
 		We have prioritized the optimizations according to an idea of the frequency of use, meaning that for example the mono-contract solution is based on the assumption that workflow creation is much more frequent than contract creation.
@@ -613,24 +606,23 @@ for(i = 0; i < relations.length; i=i+2){
 
 		\begin{table}
 		\label{table:test-cases-bitvectors}
-			\begin{tabular}{| l | l | l |}
+			\begin{tabular}{| l | r | r | r |}
 				\hline
-				Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
-				1. Contract creation			& 2183805		 & 1708991 	\\\hline
-				2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
-				3. Submit ticket				& 61187			 & 66591	\\\hline
-				4. Propose solution				& 41263 		 & 51805	\\\hline
-				5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
-				6. Reject solution				& 41263 		 & 51805	\\\hline
-				7. Propose solution				& 41263 		 & 51805	\\\hline
-				8. Accept solution				& 54118 		 & 51805	\\\hline
-				9. Close ticket					& 34845 		 & 36805	\\\hline
-				10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
-				11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
+				Action 							& Mono-contract  	& bitvectors 	& Diff.		\\\hline
+				1. Contract creation			& 2,183,805		 	& 1,708,991 	& 474,814	\\\hline
+				2. Workflow creation (1)		& 1,010,934 		& 835,045 		& 175,889	\\\hline
+				3. Submit ticket				& 61,187			& 66,591		& -5,404	\\\hline
+				4. Propose solution				& 41,263 		 	& 51,805		& -10,542	\\\hline
+				5. Propose solution (Duplicate)	& 41,263 		 	& 51,805		& -10,542	\\\hline
+				6. Reject solution				& 41,263 		 	& 51,805		& -10,542	\\\hline
+				7. Propose solution				& 41,263 		 	& 51,805		& -10,542	\\\hline
+				8. Accept solution				& 54,118 		 	& 51,805		& 2,313		\\\hline
+				9. Close ticket					& 34,845 		 	& 36,805		& -1,960	\\\hline
+				10.Workflow creation (2)		& 995,934 		 	& 820,045		& 175,889	\\\hline
+				11.Workflow creation (3)		& 995,934 		 	& 820,045		& 175,889 	\\\hline
 			\end{tabular}
 		\end{table}
-
-
+		\FloatBarrier
 
 		Since each relation-type (i.e. Condition, Include, etc.) is represented as an \texttt{uint256} per activity, the creation of a workflow will usually be more expensive, unless the workflow is unusually relation-dense. 
 		This is due to the fact that we allocate 5 bitvectors (one per relation type) of size 256, per activity. 
@@ -646,14 +638,38 @@ for(i = 0; i < relations.length; i=i+2){
 		While this will rarely be the case, we still view this as an acceptable optimization if there is a noticeable gain on the activity execution.
 
 		\subsection{Call data}
-		% While the bitvector implementation might not be an optimization for activity execution, it comes at the cost of workflow creation. 
-		% However, there is a hidden optimization opportunity, gained by implementing the activities as bitvectors. 
+
 		For comparison purposes we have kept the \texttt{createWorkflow} parameters as close to the original Mono-contract implementation as possible. 
-		But since the parameters have to be kept in the transaction, the call data actually uses storage space and so costs gas.
-		So by reducing the amount of data being sent, we can make the creation of a workflow cheaper, which the bitvector implementation has enabled to higher degree. 
-		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
+		But since the parameters have to be kept in the transaction, the call data actually uses storage space and therefore costs gas.
+		So by packaging the data which the constructor is called with, more intelligently, we can make the creation of a workflow cheaper. 
+		Because of the difference between the format used by the mono-contract implemented with bitvectors and the parameters accepted by the workflow constructor, a lot of work is done inside the contract itself to cast and convert these different data structures.
+		This is partly helped along by the bitvector implementation, as it is the most efficient way of calling the constructor.
 
+		\begin{table}[!ht]
+		\label{tbl:bit-call-data-comparison}
+			\begin{tabular}{| l | r | r | r |}
+			\hline
+			Action 								& Bitvectors 	& Bitvectors and call data 	& Diff. 	\\ \hline
+			1. Contract creation				& 1,708,991		& 1,406,534					& 302,457	\\ \hline
+			2. Workflow creation (1)			& 835,045		& 762,837					& 72,208	\\ \hline		
+			3. Submit ticket					& 66,591		& 66,229					& 362		\\ \hline
+			4. Propose solution					& 51,805		& 52,551					& -746		\\ \hline
+			5. Propose solution (Duplicate)		& 51,805		& 52,551					& -746		\\ \hline
+			6. Reject solution					& 51,805		& 51,493					& 312		\\ \hline
+			7. Propose solution					& 51,805		& 52,551					& -746		\\ \hline
+			8. Accept solution					& 51,805		& 51,493					& 312		\\ \hline
+			9. Close ticket						& 36,805		& 37,551					& -746		\\ \hline
+			10.Workflow creation (2)			& 820,045		& 732,773					& 87,272	\\ \hline
+			11.Workflow creation (3)			& 820,045		& 747,837					& 72,208	\\ \hline
+			\end{tabular}
+		\end{table}
+		\FloatBarrier
 
+		As can be seen in table \ref{tbl:bit-call-data-comparison}, the cost of creating both the contract and the workflow is significantly decreased, with minor changes to activity executions, as some checks performed by \texttt{canExecute} are slightly changed.
+		There is some fluctuation in the cost of creating a workflow in this new implementation, even beyond the two first times a workflow is created.
+		We are unable to explain this behavior, which is not insignificant as it is a difference of $~15,000$ gas.
+
+		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by id in each workflow, but this should only provide significant savings in situations where a contract contains many workflows where the same users reappear frequently.
 
 	\section{Discussion}
 	%intro - blød overgang til viability
@@ -935,9 +951,6 @@ if (callContract && A.included) //External call
 		\url{https://www.economist.com/news/finance-and-economics/21699159-new-automated-investment-fund-has-attracted-stacks-digital-money-dao},
 		Accessed 2017-05-13
 
-		
-		
-
 	\end{thebibliography}
 
 	\clearpage
@@ -952,7 +965,7 @@ if (callContract && A.included) //External call
 		As of May 9th, 2017, the gas prices are \cite{yellow-paper}: 
 		\begin{table}[!ht]
 		\footnotesize
-		\noindent \begin{tabular}{| l | l | p{8cm} |}
+		\noindent \begin{tabular}{| l | r | p{8cm} |}
 			\hline
 			Name 				& Value 	& Description \\ \hline
 			$G_{zero}$ 			& 0 		& Nothing paid for operations of set $W_{zero}$. \\ \hline
@@ -1032,24 +1045,24 @@ if (callContract && A.included) //External call
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the multi-contract implementation.
 		Since executions which throw an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost aside from proving correct behavior.
 		Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
-		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+		\begin{longtable}{| p{3cm} | r | p{0.5\textwidth} |}
 			\hline 	
-			Action 	 									& Gas cost 	  & TxHash on Ropsten Revived 													  \\\hline
-			1. Contract creation						& 2221906 	  & \seqsplit{0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734} \\\hline
-			2. Workflow creation						& - 		  & Included in transaction above \\\hline 
-			3. Submit ticket (Authorization failure)	& - 		  & \seqsplit{0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99} \\\hline
-			4. Propose solution (Condition failure)		& - 		  & \seqsplit{0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8} \\\hline
-			5. Reject solution (Condition failure)		& - 		  & \seqsplit{0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f} \\\hline
-			6. Accept solution (Milestone failure)		& - 		  & \seqsplit{0x8cfc647a65a840d59c32776f9d856e08af089ae3a51a8342a51db5716f072ff4} \\\hline
-			7. Close ticket (Excluded failure)			& - 		  & \seqsplit{0x21fa6c5c8458cdee8a546892001b01778639ca4e4855e53df83fa1e049c8d309} \\\hline
-			8. Submit ticket							& 61112 	  & \seqsplit{0xb263f9e9f89a773ca1b4de65dc989e78e4cc9f939f13a161e27b8119e48a5cf4} \\\hline
-			9. Submit ticket (Excluded failure)			& - 		  & \seqsplit{0xcfb70b00e0357a98eeabcca60d3bf9fba69d0f4724aa31c99df3542db0cfd988} \\\hline
-			10. Propose solution						& 41208 	  & \seqsplit{0x923f1506887ea6d93ecea8c63e97e9e7d32d2227780d1c27764efbf8449b3bac} \\\hline
-			11. Propose solution (Duplicate)			& 41208 	  & \seqsplit{0x7e361c81e441689408b1be3cf800be705b69228a30583b21d7fac40d61671147} \\\hline
-			12. Reject solution							& 41208 	  & \seqsplit{0xff45cb12d828dccab36f96fcf2d18bffc85873fc0159afe392c506026dfe360c} \\\hline
-			13. Propose solution						& 41208 	  & \seqsplit{0xd3373176d23c31cf1dc8e4314aec2d3d8012e5aff2edd4a57b56e278c6cf07b9} \\\hline
-			14. Accept solution							& 54023 	  & \seqsplit{0xcff7205e63888de510e09c709f596d6dd65b559bba6a3f598a665c7f41ffcb60} \\\hline
-			15. Close ticket							& 34810 	  & \seqsplit{0xbf0896427c4006153000cd5456d5ca23ba79f24da7242bb37b7746240d2038ce} \\\hline
+			Action 	 									& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
+			1. Contract creation						& 2,221,906 & \seqsplit{0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734} \\\hline
+			2. Workflow creation						& - 		& Included in transaction above 												\\\hline 
+			3. Submit ticket (Authorization failure)	& - 		& \seqsplit{0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99} \\\hline
+			4. Propose solution (Condition failure)		& - 		& \seqsplit{0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8} \\\hline
+			5. Reject solution (Condition failure)		& - 		& \seqsplit{0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f} \\\hline
+			6. Accept solution (Milestone failure)		& - 		& \seqsplit{0x8cfc647a65a840d59c32776f9d856e08af089ae3a51a8342a51db5716f072ff4} \\\hline
+			7. Close ticket (Excluded failure)			& - 		& \seqsplit{0x21fa6c5c8458cdee8a546892001b01778639ca4e4855e53df83fa1e049c8d309} \\\hline
+			8. Submit ticket							& 61,112 	& \seqsplit{0xb263f9e9f89a773ca1b4de65dc989e78e4cc9f939f13a161e27b8119e48a5cf4} \\\hline
+			9. Submit ticket (Excluded failure)			& - 		& \seqsplit{0xcfb70b00e0357a98eeabcca60d3bf9fba69d0f4724aa31c99df3542db0cfd988} \\\hline
+			10. Propose solution						& 41,208 	& \seqsplit{0x923f1506887ea6d93ecea8c63e97e9e7d32d2227780d1c27764efbf8449b3bac} \\\hline
+			11. Propose solution (Duplicate)			& 41,208 	& \seqsplit{0x7e361c81e441689408b1be3cf800be705b69228a30583b21d7fac40d61671147} \\\hline
+			12. Reject solution							& 41,208 	& \seqsplit{0xff45cb12d828dccab36f96fcf2d18bffc85873fc0159afe392c506026dfe360c} \\\hline
+			13. Propose solution						& 41,208 	& \seqsplit{0xd3373176d23c31cf1dc8e4314aec2d3d8012e5aff2edd4a57b56e278c6cf07b9} \\\hline
+			14. Accept solution							& 54,023 	& \seqsplit{0xcff7205e63888de510e09c709f596d6dd65b559bba6a3f598a665c7f41ffcb60} \\\hline
+			15. Close ticket							& 34,810 	& \seqsplit{0xbf0896427c4006153000cd5456d5ca23ba79f24da7242bb37b7746240d2038ce} \\\hline
 		\end{longtable}
 
 	\pagebreak
@@ -1058,64 +1071,64 @@ if (callContract && A.included) //External call
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the mono-contract implementation.
 		Since executions which throw an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost aside from proving correct behavior.
 		Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
-		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+		\begin{longtable}{| p{3cm} | r | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 									& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
-			1. Contract creation						& 2183805	& \seqsplit{0x577ee5dd6c58747b983e4d6943ff6a14cbc380e630b0cbdca014a2837254e078} \\\hline
-			2. Workflow creation (1)					& 1010934	& \seqsplit{0x12557a86b97721f87b471cbf1559e0dc8d0a1c6af2edb67b12cb796463a7cd92} \\\hline
+			1. Contract creation						& 2,183,805	& \seqsplit{0x577ee5dd6c58747b983e4d6943ff6a14cbc380e630b0cbdca014a2837254e078} \\\hline
+			2. Workflow creation (1)					& 1,010,934	& \seqsplit{0x12557a86b97721f87b471cbf1559e0dc8d0a1c6af2edb67b12cb796463a7cd92} \\\hline
 			3. Submit ticket (Authorization failure) 	& -			& \seqsplit{0x301acf99c579ea0ed49099ff6c1e451fc9a5ef2e880c3292970e70c1af5cfcf9} \\\hline
 			4. Propose solution (Condition failure)		& -			& \seqsplit{0x54fd86fb9388b6f2e5e89c83ff608f9fd81a48b08ff8d481e0bd41d4d2d78695} \\\hline
 			5. Reject solution (Condition failure)		& -			& \seqsplit{0xe7d4485fb57cbeebc8a42107b4cd102e06ede6043e473fd99578d786ede469e5} \\\hline
 			6. Accept solution (Milestone failure)		& -			& \seqsplit{0x2c097d5fdc31b0ffbb5ea424e8e1fc44af7addc89e4a707ba5f270ae9e650416} \\\hline
 			7. Close ticket (Excluded failure)			& -			& \seqsplit{0xfaaad0773c564ad4913d55245f752871fabee7dca63bb3c93909e1a81e18bfb9} \\\hline
-			8. Submit ticket							& 61187		& \seqsplit{0x95876f4c4a6652384c503593de0b609f3f7b41e28a9ae9eb6ee526241ff481e6} \\\hline
+			8. Submit ticket							& 61,187	& \seqsplit{0x95876f4c4a6652384c503593de0b609f3f7b41e28a9ae9eb6ee526241ff481e6} \\\hline
 			9. Submit ticket (Excluded failure)			& -			& \seqsplit{0x81e047cd60aaa25ef3ef49c0a66bb74595aac4fd38e8bce809ff7c95bae0036c} \\\hline
-			10. Propose solution						& 41263		& \seqsplit{0x5152469274c4f5f1958ee357640ebcb6b693118273b3defed26de3e58eff4cec} \\\hline
-			11. Propose solution (Duplicate)			& 41263		& \seqsplit{0x6abcdff92de76d00d58afc9bb1816fb0c4da62077ec28a0bcf18dae1b0db3f63} \\\hline
-			12. Reject solution							& 41263		& \seqsplit{0x662f8a264b1e4bea74d9e5255ff21b9395a23e72c120d6da7dc4bf798a820f59} \\\hline
-			13. Propose solution						& 41263		& \seqsplit{0x9a021cd725465091372bc8ee7da4f17266cd829b57536bbcb8bdb8c08940070f} \\\hline
-			14. Accept solution							& 54118		& \seqsplit{0x40e5e401f2b5bf46d64657df1695190460c560f56dacf0add8210c4db931c830} \\\hline
-			15. Close ticket							& 34845		& \seqsplit{0x2f8b9c71252832f9975b1d95a7eb9f81090036fd2c4b54f42b6567cc96e1f6aa} \\\hline
-			16. Workflow creation (2)					& 995934	& \seqsplit{0xe6b80f633324a9890a73c13542194d97048de1c326e3e23b5f2f6cc9b3f19ef6} \\\hline
-			17. Workflow creation (3)					& 995934	& \seqsplit{0x860542d77bfc622cf4f97504876e4e4fbc8faaffa8189d6db1749ed43ec2762a} \\\hline
+			10. Propose solution						& 41,263	& \seqsplit{0x5152469274c4f5f1958ee357640ebcb6b693118273b3defed26de3e58eff4cec} \\\hline
+			11. Propose solution (Duplicate)			& 41,263	& \seqsplit{0x6abcdff92de76d00d58afc9bb1816fb0c4da62077ec28a0bcf18dae1b0db3f63} \\\hline
+			12. Reject solution							& 41,263	& \seqsplit{0x662f8a264b1e4bea74d9e5255ff21b9395a23e72c120d6da7dc4bf798a820f59} \\\hline
+			13. Propose solution						& 41,263	& \seqsplit{0x9a021cd725465091372bc8ee7da4f17266cd829b57536bbcb8bdb8c08940070f} \\\hline
+			14. Accept solution							& 54,118	& \seqsplit{0x40e5e401f2b5bf46d64657df1695190460c560f56dacf0add8210c4db931c830} \\\hline
+			15. Close ticket							& 34,845	& \seqsplit{0x2f8b9c71252832f9975b1d95a7eb9f81090036fd2c4b54f42b6567cc96e1f6aa} \\\hline
+			16. Workflow creation (2)					& 995,934	& \seqsplit{0xe6b80f633324a9890a73c13542194d97048de1c326e3e23b5f2f6cc9b3f19ef6} \\\hline
+			17. Workflow creation (3)					& 995,934	& \seqsplit{0x860542d77bfc622cf4f97504876e4e4fbc8faaffa8189d6db1749ed43ec2762a} \\\hline
 		\end{longtable}
 
 	\pagebreak
 	\section{Mono-contract with bitvectors test data}
 	\label{app:mono-contract-with-bitvectors-test-data}
-		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+		\begin{longtable}{| p{3cm} | r | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 						& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
-			1. Contract creation			& 1708991	& \seqsplit{0xcd5133cef32d5a41f2830fdc85b227fa3e33c930e258599f59aa012dd59c4d92} \\\hline
-			2. Workflow creation (1)		& 835045	& \seqsplit{0x4134e6eca1af2caf030519ff0c2aad02e6787925b1fe9f1e9a14f8f795ae1fbb} \\\hline
-			3. Submit ticket				& 66591		& \seqsplit{0xc109656addb462e09b8167a2e01858c42b97fc484b153b1aed2a503aca3ae112} \\\hline
-			4. Propose solution				& 51805		& \seqsplit{0xd7a69bc9d835c8a696d0df1a77575a151c4da49fcf3811a4aec20d1259de2898} \\\hline
-			5. Propose solution (Duplicate)	& 51805		& \seqsplit{0x38afda857b8f5bd59cef819d98440473a2336926cf95765559bd236cd06085c4} \\\hline
-			6. Reject solution				& 51805		& \seqsplit{0x84e8270c23b4ba2a46fc98aa841970ace36c53fdc01e999f2d5ac48a30a65c34} \\\hline
-			7. Propose solution				& 51805		& \seqsplit{0xb868f7f9c96d248c9694fdcd7e721c72d417e68258dfd67a86a0f4f6c27d9ce4} \\\hline
-			8. Accept solution				& 51805		& \seqsplit{0xfb47b6c2d207ac9bba7eede93710af908ce70b9f245dab87a11af66ba0ee253e} \\\hline
-			9. Close ticket					& 36805		& \seqsplit{0x1b84e19e2ca5270174546fbaacd97fb17240588d4bf0b6235fabe4ccd2311388} \\\hline
-			10.Workflow creation (2)		& 820045	& \seqsplit{0x497a26e6615a4262e25eadee29dbd5bd1f7e8f763255a4940ad574052d41ca5c} \\\hline
-			11.Workflow creation (3)		& 820045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
+			1. Contract creation			& 1,708,991	& \seqsplit{0xcd5133cef32d5a41f2830fdc85b227fa3e33c930e258599f59aa012dd59c4d92} \\\hline
+			2. Workflow creation (1)		& 835,045	& \seqsplit{0x4134e6eca1af2caf030519ff0c2aad02e6787925b1fe9f1e9a14f8f795ae1fbb} \\\hline
+			3. Submit ticket				& 66,591	& \seqsplit{0xc109656addb462e09b8167a2e01858c42b97fc484b153b1aed2a503aca3ae112} \\\hline
+			4. Propose solution				& 51,805	& \seqsplit{0xd7a69bc9d835c8a696d0df1a77575a151c4da49fcf3811a4aec20d1259de2898} \\\hline
+			5. Propose solution (Duplicate)	& 51,805	& \seqsplit{0x38afda857b8f5bd59cef819d98440473a2336926cf95765559bd236cd06085c4} \\\hline
+			6. Reject solution				& 51,805	& \seqsplit{0x84e8270c23b4ba2a46fc98aa841970ace36c53fdc01e999f2d5ac48a30a65c34} \\\hline
+			7. Propose solution				& 51,805	& \seqsplit{0xb868f7f9c96d248c9694fdcd7e721c72d417e68258dfd67a86a0f4f6c27d9ce4} \\\hline
+			8. Accept solution				& 51,805	& \seqsplit{0xfb47b6c2d207ac9bba7eede93710af908ce70b9f245dab87a11af66ba0ee253e} \\\hline
+			9. Close ticket					& 36,805	& \seqsplit{0x1b84e19e2ca5270174546fbaacd97fb17240588d4bf0b6235fabe4ccd2311388} \\\hline
+			10.Workflow creation (2)		& 820,045	& \seqsplit{0x497a26e6615a4262e25eadee29dbd5bd1f7e8f763255a4940ad574052d41ca5c} \\\hline
+			11.Workflow creation (3)		& 820,045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
 		\end{longtable}
 
 		\clearpage
 	\section{Mono-contract with bitvectors and compressed call data test data}
 	\label{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data}
-		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+		\begin{longtable}{| p{3cm} | r | p{0.5\textwidth} |}
 			\hline 	
 			Action 	 						& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
-			1. Contract creation			& 1406534	& \seqsplit{0xd8747c17726b7321a9f459922a55fd5b1f09f738dcb58896c610c4b890a64b55} \\\hline
-			2. Workflow creation (1)		& 762837	& \seqsplit{0x656caf3a24c494bb71d0e1be05a1ee61c08a3079eb823eb2e5aada0e21135bc5} \\\hline
-			3. Submit ticket				& 66229		& \seqsplit{0xbc2bfd43881854366c9fa9e67ae9882c68d3626e14041c64d9b618402a812809} \\\hline
-			4. Propose solution				& 52551		& \seqsplit{0xc6b048496e0f79e17e8921f968d8121666be1052137ef219a87d4979951ce5c7} \\\hline
-			5. Propose solution (Duplicate)	& 52551		& \seqsplit{0x5f826f1478b6625a979301e4c054ce2914bf9679dc120b5bacce512abb78e543} \\\hline
-			6. Reject solution				& 51493		& \seqsplit{0x1b1e3c6b70174b3c10229c393526dce6b30a9380442a4d88c3ad0a0ee06c7506} \\\hline
-			7. Propose solution				& 52551		& \seqsplit{0x7bf68eefd7e636ee0a13ebe6293d90ed0443e7d2a51c8648403732a086e445c0} \\\hline
-			8. Accept solution				& 51493		& \seqsplit{0x68b997030c621668572b315df9355faa3c518239771fe9946424063fd615c95c} \\\hline
-			9. Close ticket					& 37551		& \seqsplit{0x2022db01ac6c9c1c7f62a29cb1f46a67e9bd19c958020f07a3bd54541831bc1e} \\\hline
-			10.Workflow creation (2)		& 732773	& \seqsplit{0xd58ec97d9f116477ce0aa145672c3c9f937c585276b7f586bfc89d54416c8532} \\\hline
-			11.Workflow creation (3)		& 747837	& \seqsplit{0x8a9476eaeacb8533b999c65bb9de73d292414c037e679d8fe25908c14cae9c77} \\\hline
+			1. Contract creation			& 1,406,534	& \seqsplit{0xd8747c17726b7321a9f459922a55fd5b1f09f738dcb58896c610c4b890a64b55} \\\hline
+			2. Workflow creation (1)		& 762,837	& \seqsplit{0x656caf3a24c494bb71d0e1be05a1ee61c08a3079eb823eb2e5aada0e21135bc5} \\\hline
+			3. Submit ticket				& 66,229	& \seqsplit{0xbc2bfd43881854366c9fa9e67ae9882c68d3626e14041c64d9b618402a812809} \\\hline
+			4. Propose solution				& 52,551	& \seqsplit{0xc6b048496e0f79e17e8921f968d8121666be1052137ef219a87d4979951ce5c7} \\\hline
+			5. Propose solution (Duplicate)	& 52,551	& \seqsplit{0x5f826f1478b6625a979301e4c054ce2914bf9679dc120b5bacce512abb78e543} \\\hline
+			6. Reject solution				& 51,493	& \seqsplit{0x1b1e3c6b70174b3c10229c393526dce6b30a9380442a4d88c3ad0a0ee06c7506} \\\hline
+			7. Propose solution				& 52,551	& \seqsplit{0x7bf68eefd7e636ee0a13ebe6293d90ed0443e7d2a51c8648403732a086e445c0} \\\hline
+			8. Accept solution				& 51,493	& \seqsplit{0x68b997030c621668572b315df9355faa3c518239771fe9946424063fd615c95c} \\\hline
+			9. Close ticket					& 37,551	& \seqsplit{0x2022db01ac6c9c1c7f62a29cb1f46a67e9bd19c958020f07a3bd54541831bc1e} \\\hline
+			10.Workflow creation (2)		& 732,773	& \seqsplit{0xd58ec97d9f116477ce0aa145672c3c9f937c585276b7f586bfc89d54416c8532} \\\hline
+			11.Workflow creation (3)		& 747,837	& \seqsplit{0x8a9476eaeacb8533b999c65bb9de73d292414c037e679d8fe25908c14cae9c77} \\\hline
 		\end{longtable}
 	\pagebreak
 \end{document}
