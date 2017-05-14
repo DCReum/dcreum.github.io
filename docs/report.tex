@@ -503,15 +503,70 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Comparison}
 	\label{sec:comparison}
 
-	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See table \ref{app:test-cases-gas}).
+	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See appendix \ref{app:test-cases-gas}).
 	Due to the nature of our solutions, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
+
 	Since there is no difference in creating the workflow and creating the contract in the multi-contract solution, but there is in the mono-contract solution, they will be hard to compare.
+	From the executions of the example workflow, we get that creating the contract and workflow in the Multi-contract implementation costs $2,221,906$ gas. 
+	In the Mono-contract implementation, the same functionality costs $2,183,805 + 1,010,934 = 3,194,739$ gas.
+	From this we get the impression that the Multi-contract implementation might be the superior one in terms of gas cost.
+	However, the point of the Mono-contract implementation is to save on the cost of creating workflows after contract creation, since only one of these are required.
+	Furthermore, it turns out that, excluding the contraction creation, the first workflow is more expensive to create than subsequent workflows.
+	We conjecture that this is due to the fact that the list holding the workflows must be initialized on creation of the first workflow.
+	Subsequent identical workflows cost only $995,934$ gas, a difference of $1,010,934 - 995,934 = 15,000$ gas.
+	Table \ref{tab:cost-of-creating-multiple-workflows} shows that already after the second workflow creation, some 253,139 gas have been saved by using the Mono-contract implementation.
+	As such, our assumption that the Mono-implementation was more cost-effective in the long run, seems to have been verified.  
 
-	Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
-	This is done for each relation in order to get an estimate for the cost of a single such operation.
-	Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
+	\begin{table}[]
+		\centering
+		\label{tab:cost-of-creating-multiple-workflows}
+		\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+			\hline
+			Number of workflows & Multi-contract cost (gas) & Mono-contract cost (gas) 	& Difference (Multi $-$ Mono)   \\\hline
+			1                   & 2,221,906                 & 3,194,739                 & -972,833          			\\\hline
+			2                   & 4,443,812                 & 4,190,673                 & 253,139          				\\\hline
+			3                   & 6,665,718                 & 5,186,607                 & 1,479,111          			\\\hline
+			4                   & 8,887,624                 & 6,182,541                 & 2,705,083          			\\\hline
+			5                   & 11,109,530                & 7,178,475                 & 3,931,055          			\\\hline
+			6                   & 13,331,436                & 8,174,409                 & 5,157,027          			\\\hline
+			7                   & 15,553,342                & 9,170,343                 & 6,382,999          			\\\hline
+			8                   & 17,775,248                & 10,166,277                & 7,608,971          			\\\hline
+			9                   & 19,997,154                & 11,162,211                & 8,834,943          			\\\hline
+			10                  & 22,219,060                & 12,158,145                & 10,060,915          			\\\hline
+		\end{tabular}      
+		\caption{Gas cost of creating multiple instances of the example workflow, and the difference between implementations}
+	\end{table}
 
-	Specifically to test the mono-contract solution, we also test for the cost of creating a number of workflows.
+	The story changes when we come to the cost of executing the activities. 
+	While the costs are almost identical, it seems that the Mono-implementation consistently costs a bit more, see table \ref{tab:cost-of-executing-activities}.
+	We conjecture that this is due to the fact that there are more list look-ups in the Mono-implementation, since there is a need to first load the workflow, and then the activity.
+	It also seems that the more relations there is situated on an activity, the more the difference between the implementations increase.
+	This seems to support our hypothesis that the cost increase is due to look-ups, since each relation is another lookup on first workflow, and then activity in the Mono-contract implementation, versus only a lookup on the activity in the Multi-contract implementation. 
+
+	\begin{table}[!ht]
+		\centering
+		\label{tab:cost-of-executing-activities}
+		\begin{tabular}{|p{3cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+			\hline
+			Activity                     & Multi-contract cost (gas) & Mono-contract cost (gas) & Difference (Mono $-$ Multi) \\\hline
+			Submit ticket                & 61,112          			 & 61,187         			& 75         \\\hline
+			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
+			Reject solution              & 41,208          			 & 41,263         			& 55         \\\hline
+			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
+			Accept solution              & 54,023          			 & 54,118         			& 95         \\\hline
+			Close ticket                 & 34,810          			 & 34,845         			& 35         \\\hline
+		\end{tabular}
+		\caption{Gas cost of executing activities in the example workflow, and the difference between implementations}
+	\end{table}
+
+	However, we consider the large winnings in workflow creations to more than make up for cost increase in activity execution, and will continue to optimize on the Mono-contract implementation.
+
+		 
+
+	% Additionally we have also created tests for edge cases, where two activities are connected by a single relation.
+	% This is done for each relation in order to get an estimate for the cost of a single such operation.
+	% Stress tests are also performed for a reasonable number of each activities, in order to test for unforeseen sudden cost increases for any of the relations.
+
 
 	\section{Optimizations}
 		Using the results from section \ref{sec:comparison}, we optimized the mono-contract implementation, with the goal of reducing the cost usage even further.
@@ -696,17 +751,19 @@ for(i = 0; i < relations.length; i=i+2){
 			In the case of DCR graphs, an external contract conditional could allow multiple executions when it shouldn't be possible, if the call is performed at the wrong time, as in this example:
 
 			\begin{lstlisting}[language=pseudocode]
-if (included)
+if (A.isIncluded)
 	if (callContract) //External call
 		...
 			\end{lstlisting}
 
 			The issue here is fairly anemic as it is not immediately apparent that this code is problematic.
-			The issue is the potential side-effect of \emph{callContract}, which could mean that the state in the first line could be inconsistent with the state after the second line and in a case where the called activity has an exclude relation to itself or another activity has an exclude relation to the former activity, the activity would be executed even though it technically is excluded.
-			Therefore the external call should be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
+			The issue is the potential side-effect of \emph{callContract}. 
+			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \emph{isIncluded}.
+			The execution of activity $A$ would resume after \emph{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
+			An external call should therefore be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
 
 			\begin{lstlisting}[language=pseudocode]
-if (callContract && included) //External call
+if (callContract && A.included) //External call
 	...
 			\end{lstlisting}
 
@@ -885,8 +942,8 @@ if (callContract && included) //External call
 		\lstinputlisting[language=solidity]{../contracts/optimizations/monolith-bitvectors.sol}
 
 	\pagebreak
-	\section{Test cases with transaction hashes Multi-contract}
-	\label{app:test-cases-with-transaction-hashes-multi-contract}
+	\section{Example workflow transaction hashes Multi-contract}
+	\label{app:example-workflow-transaction-hashes-multi-contract}
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the multi-contract implementation.
 		Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
 		However, they show that the execution behaves as expected.
@@ -913,8 +970,8 @@ if (callContract && included) //External call
 		\end{longtable}
 
 	\pagebreak
-	\section{Test cases with transaction hashes Mono-contract}
-	\label{app:test-cases-with-transaction-hashes-mono-contract}
+	\section{Example workflow transaction hashes Mono-contract}
+	\label{app:example-workflow-transaction-hashes-mono-contract}
 		The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the mono-contract implementation.
 		Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
 		However, they show that the execution behaves as expected.
@@ -941,8 +998,10 @@ if (callContract && included) //External call
 			17. Workflow creation (3)					& 995934	& \seqsplit{0x860542d77bfc622cf4f97504876e4e4fbc8faaffa8189d6db1749ed43ec2762a} \\\hline
 		\end{longtable}
 
-	\section{Test cases gas comparison}
+	\pagebreak
+	\section{Test cases gas comparison for example workflow}
 	\label{app:test-cases-gas}
+		The table below brings together the gas costs from appendencies \ref{app:example-workflow-transaction-hashes-multi-contract} and \ref{app:example-workflow-transaction-hashes-mono-contract} for gas cost comparison.
 
 		\begin{tabular}{| l | l | l |}
 			\hline
@@ -967,29 +1026,112 @@ if (callContract && included) //External call
 			\hline
 		\end{tabular}
 
-	\section{Stress and edge tests}
-	\label{app:stress-and-edge-tests}
+% \pagebreak
+	% \section{Edge and stress test workflow transaction hashes Multi-contract}
+	% \label{app:edge-and-stress-test-workflow-hashes-multi-contract}
+	% 	The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the multi-contract implementation.
+	% 	Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
+	% 	However, they show that the execution behaves as expected.
+	% 	Also note that workflow creation is included in the cost of contract creation in the multi-contract implementation.
+	% 	\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+	% 		\hline 	
+	% 		Action 	 									& Gas cost 	  & TxHash on Ropsten Revived 													  \\\hline
+	% 		1. Contract creation						& 2221906 	  & \seqsplit{0x3f9a296d450ca9cdc4d73a7595add14f0c0b25421c8e34c5d087589b813a7734} \\\hline
+	% 		2. Workflow creation						& Included 
+	% 													in above cost & Included in transaction above \\\hline 
+	% 		3. Submit ticket (Authorization failure)	& - 		  & \seqsplit{0x6fe0bfe111b624b7ece7a64a1eeff6eed5ea7e9994794c5cb6462e9716568f99} \\\hline
+	% 		4. Propose solution (Condition failure)		& - 		  & \seqsplit{0xd3d39a1eb8539c6f9d2eadacb6c2114a4f3430141886372feac7359a33e334b8} \\\hline
+	% 		5. Reject solution (Condition failure)		& - 		  & \seqsplit{0xc598367828eb2ffd0fcafda581c501afed1f1da9139c745807338bc4a2a1277f} \\\hline
+	% 		6. Accept solution (Milestone failure)		& - 		  & \seqsplit{0x8cfc647a65a840d59c32776f9d856e08af089ae3a51a8342a51db5716f072ff4} \\\hline
+	% 		7. Close ticket (Excluded failure)			& - 		  & \seqsplit{0x21fa6c5c8458cdee8a546892001b01778639ca4e4855e53df83fa1e049c8d309} \\\hline
+	% 		8. Submit ticket							& 61112 	  & \seqsplit{0xb263f9e9f89a773ca1b4de65dc989e78e4cc9f939f13a161e27b8119e48a5cf4} \\\hline
+	% 		9. Submit ticket (Excluded failure)			& - 		  & \seqsplit{0xcfb70b00e0357a98eeabcca60d3bf9fba69d0f4724aa31c99df3542db0cfd988} \\\hline
+	% 		10. Propose solution						& 41208 	  & \seqsplit{0x923f1506887ea6d93ecea8c63e97e9e7d32d2227780d1c27764efbf8449b3bac} \\\hline
+	% 		11. Propose solution (Duplicate)			& 41208 	  & \seqsplit{0x7e361c81e441689408b1be3cf800be705b69228a30583b21d7fac40d61671147} \\\hline
+	% 		12. Reject solution							& 41208 	  & \seqsplit{0xff45cb12d828dccab36f96fcf2d18bffc85873fc0159afe392c506026dfe360c} \\\hline
+	% 		13. Propose solution						& 41208 	  & \seqsplit{0xd3373176d23c31cf1dc8e4314aec2d3d8012e5aff2edd4a57b56e278c6cf07b9} \\\hline
+	% 		14. Accept solution							& 54023 	  & \seqsplit{0xcff7205e63888de510e09c709f596d6dd65b559bba6a3f598a665c7f41ffcb60} \\\hline
+	% 		15. Close ticket							& 34810 	  & \seqsplit{0xbf0896427c4006153000cd5456d5ca23ba79f24da7242bb37b7746240d2038ce} \\\hline
+	% 	\end{longtable}
 
-		\begin{tabular}{| l | l | l |}
-			\hline
-			Test & Multi-contract & Mono-contract \\ \hline
-			C1.1 & 0 & 0 \\ \hline
-			M1.1 & 0 & 0 \\ \hline
-			C2.1 & 0 & 0 \\ \hline
-			M2.1 & 0 & 0 \\ \hline
-			I1.1 & 0 & 0 \\ \hline
-			E1.1 & 0 & 0 \\ \hline
-			R1.1 & 0 & 0 \\ \hline
-			I2.1 & 0 & 0 \\ \hline
-			E2.1 & 0 & 0 \\ \hline
-			R2.1 & 0 & 0 \\ \hline
-			C-stress1 & 0 & 0 \\ \hline
-			C-stress2 & 0 & 0 \\ \hline
-			M-stress1 & 0 & 0 \\ \hline
-			M-stress2 & 0 & 0 \\ \hline
-			P-stress1 & 0 & 0 \\ \hline
-			I-stress1 & 0 & 0 \\
-			\hline
-		\end{tabular}
+	% \pagebreak
+	% \section{Edge and stress test workflow transaction hashes Mono-contract}
+	% \label{app:edge-and-stress-test-workflow-hashes-mono-contract}
+	% 	The table below shows the gas cost and transaction hashes (on the Ropsten testchain) for executions of the example workflow (see figure \ref{fig:exampleWorkflow}) in the mono-contract implementation.
+	% 	Since executions which throws an exception use all available gas in the transaction, the failing cases below have no meaningful gas cost. 
+	% 	However, they show that the execution behaves as expected.
+	% 	Also note that the first workflow creation is more expensive that the two others, due to initializations of arrays. 
+	% 	\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+	% 		\hline 	
+	% 		Action 	 									& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
+	% 		1. Contract creation						& 2183805	& \seqsplit{0x577ee5dd6c58747b983e4d6943ff6a14cbc380e630b0cbdca014a2837254e078} \\\hline
+	% 		2. Workflow creation (1)					& 1010934	& \seqsplit{0x12557a86b97721f87b471cbf1559e0dc8d0a1c6af2edb67b12cb796463a7cd92} \\\hline
+	% 		3. Submit ticket (Authorization failure) 	& -			& \seqsplit{0x301acf99c579ea0ed49099ff6c1e451fc9a5ef2e880c3292970e70c1af5cfcf9} \\\hline
+	% 		4. Propose solution (Condition failure)		& -			& \seqsplit{0x54fd86fb9388b6f2e5e89c83ff608f9fd81a48b08ff8d481e0bd41d4d2d78695} \\\hline
+	% 		5. Reject solution (Condition failure)		& -			& \seqsplit{0xe7d4485fb57cbeebc8a42107b4cd102e06ede6043e473fd99578d786ede469e5} \\\hline
+	% 		6. Accept solution (Milestone failure)		& -			& \seqsplit{0x2c097d5fdc31b0ffbb5ea424e8e1fc44af7addc89e4a707ba5f270ae9e650416} \\\hline
+	% 		7. Close ticket (Excluded failure)			& -			& \seqsplit{0xfaaad0773c564ad4913d55245f752871fabee7dca63bb3c93909e1a81e18bfb9} \\\hline
+	% 		8. Submit ticket							& 61187		& \seqsplit{0x95876f4c4a6652384c503593de0b609f3f7b41e28a9ae9eb6ee526241ff481e6} \\\hline
+	% 		9. Submit ticket (Excluded failure)			& -			& \seqsplit{0x81e047cd60aaa25ef3ef49c0a66bb74595aac4fd38e8bce809ff7c95bae0036c} \\\hline
+	% 		10. Propose solution						& 41263		& \seqsplit{0x5152469274c4f5f1958ee357640ebcb6b693118273b3defed26de3e58eff4cec} \\\hline
+	% 		11. Propose solution (Duplicate)			& 41263		& \seqsplit{0x6abcdff92de76d00d58afc9bb1816fb0c4da62077ec28a0bcf18dae1b0db3f63} \\\hline
+	% 		12. Reject solution							& 41263		& \seqsplit{0x662f8a264b1e4bea74d9e5255ff21b9395a23e72c120d6da7dc4bf798a820f59} \\\hline
+	% 		13. Propose solution						& 41263		& \seqsplit{0x9a021cd725465091372bc8ee7da4f17266cd829b57536bbcb8bdb8c08940070f} \\\hline
+	% 		14. Accept solution							& 54118		& \seqsplit{0x40e5e401f2b5bf46d64657df1695190460c560f56dacf0add8210c4db931c830} \\\hline
+	% 		15. Close ticket							& 34845		& \seqsplit{0x2f8b9c71252832f9975b1d95a7eb9f81090036fd2c4b54f42b6567cc96e1f6aa} \\\hline
+	% 		16. Workflow creation (2)					& 995934	& \seqsplit{0xe6b80f633324a9890a73c13542194d97048de1c326e3e23b5f2f6cc9b3f19ef6} \\\hline
+	% 		17. Workflow creation (3)					& 995934	& \seqsplit{0x860542d77bfc622cf4f97504876e4e4fbc8faaffa8189d6db1749ed43ec2762a} \\\hline
+	% 	\end{longtable}
+	% \pagebreak
+	% \section{Test cases gas comparison for example workflow}
+	% \label{app:test-cases-gas}
+
+	% 	\begin{tabular}{| l | l | l |}
+	% 		\hline
+	% 		Action 										& Multi-contract & Mono-contract \\ \hline
+	% 		1. Contract creation						& 2221906		 & 2183805 	\\\hline
+	% 		2. Workflow creation						& included 		 & 1010934 	\\\hline
+	% 		3. Submit ticket (Authorization failure)	& -				 & - 		\\\hline
+	% 		4. Propose solution (Condition failure)		& -				 & - 		\\\hline
+	% 		5. Reject solution (Condition failure)		& -				 & - 		\\\hline
+	% 		6. Accept solution (Milestone failure)		& -				 & - 		\\\hline
+	% 		7. Close ticket (Excluded failure)			& -				 & - 		\\\hline
+	% 		8. Submit ticket							& 61112			 & 61187 	\\\hline
+	% 		9. Submit ticket (Excluded failure)			& -				 & - 		\\\hline
+	% 		10. Propose solution						& 41208			 & 41263 	\\\hline
+	% 		11. Propose solution (Duplicate)			& 41208			 & 41263 	\\\hline
+	% 		12. Reject solution							& 41208			 & 41263 	\\\hline
+	% 		13. Propose solution						& 41208			 & 41263 	\\\hline
+	% 		14. Accept solution							& 54023			 & 54118 	\\\hline
+	% 		15. Close ticket							& 34810			 & 34845 	\\\hline
+	% 		16. Workflow creation (2)					& -				 & 995934 	\\\hline
+	% 		17. Workflow creation (3)					& -				 & 995934 	\\\hline
+	% 		\hline
+	% 	\end{tabular}
+
+	% \section{Stress and edge tests}
+	% \label{app:stress-and-edge-tests}
+
+	% 	\begin{tabular}{| l | l | l |}
+	% 		\hline
+	% 		Test & Multi-contract & Mono-contract \\ \hline
+	% 		C1.1 & 0 & 0 \\ \hline
+	% 		M1.1 & 0 & 0 \\ \hline
+	% 		C2.1 & 0 & 0 \\ \hline
+	% 		M2.1 & 0 & 0 \\ \hline
+	% 		I1.1 & 0 & 0 \\ \hline
+	% 		E1.1 & 0 & 0 \\ \hline
+	% 		R1.1 & 0 & 0 \\ \hline
+	% 		I2.1 & 0 & 0 \\ \hline
+	% 		E2.1 & 0 & 0 \\ \hline
+	% 		R2.1 & 0 & 0 \\ \hline
+	% 		C-stress1 & 0 & 0 \\ \hline
+	% 		C-stress2 & 0 & 0 \\ \hline
+	% 		M-stress1 & 0 & 0 \\ \hline
+	% 		M-stress2 & 0 & 0 \\ \hline
+	% 		P-stress1 & 0 & 0 \\ \hline
+	% 		I-stress1 & 0 & 0 \\
+	% 		\hline
+	% 	\end{tabular}
 
 \end{document}
