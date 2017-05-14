@@ -1031,6 +1031,26 @@ if (callContract && A.included) //External call
 			17. Workflow creation (3)					& -				 & 995934 	\\\hline
 			\hline
 		\end{tabular}
+		\pagebreak
+
+	\section{Example workflow transaction hashes Mono-contract with bitvectors}
+	\label{app:example-workflow-transaction-hashes-mono-contract-with-bitvectors}
+		\begin{longtable}{| l | p{0.12\textwidth} | p{0.5\textwidth} |}
+			\hline 	
+			Action 	 						& Gas cost 	& TxHash on Ropsten Revived 													\\\hline
+			1. Contract creation			& 1708991	& \seqsplit{0xcd5133cef32d5a41f2830fdc85b227fa3e33c930e258599f59aa012dd59c4d92} \\\hline
+			2. Workflow creation (1)		& 835045	& \seqsplit{0x4134e6eca1af2caf030519ff0c2aad02e6787925b1fe9f1e9a14f8f795ae1fbb} \\\hline
+			3. Submit ticket				& 66591		& \seqsplit{0xc109656addb462e09b8167a2e01858c42b97fc484b153b1aed2a503aca3ae112} \\\hline
+			4. Propose solution				& 51805		& \seqsplit{0xd7a69bc9d835c8a696d0df1a77575a151c4da49fcf3811a4aec20d1259de2898} \\\hline
+			5. Propose solution (Duplicate)	& 51805		& \seqsplit{0x38afda857b8f5bd59cef819d98440473a2336926cf95765559bd236cd06085c4} \\\hline
+			6. Reject solution				& 51805		& \seqsplit{0x84e8270c23b4ba2a46fc98aa841970ace36c53fdc01e999f2d5ac48a30a65c34} \\\hline
+			7. Propose solution				& 51805		& \seqsplit{0xb868f7f9c96d248c9694fdcd7e721c72d417e68258dfd67a86a0f4f6c27d9ce4} \\\hline
+			8. Accept solution				& 51805		& \seqsplit{0xfb47b6c2d207ac9bba7eede93710af908ce70b9f245dab87a11af66ba0ee253e} \\\hline
+			9. Close ticket					& 36805		& \seqsplit{0x1b84e19e2ca5270174546fbaacd97fb17240588d4bf0b6235fabe4ccd2311388} \\\hline
+			10.Workflow creation (2)		& 820045	& \seqsplit{0x497a26e6615a4262e25eadee29dbd5bd1f7e8f763255a4940ad574052d41ca5c} \\\hline
+			11.Workflow creation (3)		& 820045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
+		\end{longtable}
+
 
 % \pagebreak
 	% \section{Edge and stress test workflow transaction hashes Multi-contract}

@@ -122,7 +122,7 @@ contract DCReum {
     if ((workflow.included & (1<<activityId)) == 0) return false;
 
     // all conditions executed
-    if(workflow.conditionsFrom[activityId] & (~(workflow.executed & workflow.included)) != 0) return false;
+    if(workflow.conditionsFrom[activityId] & (~workflow.executed & workflow.included) != 0) return false;
 
     // no milestones pending
     if(workflow.milestonesFrom[activityId] & (workflow.pending & workflow.included) != 0) return false;
