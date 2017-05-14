@@ -503,16 +503,16 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Comparison}
 	\label{sec:comparison}
 
-	In order to compare the implementations we have created an example workflow, see figure \ref{fig:exampleWorkflow}, on which we will execute activities in a specific order. Some of the executions should fail, as the executions are also used to test if the DCR logic is implemented correctly(See appendix \ref{app:test-cases-gas}).
+	In order to compare the implementations we have created an example workflow, see figure \ref{fig:exampleWorkflow}, on which we will execute activities in a specific order. Some of the executions should fail, as the executions are also used to test if the DCR logic is implemented correctly.
 	Due to the nature of our implementations, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
 
 	In the Multi-contract implementation the cost of creating a workflow is included in the cost of deploying the contract, while these two costs are separate in the Mono-contract implementation.
 	This difference complicates the comparison of the two implementation.
 
-	Appendix \ref{app:test-cases-gas} shows that the cost of creating a contract containing the example workflow in the Multi-contract implementation costs $2,221,906$ gas.
-	In the Mono-contract implementation, the equivalent operation cost 
+	Appendix \ref{app:multi-contract-test-data} shows that the cost of creating a contract containing the example workflow in the Multi-contract implementation costs $2,221,906$ gas.
+	In the Mono-contract implementation, the equivalent operation costs \\
 
-	$$2,183,805\quad(contract) + 1,010,934\quad(workflow) = 3,194,739$$
+	$2,183,805\quad(contract) + 1,010,934\quad(workflow) = 3,194,739$ \\
 
 	\noindent gas. These results give us the impression that the Multi-contract implementation might be the superior implementation in terms of gas cost
 	However, the point of the Mono-contract implementation is to minimize the cost of creating workflows after contract creation, since only one contract creations is required. 
@@ -520,27 +520,27 @@ for(i = 0; i < relations.length; i=i+2){
 	Table \ref{tab:cost-of-creating-multiple-workflows} shows that already after the second workflow creation, 253,139 gas has been saved by using the Mono-contract implementation.
 	Our assumption that the Mono-implementation is more cost-effective in the long run, therefore seems to hold.  
 
-	\begin{table}[]
+	\begin{table}[!ht]
 		\centering
 		\label{tab:cost-of-creating-multiple-workflows}
-		\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+		\begin{tabular}{| p{1.9cm} | r | r | r |}
 			\hline
-			Number of workflows & Multi-contract cost (gas) & Mono-contract cost (gas) 	& Difference (Multi $-$ Mono)   \\\hline
-			1                   & 2,221,906                 & 3,194,739                 & -972,833          			\\\hline
-			2                   & 4,443,812                 & 4,190,673                 & 253,139          				\\\hline
-			3                   & 6,665,718                 & 5,186,607                 & 1,479,111          			\\\hline
-			4                   & 8,887,624                 & 6,182,541                 & 2,705,083          			\\\hline
-			5                   & 11,109,530                & 7,178,475                 & 3,931,055          			\\\hline
-			6                   & 13,331,436                & 8,174,409                 & 5,157,027          			\\\hline
-			7                   & 15,553,342                & 9,170,343                 & 6,382,999          			\\\hline
-			8                   & 17,775,248                & 10,166,277                & 7,608,971          			\\\hline
-			9                   & 19,997,154                & 11,162,211                & 8,834,943          			\\\hline
-			10                  & 22,219,060                & 12,158,145                & 10,060,915          			\\\hline
+			\# workflows 		& Multi-contract cost 	& Mono-contract cost	& Diff.   		\\\hline
+			1                   & 2,221,906             & 3,194,739         	& -972,833 		\\\hline
+			2                   & 4,443,812             & 4,190,673         	& 253,139  		\\\hline
+			3                   & 6,665,718             & 5,186,607         	& 1,479,111 	\\\hline
+			4                   & 8,887,624             & 6,182,541         	& 2,705,083 	\\\hline
+			5                   & 11,109,530            & 7,178,475         	& 3,931,055 	\\\hline
+			6                   & 13,331,436            & 8,174,409         	& 5,157,027 	\\\hline
+			7                   & 15,553,342            & 9,170,343         	& 6,382,999 	\\\hline
+			8                   & 17,775,248            & 10,166,277        	& 7,608,971 	\\\hline
+			9                   & 19,997,154            & 11,162,211        	& 8,834,943 	\\\hline
+			10                  & 22,219,060            & 12,158,145        	& 10,060,915    \\\hline
 		\end{tabular}      
 		\caption{Gas cost of creating multiple instances of the example workflow, and the difference between implementations}
 	\end{table}
 
-	Interestingly it can also be observed in appendix \ref{app:test-cases-gas} that the second and third creation of the example workflow in the Mono-contract implementation are cheaper than the first creation of the example workflow.
+	Interestingly it can also be observed in appendix \ref{app:multi-contract-test-data} that the second and third creation of the example workflow in the Mono-contract implementation are cheaper than the first creation of the example workflow.
 
 	We expect this is due to the fact that the array holding the workflows must be initialized on creation of the first workflow.
 	Subsequent creations of the example workflow cost $995,934$ gas, a difference of $1,010,934 - 995,934 = 15,000$ gas.	
@@ -556,15 +556,15 @@ for(i = 0; i < relations.length; i=i+2){
 	\begin{table}[!ht]
 		\centering
 		\label{tab:cost-of-executing-activities}
-		\begin{tabular}{|p{3cm}|p{2.5cm}|p{2.5cm}|p{2.5cm}|}
+		\begin{tabular}{| l | r | r | r |}
 			\hline
-			Activity                     & Multi-contract cost (gas) & Mono-contract cost (gas) & Difference (Mono $-$ Multi) \\\hline
-			Submit ticket                & 61,112          			 & 61,187         			& 75         \\\hline
-			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
-			Reject solution              & 41,208          			 & 41,263         			& 55         \\\hline
-			Propose solution             & 41,208          			 & 41,263         			& 55         \\\hline
-			Accept solution              & 54,023          			 & 54,118         			& 95         \\\hline
-			Close ticket                 & 34,810          			 & 34,845         			& 35         \\\hline
+			Activity          & Multi-contract 	& Mono-contract & Diff. 	\\\hline
+			Submit ticket     & 61,112          & 61,187        & 75        \\\hline
+			Propose solution  & 41,208          & 41,263        & 55        \\\hline
+			Reject solution   & 41,208          & 41,263        & 55        \\\hline
+			Propose solution  & 41,208          & 41,263        & 55        \\\hline
+			Accept solution   & 54,023          & 54,118        & 95        \\\hline
+			Close ticket      & 34,810          & 34,845        & 35        \\\hline
 		\end{tabular}
 		\caption{Gas cost of executing activities in the example workflow, and the difference between implementations}
 	\end{table}
