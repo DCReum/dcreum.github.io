@@ -1,6 +1,67 @@
-const address = "0x513f9A8f6D84246B48C494297b40aDd088c1fEbc";
+const address = "0x28095176552B627D6ac1D836d33a553fcDE16e71";
 
 const abi = [
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "workflowName",
+        "type": "bytes32"
+      },
+      {
+        "name": "activityNames",
+        "type": "bytes32[]"
+      },
+      {
+        "name": "includedStates",
+        "type": "uint256"
+      },
+      {
+        "name": "executedStates",
+        "type": "uint256"
+      },
+      {
+        "name": "pendingStates",
+        "type": "uint256"
+      },
+      {
+        "name": "includesTo",
+        "type": "uint256[]"
+      },
+      {
+        "name": "excludesTo",
+        "type": "uint256[]"
+      },
+      {
+        "name": "responsesTo",
+        "type": "uint256[]"
+      },
+      {
+        "name": "conditionsFrom",
+        "type": "uint256[]"
+      },
+      {
+        "name": "milestonesFrom",
+        "type": "uint256[]"
+      },
+      {
+        "name": "authDisabled",
+        "type": "uint256"
+      },
+      {
+        "name": "authAccounts",
+        "type": "address[]"
+      },
+      {
+        "name": "authWhitelist",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "createWorkflow",
+    "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
   {
     "constant": true,
     "inputs": [
@@ -143,43 +204,6 @@ const abi = [
         "type": "bytes32"
       }
     ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "names",
-        "type": "bytes32[]"
-      },
-      {
-        "name": "activityStates",
-        "type": "bool[3][]"
-      },
-      {
-        "name": "activityData",
-        "type": "uint32[2][]"
-      },
-      {
-        "name": "relationTypes",
-        "type": "uint8[]"
-      },
-      {
-        "name": "relationActivityIds",
-        "type": "uint32[]"
-      },
-      {
-        "name": "authAccounts",
-        "type": "address[]"
-      },
-      {
-        "name": "authDisabled",
-        "type": "bool[]"
-      }
-    ],
-    "name": "createWorkflow",
-    "outputs": [],
     "payable": false,
     "type": "function"
   },
