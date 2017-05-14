@@ -1,4 +1,4 @@
-const address = "0x02A03937CdC4825314a8480885FC9C4f93342868";
+const address = "0x5A9726C2326F0cc5825Bd2C77f9017b1879f2b34";
 
 const abi = [
   {
@@ -268,6 +268,19 @@ const abi = [
       {
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getWorkflowCount",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,

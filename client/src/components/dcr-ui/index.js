@@ -218,9 +218,9 @@ class DcrUi {
     });
 
     // Only allow single element to be selected
-    this.cy.on("select", "*", event =>
+    this.cy.on("select", "*", event => {
       this.cy.collection("*:selected").not(event.target).unselect()
-    );
+    });
 
     this.cy.on("select", "node", event => {
       this.selectedActivityId(parseInt(event.target.data("id").replace("n", "")));
@@ -255,8 +255,6 @@ class DcrUi {
 
   publish() {
     let args = new Workflow(this.workflowName(), this.activities, this.relations).getContractArguments();
-    console.log("publish", args);
-    console.log(WorkflowManager.contract.createWorkflow.getData.apply(this, args));
     WorkflowManager.createWorkflow.apply(this, args)
       .then(this.publishHash)
       .then(() => m.redraw())
@@ -270,7 +268,6 @@ class DcrUi {
           }
         })
       });;
-    
   }
 
   view(vnode) {
