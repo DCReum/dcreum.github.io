@@ -54,10 +54,6 @@ contract DCReum {
   function isPending(uint256 workflowId, uint256 activityId) public constant returns (bool) {
     return ((workflows[workflowId].pending & (1<<activityId)) != 0);
   }
-
-  function test(uint256 workflowId, uint256 activityId) public constant returns (uint256) {
-    return workflows[workflowId].conditionsFrom[activityId];
-  }
   
   function getRelations(uint256 relations) private constant returns (uint8[]) {
     uint i;

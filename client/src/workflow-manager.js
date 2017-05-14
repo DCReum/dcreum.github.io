@@ -104,9 +104,9 @@ class Workflow {
       ]),
 
       // activityData
-      activities.map(activity => [
+      activities.map((activity, i) => [
         // counts for relationTypes and relationActivityIds
-        count(relations, relation => relationSelf(relation) === activity.id),
+        count(relations, relation => relationSelf(relation) === i),
 
         // counts for accountWhitelist
         activity.accountWhitelist.length,
