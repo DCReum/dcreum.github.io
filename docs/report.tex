@@ -1061,6 +1061,28 @@ if (callContract && A.included) //External call
 			11.Workflow creation (3)		& 820045	& \seqsplit{0x44b86c4630a260cc7038b42aa63961474992bd1bee97186de7b70543c5c99775} \\\hline
 		\end{longtable}
 
+	\section{Test cases gas comparison for example workflow}
+	\label{app:test-cases-gas}
+		The table below brings together the gas costs from appendencies \ref{app:example-workflow-transaction-hashes-multi-contract} and \ref{app:example-workflow-transaction-hashes-mono-contract} for gas cost comparison.
+
+		\begin{tabular}{| l | l | l |}
+			\hline
+			Action 							& Mono-contract  & Mono-contract with bitvectors \\ \hline
+			1. Contract creation			& 2183805		 & 1708991 	\\\hline
+			2. Workflow creation (1)		& 1010934 		 & 835045 	\\\hline
+			3. Submit ticket				& 61187			 & 66591	\\\hline
+			4. Propose solution				& 41263 		 & 51805	\\\hline
+			5. Propose solution (Duplicate)	& 41263 		 & 51805	\\\hline
+			6. Reject solution				& 41263 		 & 51805	\\\hline
+			7. Propose solution				& 41263 		 & 51805	\\\hline
+			8. Accept solution				& 54118 		 & 51805	\\\hline
+			9. Close ticket					& 34845 		 & 36805	\\\hline
+			10.Workflow creation (2)		& 995934 		 & 820045	\\\hline
+			11.Workflow creation (3)		& 995934 		 & 820045	\\\hline
+			\hline
+		\end{tabular}
+		\pagebreak
+
 
 % \pagebreak
 	% \section{Edge and stress test workflow transaction hashes Multi-contract}
