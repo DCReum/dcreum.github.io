@@ -696,17 +696,19 @@ for(i = 0; i < relations.length; i=i+2){
 			In the case of DCR graphs, an external contract conditional could allow multiple executions when it shouldn't be possible, if the call is performed at the wrong time, as in this example:
 
 			\begin{lstlisting}[language=pseudocode]
-if (included)
+if (A.isIncluded)
 	if (callContract) //External call
 		...
 			\end{lstlisting}
 
 			The issue here is fairly anemic as it is not immediately apparent that this code is problematic.
-			The issue is the potential side-effect of \emph{callContract}, which could mean that the state in the first line could be inconsistent with the state after the second line and in a case where the called activity has an exclude relation to itself or another activity has an exclude relation to the former activity, the activity would be executed even though it technically is excluded.
-			Therefore the external call should be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
+			The issue is the potential side-effect of \emph{callContract}. 
+			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \emph{isIncluded}.
+			The execution of activity $A$ would resume after \emph{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
+			An external call should therefore be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
 
 			\begin{lstlisting}[language=pseudocode]
-if (callContract && included) //External call
+if (callContract && A.included) //External call
 	...
 			\end{lstlisting}
 
