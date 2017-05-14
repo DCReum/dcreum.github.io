@@ -242,6 +242,8 @@ class WorkflowManager {
 
     let addEvent = event => {
       let events = this.events();
+      if (events.find(e => e.transactionHash === event.transactionHash))
+        return;
       events.push(event);
       this.events(events);
     };
@@ -276,7 +278,16 @@ class WorkflowManager {
       this.getWorkflowName()
         .then(web3.toAscii)
         .then(String.trim)
-        .then(name => result.workflowName = name),
+        .then(name => {
+          result.workflowName = name;
+
+          let recentWorkflows = JSON.parse(localStorage.getItem("recent-workflows")) || [];
+          if (!recentWorkflows.find(wf => wf.id == this.workflowId)) {
+            recentWorkflows.unshift({ id: +this.workflowId, name: name.trim() });
+            recentWorkflows.slice(0, 5);
+            localStorage.setItem("recent-workflows", JSON.stringify(recentWorkflows));
+          }
+        }),
 
       this.getActivityCount()
         .then(count => {
