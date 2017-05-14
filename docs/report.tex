@@ -655,6 +655,20 @@ for(i = 0; i < relations.length; i=i+2){
 		Furthermore, since we are not making structs any more, we can, with a few exceptions, send the raw data to be stored, thus saving conversion operations. 
 
 	\section{Discussion}
+	%intro - blød overgang til viability
+	%Viability
+	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
+	There was no need for jumping though hoops, to get several working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
+	However, finding the essential optimizations were not very simple.
+	While the cost of the instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some hidden costs, that are not readily available. 
+	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is behaviour we have not been able to figure out.
+	Notice from appendices \ref{}This is a common behaviour across  
+
+	%choosing implementation
+		% Many workflows vs many executions vs extendability(optimization bliver ødelagt)
+	%missing tools for easily checking gas price
+
+
 
 	\section{GUI}
 
