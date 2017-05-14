@@ -374,6 +374,7 @@
 		A DApp is an application of which the back-end code is running on a decentralized peer-to-peer network, as for example on the Ethereum blockchain.
 		The front-end can then be published on any or all of readily available platforms, such that anyone who is participating the peer-to-peer network can access it, achieving a fully decentralized application.
 
+		Most DApps are created using a JavaScript API called Web3\footnote{Developed by Ethereum. Github at \url{https://github.com/ethereum/web3.js}}, which implements the JSON Remote Procedure Call specifications required by Ethereum clients. 
 
 	\section{Implementation requirements}
 	\label{sec:implementation-requirements}
@@ -672,37 +673,38 @@ for(i = 0; i < relations.length; i=i+2){
 		A further optimization could be to share user addresses across workflows by storing them globally in the contract and referring to them by ID in each workflow, but this should only provide significant savings in situations where a contract contains many workflows, in which the same users reappear frequently.
 
 	\section{Discussion}
-	Having made the above different implementation, we can conclude that the Ethereum platform easily supports DCR.
-	There was no need for jumping though hoops to get one, or even several, working implementations, unlike in the Bitcoin blockchain \cite{bachelor}.
-	However, finding the low-level optimizations were not very simple.
-	While the cost of the instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some hidden costs, that are not readily available. 
-	For instance, the pattern where the first successful activity execution has an added cost of at least 9000 gas in all the implementations, which is a behaviour we have not been able to figure out.
-	Notice from appendices \ref{app:multi-contract-test-data}, \ref{app:mono-contract-test-data}, \ref{app:mono-contract-with-bitvectors-test-data}\& \ref{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data} that this is common behaviour across vastly different implementations. 
-	Our standing hypothesis is that there might be some data that is lazily initialized, however, we have not been able to produce anything that substantiate this claim.
-	As such, making low-level-optimized solutions in Ethereum is still a daunting task due to lacking documentation, perhaps because the technology is still relatively young.
-	While is of course relevant, it does not subtract from our opinion that DCR implementations on the Ethereum platform are completely viable.
+	The different implementations above clearly show that the Ethereum platform easily supports a DCR engine.
+	There was no need to jump through hoops to get deploy several working implementations, unlike the implementation on Bitcoin's blockchain \cite{bachelor}.
+	However, figuring out the best low-level optimizations is not simple.
 
-	Choosing the best of the above implementations is not easy.
-	Each implementation has its own merits, and would be optimal in certain situations:
+	While the cost of the bytecode instructions are fairly simple to figure out from appendix \ref{app:gas-prices}, there seems to be some  costs, which we are unable to account for.
+	For instance we do note know how to account for the added cost of at least 9000 gas from the first successful execution of an activity.
+	This cost is present in all the implementations.
+	Notice from appendices \ref{app:multi-contract-test-data}, \ref{app:mono-contract-test-data}, \ref{app:mono-contract-with-bitvectors-test-data}\& \ref{app:mono-contract-with-bitvectors-and-compressed-call-data-test-data} that this is common behavior across vastly different implementations.
+	
+	Our hypothesis is that there is some data that is lazily initialized. 
+	We have however not been able to produce anything to substantiate this claim.
+	Low-level-optimization in Ethereum is still a daunting task due to lacking documentation of both Ethereum and Solidity, perhaps because Ethereum is still a relatively young technology.
+	While we have not been able to optimize our implementations as much as we intended, we still believe implementing a DCR engine on the Ethereum platform is viable. Choosing the best implementation is however not easy. Each implementation has its own merits, and would be optimal in certain situations:
 	\begin{description}
 	 	\item[Multi-contract] is a simple and easily understandable implementation. 
-	 		It has the absolutely lowest activity execution for our example workflow, although this cost growth linearly in the number of relations an activity has. 
-	 		However, it also has the highest workflow creation cost-growth. 
-	 		We recommend this solution only for easily implementable extra features, for instance external contract conditionals (see \ref{subsec:external-contract-conditionals}), in a single relatively small workflow.
-	 		As soon as several workflows are required, this is not the implementation to go with.
-	 	\item[Mono-contract] is also relatively simple, and so also easily extendable.
-	 		It has a lower workflow creation cost growth, and supports arbitrarily large workflows, at a cost. 
+	 		It is the implementation which has the lowest cost of executing activities in the example workflow, although the cost of an execution grows linearly with the number of relations an activity has.
+	 		However, this implementation also has the highest workflow creation cost-growth. 
+	 		We recommend this solution only for easily implementable extra features, for instance external contract conditions (see \ref{subsec:external-contract-conditionals}), in a single workflow where there are many executions but few relations.
+	 		As soon as several workflows are required, this is not the most cost efficient implementation.
+	 	\item[Mono-contract] is also relatively simple and easily extended.
+	 		It has a lower workflow creation cost growth, and the implementation supports arbitrarily large workflows. 
 	 		This makes it ideal for users with a need for workflows with more than 256 activities, and easily implementable extra features.
-	 		However, we expect that this implementation is also relatively rarely needed.k
-	 	\item[Bitvectors] is cheaper than the Mono-contract, but a bit less easily extendable.
-	 		It shares an interface with the Mono-contract implementation, and the two could probably be switched around according to need.
-	 		This also means that it is relatively easy to use, but this comes at the cost of extendability, and a maximum size of 256 activities.
-	 		It has an even lower cost growth of workflow creation than Mono-contract, and bounded cost on activity execution, making it ideal for workflows with more relations per activity than our example workflow, and the need for many activity execution.
-	 	\item[Bitvectors and call data] strikes a balance with our lowest workflow creation cost, and an insignificant difference of activity executions from the Bitvector implementation.
-	 	Generally this should be used over the Bitvector implementation, unless a lot of activity executions are expected.
-	 	However, this implementation is very specifically designed and optimized for basic DCR logic, making it hard to extend.
-	 	It is also relative hard to put workflows up on this contract, due to the very specific data format required. 
-	 	As such we have created a front-end implementation for ease-of-use, see section \ref{sec:gui}.
+	 		However, we expect that this implementation is also relatively rarely needed.
+	 	\item[Bitvectors] is cheaper than the Mono-contract, but can not be extended as easily.
+	 		It has the same interface as the Mono-contract implementation, and the two could likely be used interchangeably.
+	 		This also means that it is relatively easy to use, but this comes at the cost of extendability, and a maximum size of 256 activities per workflow.
+	 		It has an even lower cost growth of workflow creation than the Mono-contract implementation, and it has a bounded cost on activity execution. This makes it ideal for workflows with many relations per activity and many activity executions.
+		\item[Bitvectors and call data] has the lowest workflow creation cost, and the cost of executing an activity is very close to the execution cost in the Bitvector implementation.
+	 		Generally this implementation should be used over the Bitvector implementation, unless very many activity executions are expected.
+	 		However, this implementation is specifically designed and optimized for basic DCR logic, making it hard to extend.
+	 		It is also relative hard to put crate workflows on this contract, due to the very specific data format required. 
+	 		As such, we have created a front-end implementation for ease-of-use, see section \ref{sec:gui}.
 	 \end{description} 
 	 
 	\section{Graphical user interface}
@@ -937,7 +939,10 @@ if (callContract && A.included) //External call
 	The supporting interfaces built around Ethereum are also somewhat lackluster at the time this article is written.
 	The chosen language, Solidity, is incredibly basic and the lack of feedback from its compiler makes development cumbersome and unintuitive.
 	All of these shortcomings are to be expected from a concept this new and ambitious and they should be fixed gradually as Ethereum solidifies.
-	At this early stage we were still able to develop several fully functional DCR implementations and ...
+
+	At this early stage we were still able to develop several fully functional DCR implementations somewhat easily, as well as optimize the more high level aspects of these implementations. 
+	The low-level optimizations, however, were only somewhat successful, which makes us conclude that it might be possible to construct an even more efficient implementation than what we were able to achieve here.
+
 
 	\pagebreak
 	\addcontentsline{toc}{section}{References}	
@@ -1090,8 +1095,12 @@ if (callContract && A.included) //External call
 	\section{Mono-contract code with bitvectors}
 		\label{app:mono-contract-code-with-bitvectors}
 
-
 		\lstinputlisting[language=solidity]{../contracts/monolith/monolith-bitvectors.sol}
+
+	\section{Mono-contract code with bitvectors and compressed call data}
+		\label{app:mono-contract-code-with-bitvectors-and-compressed-call-data}
+
+		\lstinputlisting[language=solidity]{../contracts/monolith/monolith-bitvectors-packed.sol}
 
 	\pagebreak
 	\section{Multi-contract test data}
