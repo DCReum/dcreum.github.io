@@ -503,19 +503,22 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Comparison}
 	\label{sec:comparison}
 
-	In order to compare the solutions to each other we have developed a test graph, see figure \ref{fig:exampleWorkflow}, on which we will run a specific sequence of executions, some of which should fail and some of which should succeed (See appendix \ref{app:test-cases-gas}).
-	Due to the nature of our solutions, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
+	In order to compare the implementations we have created an example workflow, see figure \ref{fig:exampleWorkflow}, on which we will execute activities in a specific order. Some of the executions should fail, as the executions are also used to test if the DCR logic is implemented correctly(See appendix \ref{app:test-cases-gas}).
+	Due to the nature of our implementations, we anticipate that the act of creating the contract and subsequently the workflow will be the most expensive operation, by a large margin.
 
-	Since there is no difference in creating the workflow and creating the contract in the multi-contract solution, but there is in the mono-contract solution, they will be hard to compare.
-	From the executions of the example workflow, we get that creating the contract and workflow in the Multi-contract implementation costs $2,221,906$ gas. 
-	In the Mono-contract implementation, the same functionality costs $2,183,805 + 1,010,934 = 3,194,739$ gas.
-	From this we get the impression that the Multi-contract implementation might be the superior one in terms of gas cost.
-	However, the point of the Mono-contract implementation is to save on the cost of creating workflows after contract creation, since only one of these are required.
-	Furthermore, it turns out that, excluding the contraction creation, the first workflow is more expensive to create than subsequent workflows.
-	We conjecture that this is due to the fact that the list holding the workflows must be initialized on creation of the first workflow.
-	Subsequent identical workflows cost only $995,934$ gas, a difference of $1,010,934 - 995,934 = 15,000$ gas.
-	Table \ref{tab:cost-of-creating-multiple-workflows} shows that already after the second workflow creation, some 253,139 gas have been saved by using the Mono-contract implementation.
-	As such, our assumption that the Mono-implementation was more cost-effective in the long run, seems to have been verified.  
+	In the Multi-contract implementation the cost of creating a workflow is included in the cost of deploying the contract, while these two costs are separate in the Mono-contract implementation.
+	This difference complicates the comparison of the two implementation.
+
+	Appendix \ref{app:test-cases-gas} shows that the cost of creating a contract containing the example workflow in the Multi-contract implementation costs $2,221,906$ gas.
+	In the Mono-contract implementation, the equivalent operation cost 
+
+	$$2,183,805\quad(contract) + 1,010,934\quad(workflow) = 3,194,739$$
+
+	\noindent gas. These results give us the impression that the Multi-contract implementation might be the superior implementation in terms of gas cost
+	However, the point of the Mono-contract implementation is to minimize the cost of creating workflows after contract creation, since only one contract creations is required. 
+
+	Table \ref{tab:cost-of-creating-multiple-workflows} shows that already after the second workflow creation, 253,139 gas has been saved by using the Mono-contract implementation.
+	Our assumption that the Mono-implementation is more cost-effective in the long run, therefore seems to hold.  
 
 	\begin{table}[]
 		\centering
@@ -537,11 +540,18 @@ for(i = 0; i < relations.length; i=i+2){
 		\caption{Gas cost of creating multiple instances of the example workflow, and the difference between implementations}
 	\end{table}
 
-	The story changes when we come to the cost of executing the activities. 
-	While the costs are almost identical, it seems that the Mono-implementation consistently costs a bit more, see table \ref{tab:cost-of-executing-activities}.
-	We conjecture that this is due to the fact that there are more list look-ups in the Mono-implementation, since there is a need to first load the workflow, and then the activity.
-	It also seems that the more relations there is situated on an activity, the more the difference between the implementations increase.
-	This seems to support our hypothesis that the cost increase is due to look-ups, since each relation is another lookup on first workflow, and then activity in the Mono-contract implementation, versus only a lookup on the activity in the Multi-contract implementation. 
+	Interestingly it can also be observed in appendix \ref{app:test-cases-gas} that the second and third creation of the example workflow in the Mono-contract implementation are cheaper than the first creation of the example workflow.
+
+	We expect this is due to the fact that the array holding the workflows must be initialized on creation of the first workflow.
+	Subsequent creations of the example workflow cost $995,934$ gas, a difference of $1,010,934 - 995,934 = 15,000$ gas.	
+
+	The cost of executing activities is however cheaper in the Multi-contract implementation as seen in table \ref{tab:cost-of-executing-activities}.
+	We expect this is due to the fact that there are more list look-ups in the Mono-contract implementation, since there is a need to first load the workflow, and then the activity.
+
+	The cost of executing an activity is also affected by how many relations are stored on it. 
+	Table \ref{tab:cost-of-executing-activities} clearly shows that executing \texttt{Reject solution}, which has two relations stored on it, is cheaper than executing \texttt{Submit ticket}, which has three relations stored on it.
+	It can also be observed in table \ref{tab:cost-of-executing-activities} that the difference of the cost of executing an activity in the two implementations grows, if more relations are stored on the executed activity.
+	Since each relation is a lookup or change of another activity's attributes, the growing difference in execution cost in our implementations supports our hypothesis that the increased cost of execution in the Mono-contract implementation is due to look-up of both workflow and activity.
 
 	\begin{table}[!ht]
 		\centering
@@ -559,7 +569,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\caption{Gas cost of executing activities in the example workflow, and the difference between implementations}
 	\end{table}
 
-	However, we consider the large winnings in workflow creations to more than make up for cost increase in activity execution, and will continue to optimize on the Mono-contract implementation.
+	We consider the large winnings in workflow creations to more than make up for cost increase in activity execution, and will continue to optimize on the Mono-contract implementation.
 
 		 
 
