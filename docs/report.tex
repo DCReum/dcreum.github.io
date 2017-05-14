@@ -601,7 +601,7 @@ for(i = 0; i < relations.length; i=i+2){
 		\end{snippet}
 
 		This change naturally has several effects.
-		As a negative consequence, this limits the number of activities a workflow can contain to 256, since each bit of the three \emph{uint256} represents one of an activity's three attributes.
+		As a negative consequence, this limits the number of activities a workflow can contain to 256, since each bit of the three \texttt{uint256} represents one of an activity's three attributes.
 		However we do not expect workflows with more than 256 activities to be a normal occurrence.
 		If the need for workflows of a greater size arises, we suggest the need could be addressed by partitioning the the workflow into 256-activity sized sub-workflows, and connecting the two workflows using external relations (see section \ref{sec:external-relations} for an in-depth explanation of external relations).
 
@@ -799,9 +799,9 @@ if (A.isIncluded)
 			\end{lstlisting}
 
 			The issue here is fairly anemic as it is not immediately apparent that this code is problematic.
-			The issue is the potential side-effect of \emph{callContract}. 
-			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \emph{isIncluded}.
-			The execution of activity $A$ would resume after \emph{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
+			The issue is the potential side-effect of \texttt{callContract}. 
+			A potential side effect could be that the state of activity $A$ could have changed (it could be excluded) and its state therefore inconsistent with the intended state of it after the check to \texttt{isIncluded}.
+			The execution of activity $A$ would resume after \texttt{callContract} and changes to other activities, if $A$ has outgoing relations, would be propagated even though $A$ would be excluded.  
 			An external call should therefore be the very first thing called to ensure a consistent state and thereby avoid any reentrancy issues:
 
 			\begin{lstlisting}[language=pseudocode]
@@ -815,10 +815,10 @@ if (callContract && A.included) //External call
 
 		Group authorization could be implemented by storing the addresses of users that are part of a group in a list and then associating activities with the id of the group requiring execution rights.
 
-		More specifically each user in a workflow should only need a single \emph{uint40}\footnote{We have chosen an \texttt{uint40} over a \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector to support membership of 32 groups with individual authorizations. Each bit in the \emph{uint40} would indicate if a user was part of a group or not.
+		More specifically each user in a workflow should only need a single \texttt{uint40}\footnote{We have chosen an \texttt{uint40} over a \texttt{uint32} to allow for eventual special groups such as authorization for workflow changes, deletion etc.} bitvector to support membership of 32 groups with individual authorizations. Each bit in the \texttt{uint40} would indicate if a user was part of a group or not.
 
-		Each activity in a workflow should then contain a \emph{uint32} where each bit represents whether or not a group has the rights to execute the activity.
-		Lastly a workflow should contain a \emph{byte32} array of length 40 to store the group names.
+		Each activity in a workflow should then contain a \texttt{uint32} where each bit represents whether or not a group has the rights to execute the activity.
+		Lastly a workflow should contain a \texttt{byte32} array of length 40 to store the group names.
 
 		Even ignoring the optimizations this extension could bring, group authorization is still a valuable feature.
 		The construction of workflows is much simpler without duplication of Ethereum-address and the transparency of how access rights are granted is improved.
