@@ -710,9 +710,11 @@ for(i = 0; i < relations.length; i=i+2){
 	\section{Graphical user interface}
 	\label{sec:gui}
 	To show that our DCR engine can be used in practice, we have implemented a graphical user interface (GUI), where user can create workflows and execute activities.
-	Since it is the front-end of a DApp, it is required for the user to have installed and be running the Ethereum client Parity\footnote{\url{https://parity.io/}}, along the a parity plugin for the browser in question, for example the Parity Ethereum Integration\footnote{\url{https://chrome.google.com/webstore/detail/parity-ethereum-integrati/himekenlppkgeaoeddcliojfddemadig}} plugin for the Chrome browser. 
-	The GUI is implemented in JavaScript using the library Cytoscape.js.\footnote{\url{http://js.cytoscape.org/}}
-	Cytoscape.js supports most basic operations on graphs and has methods to easily draw and nicely arrange nodes.
+	Since it is the front-end of a DApp, it is required for the user to have installed and be running an Ethereum client for the DApp to communicate with.\footnote{The GUI was implemented and tested for use with Parity (\url{https://parity.io/}), alongside the Parity plugin for Google Chrome (\url{https://chrome.google.com/webstore/detail/parity-ethereum-integrati/himekenlppkgeaoeddcliojfddemadig}), however other Ethereum clients can be used as well.}
+	The GUI is implemented in JavaScript using web3.js\footnote{\url{https://github.com/ethereum/web3.js/}} to communicate with the local Ethereum node.
+	As the GUI uses the Ethereum network and its peers as a server, no traditional backend is needed to persist user actions.
+	Because of this a traditional web server is only needed for distributing the client-side software, but nothing prevents other means of distribution.
+	For ease of use we host the GUI for anyone to use at \url{https://dcreum.github.io}.
 
 		\subsection{Legend}
 		Included activities have a solid border, while excluded activities have a dotted border. 
