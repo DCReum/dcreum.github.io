@@ -1,10 +1,18 @@
 import Web3 from "web3";
 
-if (typeof web3 !== 'undefined')
-  web3 = new Web3(web3.currentProvider);
-else
-  console.error("No web3 provider found!");
+const wrapper = {};
 
-web3.eth.defaultAccount = web3.eth.defaultAccount || web3.eth.accounts[0];
+window.addEventListener("load", function() {
+  console.log("Wrapping web3");
+  if (typeof window.web3 !== "undefined")
+    window.web3 = new Web3(window.web3.currentProvider);
+  else
+    console.error("No web3 provider found!");
 
-export default web3;
+  if (window.web3) {
+    window.web3.eth.defaultAccount = window.web3.eth.defaultAccount || window.web3.eth.accounts[0];
+  }
+  wrapper.web3 = window.web3;
+});
+
+export default wrapper;

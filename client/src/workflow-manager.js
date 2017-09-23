@@ -1,11 +1,12 @@
-import web3 from "web3-wrapper";
+import web3wrapper from "web3-wrapper";
 import Stream from "mithril/stream";
 import moment from "moment";
 import m from "mithril";
 import { address, abi } from "contract-details";
 import BigNumber from "bignumber.js";
 
-const contract = web3.eth.contract(abi).at(address);
+let web3 = null;
+let contract = null;
 
 class WorkflowEvent {
   static create(event, contract) {
@@ -114,10 +115,10 @@ class Workflow {
 
       // includedStates
       bitvector(activities.map(activity => activity.isIncluded)),
-      
+
       // executedStates
       bitvector(activities.map(activity => activity.isExecuted)),
-      
+
       // pendingStates
       bitvector(activities.map(activity => activity.isPending)),
 
@@ -135,7 +136,7 @@ class Workflow {
 
       // milestonesFrom
       relationVector("milestone"),
-      
+
       // authDisabled
       bitvector(activities.map(activity => activity.accountWhitelist.length === 0)),
 
@@ -236,7 +237,7 @@ class WorkflowManager {
     this.canExecute = promiseCall(contract.canExecute).bind(null, this.workflowId);
     this.LogExecution = promiseCall(contract.LogExecution);
     this.execute = contract.execute;
-    
+
     // Fetch  workflow name, activities and relations
     this.sync();
 
@@ -257,7 +258,7 @@ class WorkflowManager {
         .then(addEvent)
         .then(redraw)
     );
-    
+
     contract.LogExecution({ workflowId: this.workflowId }, { fromBlock: "earliest" }, (error, event) =>
       this.createEvent(event)
         .then(addEvent)
@@ -334,12 +335,18 @@ class WorkflowManager {
   }
 }
 
-WorkflowManager.contract = contract;
-WorkflowManager.createWorkflow = promiseCall(contract.createWorkflow);
-WorkflowManager.LogWorkflowCreation = promiseCall(contract.LogWorkflowCreation);
+window.addEventListener("load", function() {
+  web3 = web3wrapper.web3;
+  contract = web3 ? web3.eth.contract(abi).at(address) : null;
 
-WorkflowManager.blockHref = blockNumber => `https://etherscan.io/block/${blockNumber}`;
-WorkflowManager.transactionHref = hash => `https://etherscan.io/tx/${hash}`;
-WorkflowManager.addressHref = address => `https://etherscan.io/address/${address}`;
+  if (web3) {
+    WorkflowManager.contract = contract;
+    WorkflowManager.createWorkflow = promiseCall(contract.createWorkflow);
+    WorkflowManager.LogWorkflowCreation = promiseCall(contract.LogWorkflowCreation);
 
+    WorkflowManager.blockHref = blockNumber => `https://etherscan.io/block/${blockNumber}`;
+    WorkflowManager.transactionHref = hash => `https://etherscan.io/tx/${hash}`;
+    WorkflowManager.addressHref = address => `https://etherscan.io/address/${address}`;
+  }
+});
 export { WorkflowManager, Workflow, Activity, Relation };
