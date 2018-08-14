@@ -14,16 +14,11 @@ class Web3ErrorPage {
             m("p", [
               m("span", "You can choose any Ethereum client with a web interface."),
               m("br"),
-              m("span", "We recommend downloading the following two programs to get started using the tool in Google Chrome.")
+              m("span", "We recommend downloading the following program to get started using the tool in Google Chrome or Mozilla Firefox.")
             ]),
-            m("strong", "Parity"),
+            m("strong", "MetaMask"),
             m("br"),
-            m("a.button.is-success", { href: "https://parity.io", target: "_blank" }, "Download here"),
-            m("br"),
-            m("br"),
-            m("strong", "Parity Ethereum Integration"),
-            m("br"),
-            m("a.button.is-success", { href: "https://chrome.google.com/webstore/detail/parity-ethereum-integrati/himekenlppkgeaoeddcliojfddemadig", target: "_blank" }, "Download here"),
+            m("a.button.is-success", { href: "https://metamask.io", target: "_blank" }, "Download here"),
           ])
         ])
       )
