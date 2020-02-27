@@ -10,6 +10,7 @@ window.addEventListener("load", function() {
     console.error("No web3 provider found!");
 
   if (window.web3) {
+    ethereum.enable();
     window.web3.eth.defaultAccount = window.web3.eth.defaultAccount || window.web3.eth.accounts[0];
   }
   wrapper.web3 = window.web3;
